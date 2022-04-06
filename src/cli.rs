@@ -21,9 +21,9 @@ pub struct Bamboo {
     #[structopt(long, short = "g")]
     pub(crate) region: Region,
 
-    /// Set the maximum reads that will be shown in the alignment plots.
+    /// Set the maximum rows of reads that will be shown in the alignment plots.
     #[structopt(long, short = "d", default_value = "500")]
-    pub(crate) max_reads: usize,
+    pub(crate) max_read_depth: usize,
 }
 
 #[derive(Debug, Clone)]
