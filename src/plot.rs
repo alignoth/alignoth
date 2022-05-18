@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::cli;
 use crate::cli::Region;
 use anyhow::{Context, Result};
@@ -14,6 +13,7 @@ use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::{FetchDefinition, Read as HtslibRead};
 use serde::Serialize;
 use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Display;
 use std::path::Path;
@@ -26,7 +26,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     max_read_depth: usize,
 ) -> Result<serde_json::Value> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
-    let tid = bam.header().tid(&region.target.as_bytes()).unwrap() as i32;
+    let tid = bam.header().tid(region.target.as_bytes()).unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
     let mut data: Vec<_> = bam
         .records()
@@ -34,10 +34,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
         .collect();
     data.order(max_read_depth)?;
-    let mut data: Vec<_> = data
-        .iter()
-        .map(|r| json!(r))
-        .collect();
+    let mut data: Vec<_> = data.iter().map(|r| json!(r)).collect();
     let mut reference_data = fetch_reference(ref_path, region)?;
     data.append(&mut reference_data);
     Ok(json!(data))
@@ -214,7 +211,7 @@ pub trait PlotOrder {
 
 impl PlotOrder for Vec<Read> {
     /// Assigns given Reads their vertical position (row) in the read plot respecting the given max_read_depth by subsampling rows.
-    fn order(&mut self, max_read_depth: usize) -> Result<()>{
+    fn order(&mut self, max_read_depth: usize) -> Result<()> {
         let mut row_ends = vec![0; 10000];
         let mut ordered_reads = HashMap::new();
         for read in self {
@@ -223,14 +220,14 @@ impl PlotOrder for Vec<Read> {
                 if row_ends[*row] < read.end_position {
                     row_ends[*row] = read.end_position;
                 }
-                continue
+                continue;
             }
             for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
                 if read.position > *row_end {
                     read.set_row(row as u32);
                     row_ends[row] = read.end_position;
                     ordered_reads.insert(&read.name, row);
-                    break
+                    break;
                 }
             }
         }
@@ -252,7 +249,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
-            end_position: 120
+            end_position: 120,
         };
 
         let read2 = Read {
@@ -262,7 +259,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
-            end_position: 140
+            end_position: 140,
         };
 
         let mut reads = vec![read1, read2];
