@@ -245,7 +245,46 @@ impl PlotOrder for Vec<Read> {
 
 #[cfg(test)]
 mod tests {
-    use crate::plot::{PlotCigar, PlotOrder, Read};
+    use crate::plot::CigarType::{Del, Ins, Match, Sub};
+    use crate::plot::{InnerPlotCigar, PlotCigar, PlotOrder, Read};
+
+    #[test]
+    fn test_plot_cigar_string() {
+        let plot_cigar = PlotCigar(vec![
+            InnerPlotCigar {
+                cigar_type: Match,
+                bases: None,
+                length: Some(50),
+            },
+            InnerPlotCigar {
+                cigar_type: Del,
+                bases: None,
+                length: Some(3),
+            },
+            InnerPlotCigar {
+                cigar_type: Match,
+                bases: None,
+                length: Some(10),
+            },
+            InnerPlotCigar {
+                cigar_type: Sub,
+                bases: Some(vec!['C']),
+                length: Some(1),
+            },
+            InnerPlotCigar {
+                cigar_type: Sub,
+                bases: Some(vec!['G']),
+                length: Some(1),
+            },
+            InnerPlotCigar {
+                cigar_type: Ins,
+                bases: Some(vec!['G', 'G', 'T']),
+                length: None,
+            }
+        ]);
+        let expected_string = "50=3d10=1C1GiGGT".to_string();
+        assert_eq!(plot_cigar.to_string(), expected_string);
+    }
 
     #[test]
     fn test_read_ordering() {
