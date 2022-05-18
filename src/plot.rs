@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::cli;
 use crate::cli::Region;
 use anyhow::{Context, Result};
@@ -27,13 +28,13 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam.header().tid(&region.target.as_bytes()).unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
-    let data: Vec<_> = bam
+    let mut data: Vec<_> = bam
         .records()
         .filter_map(|r| r.ok())
         .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
         .collect();
+    data.order(max_read_depth)?;
     let mut data: Vec<_> = data
-        .order(max_read_depth)?
         .iter()
         .map(|r| json!(r))
         .collect();
@@ -76,6 +77,7 @@ fn read_fasta<P: AsRef<Path> + std::fmt::Debug>(path: P, region: &Region) -> Res
 /// A Read containing all relevant information for being plotted in a read plot
 #[derive(Serialize, Debug)]
 pub struct Read {
+    name: String,
     cigar: PlotCigar,
     position: i64,
     flags: u16,
@@ -190,6 +192,7 @@ impl Read {
             .map(|u| char::from(*u))
             .collect_vec();
         Ok(Read {
+            name: String::from_utf8(record.qname().to_vec())?,
             cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
             position: record.pos(),
             flags: record.flags(),
@@ -206,12 +209,64 @@ impl Read {
 }
 
 pub trait PlotOrder {
-    fn order(&self, max_read_depth: usize) -> Result<Vec<Read>>;
+    fn order(&mut self, max_read_depth: usize) -> Result<()>;
 }
 
 impl PlotOrder for Vec<Read> {
     /// Assigns given Reads their vertical position (row) in the read plot respecting the given max_read_depth by subsampling rows.
-    fn order(&self, max_read_depth: usize) -> Result<Vec<Read>> {
-        unimplemented!()
+    fn order(&mut self, max_read_depth: usize) -> Result<()>{
+        let mut row_ends = vec![0; 10000];
+        let mut ordered_reads = HashMap::new();
+        for read in self {
+            if let Some(row) = ordered_reads.get(&read.name) {
+                read.set_row(*row as u32);
+                if row_ends[*row] < read.end_position {
+                    row_ends[*row] = read.end_position;
+                }
+                continue
+            }
+            for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
+                if read.position > *row_end {
+                    read.set_row(row as u32);
+                    row_ends[row] = read.end_position;
+                    ordered_reads.insert(&read.name, row);
+                    break
+                }
+            }
+        }
+        // TODO: Implement subsampling with max_read_depth
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::plot::{PlotCigar, PlotOrder, Read};
+
+    #[test]
+    fn test_read_ordering() {
+        let read1 = Read {
+            name: "read1".to_string(),
+            cigar: PlotCigar(vec![]),
+            position: 20,
+            flags: 0,
+            mapq: 0,
+            row: None,
+            end_position: 120
+        };
+
+        let read2 = Read {
+            name: "read2".to_string(),
+            cigar: PlotCigar(vec![]),
+            position: 40,
+            flags: 0,
+            mapq: 0,
+            row: None,
+            end_position: 140
+        };
+
+        let mut reads = vec![read1, read2];
+        reads.order(100).unwrap();
+        assert_ne!(reads.first().unwrap().row, reads.last().unwrap().row);
     }
 }
