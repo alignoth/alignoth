@@ -4,16 +4,15 @@ use anyhow::{Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
 use rand::prelude::IteratorRandom;
-use rand::prelude::SliceRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use rust_htslib::bam;
-use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+use rust_htslib::bam::record::{Cigar, CigarStringView};
 use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
-use rust_htslib::bam::{FetchDefinition, Read as HtslibRead};
+use rust_htslib::bam::Read as HtslibRead;
 use serde::Serialize;
-use serde_json::{json, Value};
-use std::collections::HashMap;
+use serde_json::json;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fmt::Display;
 use std::path::Path;
@@ -214,7 +213,7 @@ impl PlotOrder for Vec<Read> {
     fn order(&mut self, max_read_depth: usize) -> Result<()> {
         let mut row_ends = vec![0; 10000];
         let mut ordered_reads = HashMap::new();
-        for read in self {
+        for read in self.iter_mut() {
             if let Some(row) = ordered_reads.get(&read.name) {
                 read.set_row(*row as u32);
                 if row_ends[*row] < read.end_position {
@@ -231,7 +230,15 @@ impl PlotOrder for Vec<Read> {
                 }
             }
         }
-        // TODO: Implement subsampling with max_read_depth
+        let used_rows = *ordered_reads.values().max().unwrap();
+        if max_read_depth < used_rows {
+            let mut rng = StdRng::seed_from_u64(42);
+            let random_rows: HashSet<_> = (0..used_rows as u32)
+                .choose_multiple(&mut rng, max_read_depth as usize)
+                .into_iter()
+                .collect();
+            self.retain(|read| random_rows.contains(&read.row.unwrap()));
+        }
         Ok(())
     }
 }
@@ -265,5 +272,42 @@ mod tests {
         let mut reads = vec![read1, read2];
         reads.order(100).unwrap();
         assert_ne!(reads.first().unwrap().row, reads.last().unwrap().row);
+    }
+
+    #[test]
+    fn test_read_ordering_with_max_read_depth() {
+        let read1 = Read {
+            name: "read1".to_string(),
+            cigar: PlotCigar(vec![]),
+            position: 20,
+            flags: 0,
+            mapq: 0,
+            row: None,
+            end_position: 120,
+        };
+
+        let read2 = Read {
+            name: "read2".to_string(),
+            cigar: PlotCigar(vec![]),
+            position: 40,
+            flags: 0,
+            mapq: 0,
+            row: None,
+            end_position: 140,
+        };
+
+        let read3 = Read {
+            name: "read3".to_string(),
+            cigar: PlotCigar(vec![]),
+            position: 50,
+            flags: 0,
+            mapq: 0,
+            row: None,
+            end_position: 150,
+        };
+
+        let mut reads = vec![read1, read2, read3];
+        reads.order(2).unwrap();
+        assert_eq!(reads.len(), 2);
     }
 }
