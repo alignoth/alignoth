@@ -280,7 +280,7 @@ mod tests {
                 cigar_type: Ins,
                 bases: Some(vec!['G', 'G', 'T']),
                 length: None,
-            }
+            },
         ]);
         let expected_string = "50=3d10=1C1GiGGT".to_string();
         assert_eq!(plot_cigar.to_string(), expected_string);
