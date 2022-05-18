@@ -1,5 +1,6 @@
+use crate::cli;
 use crate::cli::Region;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
 use rand::prelude::IteratorRandom;
@@ -8,6 +9,7 @@ use rand::rngs::StdRng;
 use rand::SeedableRng;
 use rust_htslib::bam;
 use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::{FetchDefinition, Read as HtslibRead};
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -23,11 +25,11 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
 ) -> Result<serde_json::Value> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam.header().tid(&region.target.as_bytes()).unwrap() as i32;
-    bam.fetch(FetchDefinition::Region(tid, region.start, region.end))?;
+    bam.fetch(FetchRegion(tid, region.start, region.end))?;
     let data: Vec<_> = bam
         .records()
         .filter_map(|r| r.ok())
-        .map(|r| Read::from_record(r, &ref_path))
+        .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
         .collect();
     let mut data: Vec<_> = data
         .order(max_read_depth)?
@@ -43,18 +45,30 @@ pub(crate) fn fetch_reference<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: Region,
 ) -> Result<Vec<serde_json::Value>> {
-    let mut reader = fasta::IndexedReader::from_file(&ref_path).unwrap();
-    let mut seq: Vec<u8> = Vec::new();
-    reader.fetch(&region.target, region.start as u64, region.end as u64)?;
-    reader.read(&mut seq)?;
+    let seq = read_fasta(ref_path, &region)?;
     Ok(seq
         .iter()
-        .map(|c| Reference {
-            position: 0,
-            base: char::from(*c),
+        .enumerate()
+        .map(|(i, c)| Reference {
+            position: (region.start + i as i64) as u64,
+            base: *c,
         })
         .map(|b| json!(b))
         .collect())
+}
+
+fn read_fasta<P: AsRef<Path> + std::fmt::Debug>(path: P, region: &Region) -> Result<Vec<char>> {
+    let mut reader = fasta::IndexedReader::from_file(&path).unwrap();
+    let index =
+        fasta::Index::with_fasta_file(&path).context("error reading index file of input FASTA")?;
+    let _sequences = index.sequences();
+
+    let mut seq: Vec<u8> = Vec::new();
+
+    reader.fetch(&region.target, region.start as u64, region.end as u64)?;
+    reader.read(&mut seq)?;
+
+    Ok(seq.iter().map(|u| char::from(*u)).collect_vec())
 }
 
 #[derive(Serialize, Debug)]
@@ -119,7 +133,11 @@ enum CigarType {
 }
 
 impl PlotCigar {
-    fn from_cigar(cigar: CigarStringView, ref_seq: Vec<char>) {
+    fn from_cigar(
+        cigar: CigarStringView,
+        read_seq: Vec<char>,
+        ref_seq: Vec<char>,
+    ) -> Result<PlotCigar> {
         for c in &cigar {
             match c {
                 Cigar::Match(_) => {}
@@ -138,8 +156,31 @@ impl PlotCigar {
 }
 
 impl Read {
-    fn from_record<P: AsRef<Path>>(record: rust_htslib::bam::record::Record, ref_path: P) -> Read {
-        unimplemented!()
+    fn from_record<P: AsRef<Path> + std::fmt::Debug>(
+        record: rust_htslib::bam::record::Record,
+        ref_path: P,
+        target: &str,
+    ) -> Result<Read> {
+        let region = cli::Region {
+            target: target.to_string(),
+            start: record.pos(),
+            end: record.pos() + record.seq_len() as i64,
+        };
+        let ref_seq = read_fasta(ref_path, &region)?;
+        let read_seq = record
+            .seq()
+            .as_bytes()
+            .iter()
+            .map(|u| char::from(*u))
+            .collect_vec();
+        Ok(Read {
+            cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
+            position: record.pos(),
+            flags: record.flags(),
+            mapq: record.mapq(),
+            row: None,
+            end_postion: record.pos() + record.seq_len() as i64,
+        })
     }
 
     fn set_row(&mut self, row: u32) {
