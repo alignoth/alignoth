@@ -151,6 +151,7 @@ impl PlotCigar {
         read_seq: Vec<char>,
         ref_seq: Vec<char>,
     ) -> Result<PlotCigar> {
+        let inner_plot_cigar = Vec::new();
         for c in &cigar {
             match c {
                 Cigar::Match(_) => {}
@@ -164,7 +165,7 @@ impl PlotCigar {
                 Cigar::Diff(_) => {}
             }
         }
-        unimplemented!()
+        Ok(PlotCigar(inner_plot_cigar))
     }
 }
 
