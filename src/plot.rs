@@ -17,6 +17,7 @@ use std::fmt;
 use std::fmt::Display;
 use std::path::Path;
 
+/// Generates the plot data for a given region of a bam file
 pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     bam_path: P,
     ref_path: P,
@@ -57,6 +58,7 @@ pub(crate) fn fetch_reference<P: AsRef<Path> + std::fmt::Debug>(
         .collect())
 }
 
+/// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
 fn read_fasta<P: AsRef<Path> + std::fmt::Debug>(path: P, region: &Region) -> Result<Vec<char>> {
     let mut reader = fasta::IndexedReader::from_file(&path).unwrap();
     let index =
@@ -71,6 +73,7 @@ fn read_fasta<P: AsRef<Path> + std::fmt::Debug>(path: P, region: &Region) -> Res
     Ok(seq.iter().map(|u| char::from(*u)).collect_vec())
 }
 
+/// A Read containing all relevant information for being plotted in a read plot
 #[derive(Serialize, Debug)]
 pub struct Read {
     cigar: PlotCigar,
@@ -79,15 +82,26 @@ pub struct Read {
     mapq: u8,
     row: Option<u32>,
     #[serde(skip)]
-    end_postion: i64,
+    end_position: i64,
 }
 
+/// A single reference with all relevant information base for being plotted in a read plot
 #[derive(Serialize, Debug)]
 struct Reference {
     position: u64,
     base: char,
 }
 
+/// A more detailed version of a CigarString with all relevant information base for being plotted in a read plot.
+///
+/// | Cigar         | Syntax          |
+/// |---------------|-----------------|
+/// | Match         | `<#matches>=`   |
+/// | Deletion      | `<#deletions>d` |
+/// | Substitutions | `<#><base>`     |
+/// | Insertions    | `i<bases>`      |
+///
+/// Example: `50=3d10=1C1GiGGT`
 #[derive(Serialize, Debug)]
 struct PlotCigar(Vec<InnerPlotCigar>);
 
@@ -133,6 +147,7 @@ enum CigarType {
 }
 
 impl PlotCigar {
+    /// Creates a detailed PlotCigar from a given rust_htslib CigarStringView
     fn from_cigar(
         cigar: CigarStringView,
         read_seq: Vec<char>,
@@ -156,6 +171,7 @@ impl PlotCigar {
 }
 
 impl Read {
+    /// Creates a Read from a given rust_htslib bam record
     fn from_record<P: AsRef<Path> + std::fmt::Debug>(
         record: rust_htslib::bam::record::Record,
         ref_path: P,
@@ -179,10 +195,11 @@ impl Read {
             flags: record.flags(),
             mapq: record.mapq(),
             row: None,
-            end_postion: record.pos() + record.seq_len() as i64,
+            end_position: record.pos() + record.seq_len() as i64,
         })
     }
 
+    /// Sets the row of the Read
     fn set_row(&mut self, row: u32) {
         self.row = Some(row);
     }
@@ -193,6 +210,7 @@ pub trait PlotOrder {
 }
 
 impl PlotOrder for Vec<Read> {
+    /// Assigns given Reads their vertical position (row) in the read plot respecting the given max_read_depth by subsampling rows.
     fn order(&self, max_read_depth: usize) -> Result<Vec<Read>> {
         unimplemented!()
     }

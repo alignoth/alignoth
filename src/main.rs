@@ -1,7 +1,7 @@
 mod cli;
-mod data;
+mod plot;
 
-use crate::data::create_plot_data;
+use crate::plot::create_plot_data;
 use anyhow::Result;
 use structopt::StructOpt;
 
