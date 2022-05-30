@@ -291,9 +291,9 @@ impl PlotOrder for Vec<Read> {
 
 #[cfg(test)]
 mod tests {
-    use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
     use crate::plot::{match_bases, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read};
+    use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
 
     #[test]
     fn test_plot_cigar_string_serialization() {
@@ -450,7 +450,10 @@ mod tests {
 
     #[test]
     fn test_plot_cigar_insertion() {
-        let cigar_string = CigarStringView::new(CigarString::from(vec![Cigar::Match(2), Cigar::Ins(1), Cigar::Match(2)]), 0);
+        let cigar_string = CigarStringView::new(
+            CigarString::from(vec![Cigar::Match(2), Cigar::Ins(1), Cigar::Match(2)]),
+            0,
+        );
         let reference = vec!['A', 'A', 'G', 'C'];
         let read = vec!['A', 'A', 'A', 'G', 'C'];
         let cigar = PlotCigar::from_cigar(cigar_string, read, reference).unwrap();
@@ -476,7 +479,10 @@ mod tests {
 
     #[test]
     fn test_plot_cigar_deletion() {
-        let cigar_string = CigarStringView::new(CigarString::from(vec![Cigar::Match(2), Cigar::Del(2), Cigar::Match(2)]), 0);
+        let cigar_string = CigarStringView::new(
+            CigarString::from(vec![Cigar::Match(2), Cigar::Del(2), Cigar::Match(2)]),
+            0,
+        );
         let reference = vec!['A', 'A', 'A', 'A', 'G', 'C'];
         let read = vec!['A', 'A', 'G', 'C'];
         let cigar = PlotCigar::from_cigar(cigar_string, read, reference).unwrap();
