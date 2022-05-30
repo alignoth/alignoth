@@ -291,9 +291,15 @@ impl PlotOrder for Vec<Read> {
 
 #[cfg(test)]
 mod tests {
+    use crate::cli::Region;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
-    use crate::plot::{match_bases, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read};
+    use crate::plot::{
+        fetch_reference, match_bases, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
+        Reference,
+    };
+    use itertools::Itertools;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+    use serde_json::json;
 
     #[test]
     fn test_plot_cigar_string_serialization() {
@@ -504,5 +510,29 @@ mod tests {
             },
         ]);
         assert_eq!(cigar, expected_cigar);
+    }
+
+    #[test]
+    fn test_fetch_reference() {
+        let reference = fetch_reference(
+            "tests/reference.fa",
+            Region {
+                target: "chr1".to_string(),
+                start: 0,
+                end: 20,
+            },
+        )
+        .unwrap();
+        let expected_reference = "TTGCCGGGGTGGGGAGAGAG"
+            .chars()
+            .enumerate()
+            .map(|(i, c)| {
+                json!(Reference {
+                    position: i as u64,
+                    base: c
+                })
+            })
+            .collect_vec();
+        assert_eq!(reference, expected_reference);
     }
 }
