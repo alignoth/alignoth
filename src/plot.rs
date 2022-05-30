@@ -100,7 +100,7 @@ struct Reference {
 /// | Insertions    | `i<bases>`      |
 ///
 /// Example: `50=3d10=1C1GiGGT`
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Eq, PartialEq)]
 struct PlotCigar(Vec<InnerPlotCigar>);
 
 impl ToString for PlotCigar {
@@ -109,7 +109,7 @@ impl ToString for PlotCigar {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Eq, PartialEq)]
 struct InnerPlotCigar {
     cigar_type: CigarType,
     bases: Option<Vec<char>>,
@@ -136,7 +136,7 @@ impl Display for InnerPlotCigar {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Eq, PartialEq)]
 enum CigarType {
     Match,
     Ins,
@@ -151,22 +151,67 @@ impl PlotCigar {
         read_seq: Vec<char>,
         ref_seq: Vec<char>,
     ) -> Result<PlotCigar> {
-        let inner_plot_cigar = Vec::new();
+        let mut inner_plot_cigars = Vec::new();
+        let (mut read_index, mut ref_index) = (0, 0);
         for c in &cigar {
             match c {
-                Cigar::Match(_) => {}
-                Cigar::Ins(_) => {}
-                Cigar::Del(_) => {}
-                Cigar::RefSkip(_) => {}
-                Cigar::SoftClip(_) => {}
-                Cigar::HardClip(_) => {}
-                Cigar::Pad(_) => {}
-                Cigar::Equal(_) => {}
-                Cigar::Diff(_) => {}
+                Cigar::Match(length) | Cigar::SoftClip(length) => {
+                    inner_plot_cigars.extend(match_bases(
+                        &read_seq[read_index..read_index + *length as usize],
+                        &ref_seq[ref_index..ref_index + *length as usize],
+                    ));
+                    read_index += *length as usize;
+                    ref_index += *length as usize;
+                }
+                Cigar::Ins(length) => {
+                    inner_plot_cigars.push(InnerPlotCigar {
+                        cigar_type: CigarType::Ins,
+                        bases: Some(read_seq[read_index..read_index + *length as usize].to_vec()),
+                        length: Some(*length),
+                    });
+                    read_index += *length as usize;
+                }
+                Cigar::Del(length) => {
+                    inner_plot_cigars.push(InnerPlotCigar {
+                        cigar_type: CigarType::Del,
+                        bases: None,
+                        length: Some(*length),
+                    });
+                    ref_index += *length as usize;
+                }
+                _ => {}
             }
         }
-        Ok(PlotCigar(inner_plot_cigar))
+        Ok(PlotCigar(inner_plot_cigars))
     }
+}
+
+/// Matches a given read sequence against a given reference sequence and returning the result as Vec<InnerPlotCigar>
+fn match_bases(read_seq: &[char], ref_seq: &[char]) -> Vec<InnerPlotCigar> {
+    let mut inner_plot_cigars = Vec::new();
+    for (is_match, group) in &read_seq
+        .iter()
+        .zip_eq(ref_seq.iter())
+        .group_by(|(read, reference)| read == reference)
+    {
+        if is_match {
+            inner_plot_cigars.push(InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(group.count() as u32),
+            });
+        } else {
+            let substitutions = group.into_iter().map(|(r, _)| *r).collect_vec();
+            for (length, base) in substitutions.iter().dedup_with_count() {
+                inner_plot_cigars.push(InnerPlotCigar {
+                    cigar_type: CigarType::Sub,
+                    bases: Some(vec![*base]),
+                    length: Some(length as u32),
+                })
+            }
+        };
+    }
+    inner_plot_cigars
 }
 
 impl Read {
@@ -178,7 +223,7 @@ impl Read {
     ) -> Result<Read> {
         let region = cli::Region {
             target: target.to_string(),
-            start: record.pos(),
+            start: record.pos() - record.cigar().leading_softclips(),
             end: record.pos() + record.seq_len() as i64,
         };
         let ref_seq = read_fasta(ref_path, &region)?;
@@ -246,11 +291,12 @@ impl PlotOrder for Vec<Read> {
 
 #[cfg(test)]
 mod tests {
+    use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
-    use crate::plot::{InnerPlotCigar, PlotCigar, PlotOrder, Read};
+    use crate::plot::{match_bases, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read};
 
     #[test]
-    fn test_plot_cigar_string() {
+    fn test_plot_cigar_string_serialization() {
         let plot_cigar = PlotCigar(vec![
             InnerPlotCigar {
                 cigar_type: Match,
@@ -349,5 +395,108 @@ mod tests {
         let mut reads = vec![read1, read2, read3];
         reads.order(2).unwrap();
         assert_eq!(reads.len(), 2);
+    }
+
+    #[test]
+    fn test_matching_bases() {
+        let reference = vec!['A', 'A', 'G', 'C', 'T', 'A'];
+        let read = vec!['A', 'A', 'G', 'C', 'C', 'A'];
+        let inner_plot_cigars = match_bases(&read, &reference);
+        let expected_inner_plot_cigars = vec![
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(4),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Sub,
+                bases: Some(vec!['C']),
+                length: Some(1),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(1),
+            },
+        ];
+        assert_eq!(inner_plot_cigars, expected_inner_plot_cigars)
+    }
+
+    #[test]
+    fn test_plot_cigar_match() {
+        let cigar_string = CigarStringView::new(CigarString::from(vec![Cigar::Match(10)]), 0);
+        let reference = vec!['A', 'A', 'G', 'C', 'T', 'A', 'T', 'A', 'T', 'A'];
+        let read = vec!['A', 'A', 'G', 'C', 'C', 'A', 'T', 'A', 'T', 'A'];
+        let cigar = PlotCigar::from_cigar(cigar_string, read, reference).unwrap();
+        let expected_cigar = PlotCigar(vec![
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(4),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Sub,
+                bases: Some(vec!['C']),
+                length: Some(1),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(5),
+            },
+        ]);
+        assert_eq!(cigar, expected_cigar);
+    }
+
+    #[test]
+    fn test_plot_cigar_insertion() {
+        let cigar_string = CigarStringView::new(CigarString::from(vec![Cigar::Match(2), Cigar::Ins(1), Cigar::Match(2)]), 0);
+        let reference = vec!['A', 'A', 'G', 'C'];
+        let read = vec!['A', 'A', 'A', 'G', 'C'];
+        let cigar = PlotCigar::from_cigar(cigar_string, read, reference).unwrap();
+        let expected_cigar = PlotCigar(vec![
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(2),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Ins,
+                bases: Some(vec!['A']),
+                length: Some(1),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(2),
+            },
+        ]);
+        assert_eq!(cigar, expected_cigar);
+    }
+
+    #[test]
+    fn test_plot_cigar_deletion() {
+        let cigar_string = CigarStringView::new(CigarString::from(vec![Cigar::Match(2), Cigar::Del(2), Cigar::Match(2)]), 0);
+        let reference = vec!['A', 'A', 'A', 'A', 'G', 'C'];
+        let read = vec!['A', 'A', 'G', 'C'];
+        let cigar = PlotCigar::from_cigar(cigar_string, read, reference).unwrap();
+        let expected_cigar = PlotCigar(vec![
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(2),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Del,
+                bases: None,
+                length: Some(2),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(2),
+            },
+        ]);
+        assert_eq!(cigar, expected_cigar);
     }
 }
