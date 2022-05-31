@@ -10,7 +10,7 @@ use rust_htslib::bam;
 use rust_htslib::bam::record::{Cigar, CigarStringView};
 use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::Read as HtslibRead;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use serde_json::json;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -100,8 +100,17 @@ struct Reference {
 /// | Insertions    | `i<bases>`      |
 ///
 /// Example: `50=3d10=1C1GiGGT`
-#[derive(Serialize, Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 struct PlotCigar(Vec<InnerPlotCigar>);
+
+impl Serialize for PlotCigar {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
 
 impl ToString for PlotCigar {
     fn to_string(&self) -> String {
