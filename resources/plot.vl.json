@@ -1,19 +1,97 @@
 {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": "Google's stock price over time.",
-    "data": {
-        "values": []
+    "datasets": {
+        "reference": [],
+        "reads": []
     },
-    "transform": [],
-    "mark": "line",
     "encoding": {
         "x": {
-            "field": "position",
+            "field": "start",
             "type": "quantitative"
         },
-        "y": {
-            "field": "row",
+        "x2": {
+            "field": "end",
             "type": "quantitative"
+        },
+        "size": {
+            "value": 4
         }
-    }
+    },
+    "layer": [
+        {
+            "data": {
+                "name": "reference"
+            },
+            "transform": [
+                {
+                    "calculate": "datum.position - 0.5",
+                    "as": "start"
+                },
+                {
+                    "calculate": "datum.position + 0.5",
+                    "as": "end"
+                }
+            ],
+            "mark": "rule",
+            "encoding": {
+                "y": {
+                    "value": 0
+                },
+                "color": {
+                    "field": "base",
+                    "type": "nominal"
+                }
+            }
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "transform": [
+                {
+                    "as": "cigars",
+                    "calculate": "split(datum.cigar, '|')"
+                },
+                {
+                    "as": "cigar_index",
+                    "calculate": "sequence(datum.cigars.length)"
+                },
+                {
+                    "flatten": [
+                        "cigars", "cigar_index"
+                    ]
+                },
+                {
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+                    "as": "type"
+                },
+                {
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+                    "as": "length"
+                },
+                {
+                    "calculate": "datum.position",
+                    "as": "offset"
+                },
+                {
+                    "calculate": "datum.position + datum.offset - 0.5",
+                    "as": "start"
+                },
+                {
+                    "calculate": "datum.position + datum.offset + datum.length + 0.5",
+                    "as": "end"
+                }
+            ],
+            "mark": "rule",
+            "encoding": {
+                "y": {
+                    "field": "row",
+                    "type": "ordinal"
+                },
+                "color": {
+                    "field": "type",
+                    "type": "nominal"
+                }
+            }
+        }
+    ]
 }

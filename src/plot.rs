@@ -23,7 +23,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: Region,
     max_read_depth: usize,
-) -> Result<serde_json::Value> {
+) -> Result<(serde_json::Value, serde_json::Value)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam.header().tid(region.target.as_bytes()).unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
@@ -33,16 +33,15 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
         .collect();
     data.order(max_read_depth)?;
-    let mut data: Vec<_> = data.iter().map(|r| json!(r)).collect();
-    let mut reference_data = fetch_reference(ref_path, region)?;
-    data.append(&mut reference_data);
-    Ok(json!(data))
+    let data: Vec<_> = data.iter().map(|r| json!(r)).collect();
+    let reference_data = fetch_reference(ref_path, region)?;
+    Ok((json!(data), json!(reference_data)))
 }
 
 pub(crate) fn fetch_reference<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: Region,
-) -> Result<Vec<serde_json::Value>> {
+) -> Result<Vec<Reference>> {
     let seq = read_fasta(ref_path, &region)?;
     Ok(seq
         .iter()
@@ -51,7 +50,6 @@ pub(crate) fn fetch_reference<P: AsRef<Path> + std::fmt::Debug>(
             position: (region.start + i as i64) as u64,
             base: *c,
         })
-        .map(|b| json!(b))
         .collect())
 }
 
@@ -84,8 +82,8 @@ pub struct Read {
 }
 
 /// A single reference with all relevant information base for being plotted in a read plot
-#[derive(Serialize, Debug)]
-struct Reference {
+#[derive(Serialize, Debug, Eq, PartialEq)]
+pub(crate) struct Reference {
     position: u64,
     base: char,
 }
@@ -99,7 +97,7 @@ struct Reference {
 /// | Substitutions | `<#><base>`     |
 /// | Insertions    | `i<bases>`      |
 ///
-/// Example: `50=3d10=1C1GiGGT`
+/// Example: `50=|3d|10=|1C|1G|iGGT`
 #[derive(Debug, Eq, PartialEq)]
 struct PlotCigar(Vec<InnerPlotCigar>);
 
@@ -114,7 +112,7 @@ impl Serialize for PlotCigar {
 
 impl ToString for PlotCigar {
     fn to_string(&self) -> String {
-        self.0.iter().join("")
+        self.0.iter().join("|")
     }
 }
 
@@ -308,7 +306,6 @@ mod tests {
     };
     use itertools::Itertools;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
-    use serde_json::json;
 
     #[test]
     fn test_plot_cigar_string_serialization() {
@@ -344,7 +341,7 @@ mod tests {
                 length: None,
             },
         ]);
-        let expected_string = "50=3d10=1C1GiGGT".to_string();
+        let expected_string = "50=|3d|10=|1C|1G|iGGT".to_string();
         assert_eq!(plot_cigar.to_string(), expected_string);
     }
 
@@ -535,11 +532,9 @@ mod tests {
         let expected_reference = "TTGCCGGGGTGGGGAGAGAG"
             .chars()
             .enumerate()
-            .map(|(i, c)| {
-                json!(Reference {
-                    position: i as u64,
-                    base: c
-                })
+            .map(|(i, c)| Reference {
+                position: i as u64,
+                base: c,
             })
             .collect_vec();
         assert_eq!(reference, expected_reference);
