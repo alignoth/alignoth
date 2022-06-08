@@ -1,4 +1,6 @@
 {
+    "width": 500,
+    "height": 100,
     "datasets": {
         "reference": [],
         "reads": []
@@ -53,7 +55,27 @@
                 },
                 "color": {
                     "field": "base",
-                    "type": "nominal"
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            "#ff7f0e",
+                            "#e377c2",
+                            "#17becf",
+                            "#8c564b",
+                            "#c7c7c7",
+                            "#d62728",
+                            "#2ca02c"
+                        ]
+                    }
                 }
             }
         },
@@ -86,6 +108,9 @@
                 },
                 {
                     "stack": "length",
+                    "groupby": [
+                        "name"
+                    ],
                     "as": "offset"
                 },
                 {
@@ -145,7 +170,31 @@
                 },
                 "color": {
                     "field": "type",
-                    "type": "nominal"
+                    "legend": {
+                        "symbolSize": 75,
+                        "title": "symbol"
+                    },
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            "#ff7f0e",
+                            "#e377c2",
+                            "#17becf",
+                            "#8c564b",
+                            "#c7c7c7",
+                            "#d62728",
+                            "#2ca02c"
+                        ]
+                    }
                 }
             }
         }
