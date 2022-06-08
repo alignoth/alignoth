@@ -522,7 +522,7 @@ mod tests {
     fn test_fetch_reference() {
         let reference = fetch_reference(
             "tests/reference.fa",
-            Region {
+            &Region {
                 target: "chr1".to_string(),
                 start: 0,
                 end: 20,
