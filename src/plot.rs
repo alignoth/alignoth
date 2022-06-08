@@ -21,7 +21,7 @@ use std::path::Path;
 pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     bam_path: P,
     ref_path: P,
-    region: Region,
+    region: &Region,
     max_read_depth: usize,
 ) -> Result<(serde_json::Value, serde_json::Value)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
@@ -40,7 +40,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
 
 pub(crate) fn fetch_reference<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
-    region: Region,
+    region: &Region,
 ) -> Result<Vec<Reference>> {
     let seq = read_fasta(ref_path, &region)?;
     Ok(seq

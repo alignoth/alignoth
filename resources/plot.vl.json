@@ -6,14 +6,17 @@
     "encoding": {
         "x": {
             "field": "start",
-            "type": "quantitative"
+            "type": "quantitative",
+            "axis": {
+                "title": "position"
+            },
+            "scale": {
+                "domain": []
+            }
         },
         "x2": {
             "field": "end",
             "type": "quantitative"
-        },
-        "size": {
-            "value": 4
         }
     },
     "layer": [
@@ -31,10 +34,22 @@
                     "as": "end"
                 }
             ],
-            "mark": "rule",
+            "mark": {
+                "type": "rule",
+                "clip": true
+            },
             "encoding": {
+                "tooltip": [
+                    {
+                        "field": "base"
+                    }
+                ],
+                "strokeWidth": {
+                    "value": 5
+                },
                 "y": {
-                    "value": 0
+                    "value": 0,
+                    "axis": null
                 },
                 "color": {
                     "field": "base",
@@ -57,7 +72,8 @@
                 },
                 {
                     "flatten": [
-                        "cigars", "cigar_index"
+                        "cigars",
+                        "cigar_index"
                     ]
                 },
                 {
@@ -69,23 +85,63 @@
                     "as": "length"
                 },
                 {
-                    "calculate": "datum.position",
+                    "stack": "length",
                     "as": "offset"
                 },
                 {
-                    "calculate": "datum.position + datum.offset - 0.5",
-                    "as": "start"
+                    "as": "start",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 0.5)"
                 },
                 {
-                    "calculate": "datum.position + datum.offset + datum.length + 0.5",
-                    "as": "end"
+                    "as": "end",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
                 }
             ],
-            "mark": "rule",
+            "mark": {
+                "type": "rule",
+                "clip": true
+            },
             "encoding": {
+                "tooltip": [
+                    {
+                        "field": "name"
+                    },
+                    {
+                        "field": "type"
+                    },
+                    {
+                        "field": "mapq"
+                    }
+                ],
+                "strokeWidth": {
+                    "field": "type",
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            3,
+                            3,
+                            3,
+                            3,
+                            3,
+                            3,
+                            6
+                        ]
+                    },
+                    "legend": null
+                },
                 "y": {
                     "field": "row",
-                    "type": "ordinal"
+                    "type": "ordinal",
+                    "axis": null
                 },
                 "color": {
                     "field": "type",
