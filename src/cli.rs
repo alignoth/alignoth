@@ -24,6 +24,22 @@ pub struct Bamboo {
     /// Set the maximum rows of reads that will be shown in the alignment plots.
     #[structopt(long, short = "d", default_value = "500")]
     pub(crate) max_read_depth: usize,
+
+    /// If present vega-lite specs will be written to the given directory
+    #[structopt(long, parse(from_os_str), conflicts_with("output"))]
+    pub(crate) spec_output: Option<PathBuf>,
+
+    /// If present reference data will be written to the given directory
+    #[structopt(long, parse(from_os_str), conflicts_with("output"))]
+    pub(crate) ref_data_output: Option<PathBuf>,
+
+    /// If present read data will be written to the given directory
+    #[structopt(long, parse(from_os_str), conflicts_with("output"))]
+    pub(crate) read_data_output: Option<PathBuf>,
+
+    /// If present, data and vega-lite specs of the generated plot will be split and written to the given directory
+    #[structopt(long, short = "o", parse(from_os_str))]
+    pub(crate) output: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone)]

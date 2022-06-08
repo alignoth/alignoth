@@ -1,6 +1,5 @@
 {
     "width": 500,
-    "height": 100,
     "datasets": {
         "reference": [],
         "reads": []
@@ -28,12 +27,30 @@
             },
             "transform": [
                 {
-                    "calculate": "datum.position - 0.5",
-                    "as": "start"
+                    "as": "base",
+                    "calculate": "split(datum.reference, '')"
                 },
                 {
-                    "calculate": "datum.position + 0.5",
-                    "as": "end"
+                    "as": "offset",
+                    "calculate": "sequence(datum.reference.length)"
+                },
+                {
+                    "flatten": [
+                        "base",
+                        "offset"
+                    ]
+                },
+                {
+                    "as": "position",
+                    "calculate": "datum.start + datum.offset"
+                },
+                {
+                    "as": "start",
+                    "calculate": "datum.position - 0.5"
+                },
+                {
+                    "as": "end",
+                    "calculate": "datum.position + 0.5"
                 }
             ],
             "mark": {
@@ -62,18 +79,20 @@
                             "C",
                             "G",
                             "T",
+                            "N",
                             "match",
                             "deletion",
                             "insertion"
                         ],
                         "range": [
-                            "#ff7f0e",
-                            "#e377c2",
-                            "#17becf",
-                            "#8c564b",
-                            "#c7c7c7",
-                            "#d62728",
-                            "#2ca02c"
+                            "#CADB69",
+                            "#F2B671",
+                            "#F28CC2",
+                            "#7284A8",
+                            "#A23E11",
+                            "#BBBBBB",
+                            "#CC1414",
+                            "#047C0A"
                         ]
                     }
                 }
@@ -147,11 +166,13 @@
                             "C",
                             "G",
                             "T",
+                            "N",
                             "match",
                             "deletion",
                             "insertion"
                         ],
                         "range": [
+                            3,
                             3,
                             3,
                             3,
@@ -181,18 +202,20 @@
                             "C",
                             "G",
                             "T",
+                            "N",
                             "match",
                             "deletion",
                             "insertion"
                         ],
                         "range": [
-                            "#ff7f0e",
-                            "#e377c2",
-                            "#17becf",
-                            "#8c564b",
-                            "#c7c7c7",
-                            "#d62728",
-                            "#2ca02c"
+                            "#CADB69",
+                            "#F2B671",
+                            "#F28CC2",
+                            "#7284A8",
+                            "#A23E11",
+                            "#BBBBBB",
+                            "#CC1414",
+                            "#047C0A"
                         ]
                     }
                 }

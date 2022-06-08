@@ -23,7 +23,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: &Region,
     max_read_depth: usize,
-) -> Result<(serde_json::Value, serde_json::Value)> {
+) -> Result<(serde_json::Value, serde_json::Value, u32)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam.header().tid(region.target.as_bytes()).unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
@@ -33,24 +33,13 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
         .collect();
     data.order(max_read_depth)?;
+    let read_depth = data.iter().map(|r| r.row.unwrap()).max().unwrap();
     let data: Vec<_> = data.iter().map(|r| json!(r)).collect();
-    let reference_data = fetch_reference(ref_path, region)?;
-    Ok((json!(data), json!(reference_data)))
-}
-
-pub(crate) fn fetch_reference<P: AsRef<Path> + std::fmt::Debug>(
-    ref_path: P,
-    region: &Region,
-) -> Result<Vec<Reference>> {
-    let seq = read_fasta(ref_path, &region)?;
-    Ok(seq
-        .iter()
-        .enumerate()
-        .map(|(i, c)| Reference {
-            position: (region.start + i as i64) as u64,
-            base: *c,
-        })
-        .collect())
+    let reference_data = Reference {
+        start: region.start,
+        reference: read_fasta(ref_path, region)?.iter().collect(),
+    };
+    Ok((json!(data), json!(reference_data), read_depth))
 }
 
 /// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
@@ -81,11 +70,11 @@ pub struct Read {
     end_position: i64,
 }
 
-/// A single reference with all relevant information base for being plotted in a read plot
+/// A reference with all relevant information base for being plotted in a read plot
 #[derive(Serialize, Debug, Eq, PartialEq)]
 pub(crate) struct Reference {
-    position: u64,
-    base: char,
+    start: i64,
+    reference: String,
 }
 
 /// A more detailed version of a CigarString with all relevant information base for being plotted in a read plot.
@@ -301,8 +290,7 @@ mod tests {
     use crate::cli::Region;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
     use crate::plot::{
-        fetch_reference, match_bases, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
-        Reference,
+        match_bases, read_fasta, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
     };
     use itertools::Itertools;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
@@ -520,7 +508,7 @@ mod tests {
 
     #[test]
     fn test_fetch_reference() {
-        let reference = fetch_reference(
+        let reference = read_fasta(
             "tests/reference.fa",
             &Region {
                 target: "chr1".to_string(),
@@ -529,14 +517,7 @@ mod tests {
             },
         )
         .unwrap();
-        let expected_reference = "TTGCCGGGGTGGGGAGAGAG"
-            .chars()
-            .enumerate()
-            .map(|(i, c)| Reference {
-                position: i as u64,
-                base: c,
-            })
-            .collect_vec();
+        let expected_reference = "TTGCCGGGGTGGGGAGAGAG".chars().collect_vec();
         assert_eq!(reference, expected_reference);
     }
 }
