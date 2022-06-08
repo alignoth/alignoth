@@ -24,7 +24,14 @@ fn main() -> Result<()> {
         opt.region.end as f32 - 0.5
     ]);
     if let Some(out_path) = &opt.output {
-        let bam_file_name = &opt.bam_path.file_name().unwrap().to_str().unwrap().strip_suffix(".bam").unwrap();
+        let bam_file_name = &opt
+            .bam_path
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .strip_suffix(".bam")
+            .unwrap();
         let mut specs =
             File::create(Path::join(out_path, format!("{bam_file_name}.vl.json"))).unwrap();
         specs.write_all(plot_specs.to_string().as_bytes())?;
@@ -37,19 +44,33 @@ fn main() -> Result<()> {
         ))
         .unwrap();
         reference_file.write_all(reference_data.to_string().as_bytes())?;
-    } else if let (Some(spec_output), Some(ref_data_output), Some(read_data_output)) = (&opt.spec_output, &opt.ref_data_output, &opt.read_data_output) {
-        let bam_file_name = &opt.bam_path.file_name().unwrap().to_str().unwrap().strip_suffix(".bam").unwrap();
+    } else if let (Some(spec_output), Some(ref_data_output), Some(read_data_output)) = (
+        &opt.spec_output,
+        &opt.ref_data_output,
+        &opt.read_data_output,
+    ) {
+        let bam_file_name = &opt
+            .bam_path
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .strip_suffix(".bam")
+            .unwrap();
         let mut specs =
             File::create(Path::join(spec_output, format!("{bam_file_name}.vl.json"))).unwrap();
         specs.write_all(plot_specs.to_string().as_bytes())?;
-        let mut read_file =
-            File::create(Path::join(read_data_output, format!("{bam_file_name}.reads.json"))).unwrap();
+        let mut read_file = File::create(Path::join(
+            read_data_output,
+            format!("{bam_file_name}.reads.json"),
+        ))
+        .unwrap();
         read_file.write_all(read_data.to_string().as_bytes())?;
         let mut reference_file = File::create(Path::join(
             ref_data_output,
             format!("{bam_file_name}.reference.json"),
         ))
-            .unwrap();
+        .unwrap();
         reference_file.write_all(reference_data.to_string().as_bytes())?;
     } else {
         plot_specs["datasets"]["reference"] = reference_data;
