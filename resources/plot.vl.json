@@ -1,8 +1,25 @@
 {
     "width": 500,
+    "resolve": {
+        "scale": {
+            "strokeWidth": "independent"
+        }
+    },
     "datasets": {
         "reference": [],
         "reads": []
+    },
+    "config": {
+        "legend": {
+            "layout": {
+                "right": {
+                    "anchor": "start",
+                    "direction": "horizontal",
+                    "center": false,
+                    "margin": 10
+                }
+            }
+        }
     },
     "encoding": {
         "x": {
@@ -72,6 +89,7 @@
                 },
                 "color": {
                     "field": "base",
+                    "legend": null,
                     "scale": {
                         "type": "ordinal",
                         "domain": [
@@ -93,6 +111,107 @@
                             "#BBBBBB",
                             "#CC1414",
                             "#047C0A"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "transform": [
+                {
+                    "as": "cigars",
+                    "calculate": "split(datum.cigar, '|')"
+                },
+                {
+                    "as": "cigar_index",
+                    "calculate": "sequence(datum.cigars.length)"
+                },
+                {
+                    "flatten": [
+                        "cigars",
+                        "cigar_index"
+                    ]
+                },
+                {
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+                    "as": "type"
+                },
+                {
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+                    "as": "length"
+                },
+                {
+                    "stack": "length",
+                    "groupby": [
+                        "name"
+                    ],
+                    "as": "offset"
+                },
+                {
+                    "as": "start",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 0.7)"
+                },
+                {
+                    "as": "end",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.7)"
+                }
+            ],
+            "mark": {
+                "type": "rule",
+                "clip": true
+            },
+            "encoding": {
+                "strokeWidth": {
+                    "field": "type",
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            8
+                        ]
+                    },
+                    "legend": null
+                },
+                "y": {
+                    "field": "row",
+                    "type": "ordinal",
+                    "axis": null
+                },
+                "color": {
+                    "field": "mapq",
+                    "type": "quantitative",
+                    "scale": {
+                        "domain": [
+                            60,
+                            0
+                        ],
+                        "range": [
+                            "#910000",
+                            "#c70002",
+                            "#ff0000",
+                            "#ff7500",
+                            "#ffb200",
+                            "#ffe921",
+                            "#bbbbbb"
                         ]
                     }
                 }
