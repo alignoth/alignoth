@@ -35,6 +35,11 @@
         "x2": {
             "field": "end",
             "type": "quantitative"
+        },
+        "y": {
+            "axis": null,
+            "field": "row",
+            "type": "ordinal"
         }
     },
     "layer": [
@@ -82,10 +87,6 @@
                 ],
                 "strokeWidth": {
                     "value": 5
-                },
-                "y": {
-                    "value": 0,
-                    "axis": null
                 },
                 "color": {
                     "field": "base",
@@ -190,11 +191,6 @@
                         ]
                     },
                     "legend": null
-                },
-                "y": {
-                    "field": "row",
-                    "type": "ordinal",
-                    "axis": null
                 },
                 "color": {
                     "field": "mapq",
@@ -302,11 +298,6 @@
                         ]
                     },
                     "legend": null
-                },
-                "y": {
-                    "field": "row",
-                    "type": "ordinal",
-                    "axis": null
                 },
                 "color": {
                     "field": "type",
