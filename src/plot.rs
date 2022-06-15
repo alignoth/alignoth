@@ -1,3 +1,4 @@
+use std::cmp::{max, min};
 use crate::cli;
 use crate::cli::Region;
 use anyhow::{Context, Result};
@@ -68,6 +69,8 @@ pub struct Read {
     row: Option<u32>,
     #[serde(skip)]
     end_position: i64,
+    #[serde(skip)]
+    mpos: i64,
 }
 
 /// A reference with all relevant information base for being plotted in a read plot
@@ -237,6 +240,7 @@ impl Read {
             mapq: record.mapq(),
             row: None,
             end_position: record.pos() + record.seq_len() as i64,
+            mpos: record.mpos(),
         })
     }
 
@@ -264,9 +268,9 @@ impl PlotOrder for Vec<Read> {
                 continue;
             }
             for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
-                if read.position > *row_end {
+                if min(read.position, read.mpos) > *row_end + 5 {
                     read.set_row(row as u32);
-                    row_ends[row] = read.end_position;
+                    row_ends[row] = max(read.end_position, read.mpos);
                     ordered_reads.insert(&read.name, row);
                     break;
                 }
@@ -343,6 +347,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 120,
+            mpos: 0
         };
 
         let read2 = Read {
@@ -353,6 +358,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 140,
+            mpos: 0
         };
 
         let mut reads = vec![read1, read2];
@@ -370,6 +376,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 120,
+            mpos: 0
         };
 
         let read2 = Read {
@@ -380,6 +387,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 140,
+            mpos: 0
         };
 
         let read3 = Read {
@@ -390,6 +398,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 150,
+            mpos: 0
         };
 
         let mut reads = vec![read1, read2, read3];
