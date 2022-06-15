@@ -1,4 +1,3 @@
-use std::cmp::{max, min};
 use crate::cli;
 use crate::cli::Region;
 use anyhow::{Context, Result};
@@ -13,6 +12,7 @@ use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::Read as HtslibRead;
 use serde::{Serialize, Serializer};
 use serde_json::json;
+use std::cmp::{max, min};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fmt::Display;
@@ -347,7 +347,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 120,
-            mpos: 0
+            mpos: 0,
         };
 
         let read2 = Read {
@@ -358,7 +358,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 140,
-            mpos: 0
+            mpos: 0,
         };
 
         let mut reads = vec![read1, read2];
@@ -376,7 +376,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 120,
-            mpos: 0
+            mpos: 0,
         };
 
         let read2 = Read {
@@ -387,7 +387,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 140,
-            mpos: 0
+            mpos: 0,
         };
 
         let read3 = Read {
@@ -398,7 +398,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 150,
-            mpos: 0
+            mpos: 0,
         };
 
         let mut reads = vec![read1, read2, read3];
