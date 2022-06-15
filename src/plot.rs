@@ -347,7 +347,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 120,
-            mpos: 0,
+            mpos: 100,
         };
 
         let read2 = Read {
@@ -358,7 +358,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 140,
-            mpos: 0,
+            mpos: 120,
         };
 
         let mut reads = vec![read1, read2];
@@ -376,7 +376,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 120,
-            mpos: 0,
+            mpos: 100,
         };
 
         let read2 = Read {
@@ -387,7 +387,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 140,
-            mpos: 0,
+            mpos: 120,
         };
 
         let read3 = Read {
@@ -398,7 +398,7 @@ mod tests {
             mapq: 0,
             row: None,
             end_position: 150,
-            mpos: 0,
+            mpos: 140,
         };
 
         let mut reads = vec![read1, read2, read3];
