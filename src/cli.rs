@@ -26,7 +26,7 @@ pub struct Bamboo {
     pub(crate) max_read_depth: usize,
 
     /// Sets the maximum width of the resulting plot.
-    #[structopt(long, short = "w", default_value = "1000")]
+    #[structopt(long, short = "w", default_value = "1024")]
     pub(crate) max_width: i64,
 
     /// If present vega-lite specs will be written to the given directory
