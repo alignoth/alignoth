@@ -69,7 +69,6 @@ pub struct Read {
     row: Option<u32>,
     #[serde(skip)]
     end_position: i64,
-    #[serde(skip)]
     mpos: i64,
 }
 

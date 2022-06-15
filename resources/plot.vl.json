@@ -153,7 +153,9 @@
                 {
                     "stack": "length",
                     "groupby": [
-                        "name"
+                        "name",
+                        "cigar",
+                        "position"
                     ],
                     "as": "offset"
                 },
@@ -225,6 +227,33 @@
             },
             "transform": [
                 {
+                    "as": "start",
+                    "calculate": "if(datum.position < datum.mpos, datum.position - 0.5, datum.mpos - 0.5)"
+                },
+                {
+                    "as": "end",
+                    "calculate": "if(datum.position > datum.mpos, datum.position - 0.5, datum.mpos - 0.5)"
+                }
+            ],
+            "mark": {
+                "type": "rule",
+                "clip": true
+            },
+            "encoding": {
+                "strokeWidth": {
+                    "value": 1
+                },
+                "color": {
+                    "value": "#BBBBBB"
+                }
+            }
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "transform": [
+                {
                     "as": "cigars",
                     "calculate": "split(datum.cigar, '|')"
                 },
@@ -249,7 +278,9 @@
                 {
                     "stack": "length",
                     "groupby": [
-                        "name"
+                        "name",
+                        "cigar",
+                        "position"
                     ],
                     "as": "offset"
                 },
