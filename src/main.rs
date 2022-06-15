@@ -4,6 +4,7 @@ mod plot;
 use crate::plot::create_plot_data;
 use anyhow::Result;
 use serde_json::{json, Value};
+use std::cmp::min;
 use std::fs::File;
 use std::io::{stdout, Write};
 use std::path::Path;
@@ -19,6 +20,7 @@ fn main() -> Result<()> {
     )?;
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
     plot_specs["height"] = json!(8 + 8 * plot_depth);
+    plot_specs["width"] = json!(min(opt.max_width, 5 * (opt.region.length())));
     plot_specs["encoding"]["x"]["scale"]["domain"] = json!(vec![
         opt.region.start as f32 - 0.5,
         opt.region.end as f32 - 0.5

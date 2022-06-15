@@ -1,5 +1,4 @@
 {
-    "width": 500,
     "resolve": {
         "scale": {
             "strokeWidth": "independent"
@@ -47,6 +46,13 @@
             "data": {
                 "name": "reference"
             },
+            "params": [
+                {
+                    "name": "grid",
+                    "select": "interval",
+                    "bind": "scales"
+                }
+            ],
             "transform": [
                 {
                     "as": "base",

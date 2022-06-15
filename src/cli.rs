@@ -25,6 +25,10 @@ pub struct Bamboo {
     #[structopt(long, short = "d", default_value = "500")]
     pub(crate) max_read_depth: usize,
 
+    /// Sets the maximum width of the resulting plot.
+    #[structopt(long, short = "w", default_value = "1000")]
+    pub(crate) max_width: i64,
+
     /// If present vega-lite specs will be written to the given directory
     #[structopt(long, parse(from_os_str), conflicts_with("output"))]
     pub(crate) spec_output: Option<PathBuf>,
@@ -62,5 +66,12 @@ impl FromStr for Region {
             start,
             end,
         })
+    }
+}
+
+impl Region {
+    /// Returns the length of the Region
+    pub(crate) fn length(&self) -> i64 {
+        self.end - self.start
     }
 }
