@@ -1,4 +1,5 @@
 {
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
     "resolve": {
         "scale": {
             "strokeWidth": "independent"
@@ -254,6 +255,54 @@
             },
             "transform": [
                 {
+                    "calculate": "if ((datum.flags & 1) > 0, 'read paired', '')",
+                    "as": "flag 1"
+                },
+                {
+                    "calculate": "if ((datum.flags & 2) > 0, 'read mapped in proper pair', '')",
+                    "as": "flag 2"
+                },
+                {
+                    "calculate": "if ((datum.flags & 4) > 0, 'read unmapped', '')",
+                    "as": "flag 4"
+                },
+                {
+                    "calculate": "if ((datum.flags & 8) > 0, 'mate unmapped', '')",
+                    "as": "flag 8"
+                },
+                {
+                    "calculate": "if ((datum.flags & 16) > 0, 'read reverse strand', '')",
+                    "as": "flag 16"
+                },
+                {
+                    "calculate": "if ((datum.flags & 32) > 0, 'mate reverse strand', '')",
+                    "as": "flag 32"
+                },
+                {
+                    "calculate": "if ((datum.flags & 64) > 0, 'first in pair', '')",
+                    "as": "flag 64"
+                },
+                {
+                    "calculate": "if ((datum.flags & 128) > 0, 'second in pair', '')",
+                    "as": "flag 128"
+                },
+                {
+                    "calculate": "if ((datum.flags & 256) > 0, 'not primary alignment', '')",
+                    "as": "flag 256"
+                },
+                {
+                    "calculate": "if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks', '')",
+                    "as": "flag 512"
+                },
+                {
+                    "calculate": "if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate', '')",
+                    "as": "flag 1024"
+                },
+                {
+                    "calculate": "if ((datum.flags & 2048) > 0, 'supplementary alignment', '')",
+                    "as": "flag 2048"
+                },
+                {
                     "as": "cigars",
                     "calculate": "split(datum.cigar, '|')"
                 },
@@ -307,6 +356,42 @@
                     },
                     {
                         "field": "mapq"
+                    },
+                    {
+                        "field": "flag 1"
+                    },
+                    {
+                        "field": "flag 2"
+                    },
+                    {
+                        "field": "flag 4"
+                    },
+                    {
+                        "field": "flag 8"
+                    },
+                    {
+                        "field": "flag 16"
+                    },
+                    {
+                        "field": "flag 32"
+                    },
+                    {
+                        "field": "flag 64"
+                    },
+                    {
+                        "field": "flag 128"
+                    },
+                    {
+                        "field": "flag 256"
+                    },
+                    {
+                        "field": "flag 512"
+                    },
+                    {
+                        "field": "flag 1024"
+                    },
+                    {
+                        "field": "flag 2048"
                     }
                 ],
                 "strokeWidth": {
