@@ -25,6 +25,9 @@ fn main() -> Result<()> {
         opt.region.start as f32 - 0.5,
         opt.region.end as f32 - 0.5
     ]);
+    if let Some(highlight) = opt.highlight {
+        plot_specs["datasets"]["highlight"] = json!(vec![highlight]);
+    }
     if let Some(out_path) = &opt.output {
         let bam_file_name = &opt
             .bam_path

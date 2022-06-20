@@ -6,6 +6,7 @@
         }
     },
     "datasets": {
+        "highlight": [],
         "reference": [],
         "reads": []
     },
@@ -43,6 +44,23 @@
         }
     },
     "layer": [
+        {
+            "data": {
+                "name": "highlight"
+            },
+            "mark": "rect",
+            "encoding": {
+                "color": {
+                    "value": "red"
+                },
+                "opacity": {
+                    "value": 0.15
+                },
+                "y2": {
+                    "value": 10000000
+                }
+            }
+        },
         {
             "data": {
                 "name": "reference"

@@ -1,4 +1,5 @@
 use anyhow::Context;
+use serde::Serialize;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -20,6 +21,10 @@ pub struct Bamboo {
     /// Chromosome and region for the visualization. Example: 2:132424-132924
     #[structopt(long, short = "g")]
     pub(crate) region: Region,
+
+    /// Interval that will be highlighted in the visualization. Example: 132440-132450
+    #[structopt(long, short = "h")]
+    pub(crate) highlight: Option<Interval>,
 
     /// Set the maximum rows of reads that will be shown in the alignment plots.
     #[structopt(long, short = "d", default_value = "500")]
@@ -73,5 +78,22 @@ impl Region {
     /// Returns the length of the Region
     pub(crate) fn length(&self) -> i64 {
         self.end - self.start
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Interval {
+    pub(crate) start: i64,
+    pub(crate) end: i64,
+}
+
+impl FromStr for Interval {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (start, end) = s.split_once('-').context("No '-' in interval string")?;
+        let start = start.parse::<i64>()?;
+        let end = end.parse::<i64>()?;
+        Ok(Interval { start, end })
     }
 }
