@@ -1,4 +1,4 @@
-# <img src="./img/bamboo.svg" width=250em alt="Rust-Bio logo" />
+# <img src="./img/bamboo.svg" width=250em alt="bamboo logo" />
 
 A tool for creating alignment plots from bam files. The generated [vega-lite](https://vega.github.io/vega-lite/) plots are written to stdout per default.
 
