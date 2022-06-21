@@ -51,7 +51,7 @@ pub struct Alignoth {
     pub(crate) output: Option<PathBuf>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Region {
     pub(crate) target: String,
     pub(crate) start: i64,
@@ -81,7 +81,7 @@ impl Region {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Eq, PartialEq)]
 pub struct Interval {
     pub(crate) start: i64,
     pub(crate) end: i64,
@@ -95,5 +95,32 @@ impl FromStr for Interval {
         let start = start.parse::<i64>()?;
         let end = end.parse::<i64>()?;
         Ok(Interval { start, end })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::cli::{Interval, Region};
+    use std::str::FromStr;
+
+    #[test]
+    fn test_region_deserialization() {
+        let region = Region::from_str("X:2000-3000").unwrap();
+        let expeceted_region = Region {
+            target: "X".to_string(),
+            start: 2000,
+            end: 3000,
+        };
+        assert_eq!(region, expeceted_region);
+    }
+
+    #[test]
+    fn test_interval_deserialization() {
+        let interval = Interval::from_str("2000-3000").unwrap();
+        let expeceted_interval = Interval {
+            start: 2000,
+            end: 3000,
+        };
+        assert_eq!(interval, expeceted_interval);
     }
 }
