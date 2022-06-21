@@ -1,0 +1,880 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "config": {
+        "legend": {
+            "layout": {
+                "right": {
+                    "anchor": "start",
+                    "center": false,
+                    "direction": "horizontal",
+                    "margin": 10
+                }
+            }
+        }
+    },
+    "datasets": {
+        "highlight": [
+            {
+                "end": 162500,
+                "start": 162400
+            }
+        ],
+        "reads": [
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 161820,
+                "name": "SRR062634.20835405",
+                "position": 161902,
+                "row": 1
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 161968,
+                "name": "SRR062634.9827867",
+                "position": 161922,
+                "row": 2
+            },
+            {
+                "cigar": "63=|1G|36=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 161864,
+                "name": "SRR062634.9712785",
+                "position": 161922,
+                "row": 3
+            },
+            {
+                "cigar": "100=",
+                "flags": 1123,
+                "mapq": 0,
+                "mpos": 161990,
+                "name": "SRR062634.573618",
+                "position": 161934,
+                "row": 4
+            },
+            {
+                "cigar": "100=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 161990,
+                "name": "SRR062641.19338108",
+                "position": 161934,
+                "row": 5
+            },
+            {
+                "cigar": "37=|1G|62=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 161882,
+                "name": "SRR062641.3283352",
+                "position": 161948,
+                "row": 6
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 161922,
+                "name": "SRR062634.9827867",
+                "position": 161968,
+                "row": 2
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 161899,
+                "name": "SRR062635.24037248",
+                "position": 161971,
+                "row": 7
+            },
+            {
+                "cigar": "100=",
+                "flags": 1171,
+                "mapq": 0,
+                "mpos": 161934,
+                "name": "SRR062634.573618",
+                "position": 161990,
+                "row": 4
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 161934,
+                "name": "SRR062641.19338108",
+                "position": 161990,
+                "row": 5
+            },
+            {
+                "cigar": "82=|1T|17=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162082,
+                "name": "SRR062634.9717459",
+                "position": 161999,
+                "row": 8
+            },
+            {
+                "cigar": "100=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 162146,
+                "name": "SRR062635.452094",
+                "position": 162059,
+                "row": 1
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162113,
+                "name": "SRR062635.2440968",
+                "position": 162061,
+                "row": 3
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162139,
+                "name": "SRR062641.7764107",
+                "position": 162079,
+                "row": 2
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 161999,
+                "name": "SRR062634.9717459",
+                "position": 162082,
+                "row": 8
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162061,
+                "name": "SRR062635.2440968",
+                "position": 162113,
+                "row": 3
+            },
+            {
+                "cigar": "38=|1G|31=|1G|29=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162231,
+                "name": "SRR062634.19987764",
+                "position": 162139,
+                "row": 4
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162079,
+                "name": "SRR062641.7764107",
+                "position": 162139,
+                "row": 2
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 162059,
+                "name": "SRR062635.452094",
+                "position": 162146,
+                "row": 1
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162261,
+                "name": "SRR062635.17876840",
+                "position": 162151,
+                "row": 5
+            },
+            {
+                "cigar": "20=|1G|31=|1G|47=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162253,
+                "name": "SRR062635.16937814",
+                "position": 162157,
+                "row": 6
+            },
+            {
+                "cigar": "100=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 162258,
+                "name": "SRR062635.18613792",
+                "position": 162164,
+                "row": 7
+            },
+            {
+                "cigar": "100=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 162222,
+                "name": "SRR062635.12365406",
+                "position": 162196,
+                "row": 8
+            },
+            {
+                "cigar": "91=|1C|8=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 162286,
+                "name": "SRR062641.24114383",
+                "position": 162202,
+                "row": 9
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162287,
+                "name": "SRR062634.8672405",
+                "position": 162209,
+                "row": 10
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 162196,
+                "name": "SRR062635.12365406",
+                "position": 162222,
+                "row": 8
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162139,
+                "name": "SRR062634.19987764",
+                "position": 162231,
+                "row": 4
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162157,
+                "name": "SRR062635.16937814",
+                "position": 162253,
+                "row": 6
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 162164,
+                "name": "SRR062635.18613792",
+                "position": 162258,
+                "row": 7
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162151,
+                "name": "SRR062635.17876840",
+                "position": 162261,
+                "row": 5
+            },
+            {
+                "cigar": "7=|1C|21=|1C|66=|1G|3=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 162202,
+                "name": "SRR062641.24114383",
+                "position": 162286,
+                "row": 9
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162209,
+                "name": "SRR062634.8672405",
+                "position": 162287,
+                "row": 10
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 31,
+                "mpos": 162438,
+                "name": "SRR062641.9493811",
+                "position": 162327,
+                "row": 1
+            },
+            {
+                "cigar": "68=|27=|1C|4=",
+                "flags": 99,
+                "mapq": 31,
+                "mpos": 162489,
+                "name": "SRR062641.18851078",
+                "position": 162366,
+                "row": 2
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 31,
+                "mpos": 162327,
+                "name": "SRR062641.9493811",
+                "position": 162438,
+                "row": 1
+            },
+            {
+                "cigar": "96=|4=",
+                "flags": 99,
+                "mapq": 15,
+                "mpos": 162556,
+                "name": "SRR062641.2750284",
+                "position": 162454,
+                "row": 3
+            },
+            {
+                "cigar": "13=|1T|5=|20=|1G|60=",
+                "flags": 147,
+                "mapq": 31,
+                "mpos": 162366,
+                "name": "SRR062641.18851078",
+                "position": 162489,
+                "row": 2
+            },
+            {
+                "cigar": "100=",
+                "flags": 99,
+                "mapq": 14,
+                "mpos": 162560,
+                "name": "SRR062635.5531606",
+                "position": 162494,
+                "row": 4
+            },
+            {
+                "cigar": "90=|1C|3=|1C|5=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 162587,
+                "name": "SRR062634.9978474",
+                "position": 162501,
+                "row": 5
+            },
+            {
+                "cigar": "83=|1C|6=|1G|9=",
+                "flags": 163,
+                "mapq": 0,
+                "mpos": 162601,
+                "name": "SRR062634.18982841",
+                "position": 162512,
+                "row": 6
+            },
+            {
+                "cigar": "71=|29=",
+                "flags": 99,
+                "mapq": 0,
+                "mpos": 162616,
+                "name": "SRR062634.4686433",
+                "position": 162542,
+                "row": 7
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 7,
+                "mpos": 162454,
+                "name": "SRR062641.2750284",
+                "position": 162556,
+                "row": 3
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 7,
+                "mpos": 162494,
+                "name": "SRR062635.5531606",
+                "position": 162560,
+                "row": 4
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 162501,
+                "name": "SRR062634.9978474",
+                "position": 162587,
+                "row": 5
+            },
+            {
+                "cigar": "100=",
+                "flags": 83,
+                "mapq": 0,
+                "mpos": 162512,
+                "name": "SRR062634.18982841",
+                "position": 162601,
+                "row": 6
+            },
+            {
+                "cigar": "100=",
+                "flags": 147,
+                "mapq": 0,
+                "mpos": 162542,
+                "name": "SRR062634.4686433",
+                "position": 162616,
+                "row": 7
+            },
+            {
+                "cigar": "100=",
+                "flags": 99,
+                "mapq": 31,
+                "mpos": 162771,
+                "name": "SRR062635.9964935",
+                "position": 162706,
+                "row": 1
+            },
+            {
+                "cigar": "94=|1=|1G|4=",
+                "flags": 163,
+                "mapq": 15,
+                "mpos": 162905,
+                "name": "SRR062635.19977430",
+                "position": 162771,
+                "row": 2
+            },
+            {
+                "cigar": "1C|99=",
+                "flags": 147,
+                "mapq": 31,
+                "mpos": 162706,
+                "name": "SRR062635.9964935",
+                "position": 162771,
+                "row": 1
+            },
+            {
+                "cigar": "89=|11=",
+                "flags": 99,
+                "mapq": 15,
+                "mpos": 162897,
+                "name": "SRR062641.3965313",
+                "position": 162780,
+                "row": 3
+            },
+            {
+                "cigar": "98=|2=",
+                "flags": 163,
+                "mapq": 15,
+                "mpos": 162893,
+                "name": "SRR062641.9096549",
+                "position": 162783,
+                "row": 4
+            },
+            {
+                "cigar": "100=",
+                "flags": 163,
+                "mapq": 15,
+                "mpos": 162895,
+                "name": "SRR062641.16282936",
+                "position": 162792,
+                "row": 5
+            }
+        ],
+        "reference": {
+            "reference": "TATCATGTTTAAATGTTCACTTAAAGCAATTCAGTTAAAATTCTGCATATCATACAATTTTATAGTTTGCTAGTAGGTTACAAGTAAATAGTCACCCAAATAAAAACATCATGTTTTCCACTGGTTGTTGCTCTTTTTTAGGTGAGTATTTGATGTATACCAACAGAGAGAGGATAATAACAAATCGCTAATTTCTTTCATCACTATATAAAGGTGGCTTCAGGATAGAATAGTATCAGGGCAATGATGAATTTGAAATCTAACATCAATTCAGTGATGCATCAAGATAAAAGTAGAGACAACAGGGGCACCTTGGTGAGTACTGAACATTTTATTTATTTATTTATTTTGAGATGGAGTTTTGCTCTTTTTGCCCAGGCTACAGTGCAATGGTGCCAACCTCACCTCACTGCAACCTCTGCCTCCTGGGTTCAAGCGATTCTCCTGCCTTGGCCTCCCGAATAGCTGGGATTACAGACATGCGCCACCACACCTGTCTAATTTTGTATTTTTAGTAGAGACGGGGTTTCTCCATGTTGGTCAGGCTGGTCTCGAACTCCCGACCTAGATATCTGCCTGCCTTGGCCTCCCAAAGTGCTGGGATTACAGGTGTGAGCCACCGCGCCCAGATGAATTCCAAATTTAACAAAGCAGACTAAGAGAAACAATTCATTTAAAAAAATAATATTTGGCCAGGCATGGTGGCTCACACCTATAATCCCAGCACTTTGGGAGGCTGAGGTGAGTGGATGAGGAGGTCAGCAGTTCAAGACCAGCCTAGCCAAGATCATGAAACCCCG",
+            "start": 162000
+        }
+    },
+    "encoding": {
+        "x": {
+            "axis": {
+                "title": "position"
+            },
+            "field": "start",
+            "scale": {
+                "domain": [
+                    161999.5,
+                    162799.5
+                ]
+            },
+            "type": "quantitative"
+        },
+        "x2": {
+            "field": "end",
+            "type": "quantitative"
+        },
+        "y": {
+            "axis": null,
+            "field": "row",
+            "type": "ordinal"
+        }
+    },
+    "height": 88,
+    "layer": [
+        {
+            "data": {
+                "name": "highlight"
+            },
+            "encoding": {
+                "color": {
+                    "value": "red"
+                },
+                "opacity": {
+                    "value": 0.15
+                },
+                "y2": {
+                    "value": 10000000
+                }
+            },
+            "mark": "rect"
+        },
+        {
+            "data": {
+                "name": "reference"
+            },
+            "encoding": {
+                "color": {
+                    "field": "base",
+                    "legend": null,
+                    "scale": {
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            "#CADB69",
+                            "#F2B671",
+                            "#F28CC2",
+                            "#7284A8",
+                            "#A23E11",
+                            "#BBBBBB",
+                            "#CC1414",
+                            "#047C0A"
+                        ],
+                        "type": "ordinal"
+                    }
+                },
+                "strokeWidth": {
+                    "value": 5
+                },
+                "tooltip": [
+                    {
+                        "field": "base"
+                    }
+                ]
+            },
+            "mark": {
+                "clip": true,
+                "type": "rule"
+            },
+            "params": [
+                {
+                    "bind": "scales",
+                    "name": "grid",
+                    "select": "interval"
+                }
+            ],
+            "transform": [
+                {
+                    "as": "base",
+                    "calculate": "split(datum.reference, '')"
+                },
+                {
+                    "as": "offset",
+                    "calculate": "sequence(datum.reference.length)"
+                },
+                {
+                    "flatten": [
+                        "base",
+                        "offset"
+                    ]
+                },
+                {
+                    "as": "position",
+                    "calculate": "datum.start + datum.offset"
+                },
+                {
+                    "as": "start",
+                    "calculate": "datum.position - 0.5"
+                },
+                {
+                    "as": "end",
+                    "calculate": "datum.position + 0.5"
+                }
+            ]
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "encoding": {
+                "color": {
+                    "field": "mapq",
+                    "scale": {
+                        "domain": [
+                            60,
+                            0
+                        ],
+                        "range": [
+                            "#910000",
+                            "#c70002",
+                            "#ff0000",
+                            "#ff7500",
+                            "#ffb200",
+                            "#ffe921",
+                            "#bbbbbb"
+                        ]
+                    },
+                    "type": "quantitative"
+                },
+                "strokeWidth": {
+                    "field": "type",
+                    "legend": null,
+                    "scale": {
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            5,
+                            8
+                        ],
+                        "type": "ordinal"
+                    }
+                }
+            },
+            "mark": {
+                "clip": true,
+                "type": "rule"
+            },
+            "transform": [
+                {
+                    "as": "cigars",
+                    "calculate": "split(datum.cigar, '|')"
+                },
+                {
+                    "as": "cigar_index",
+                    "calculate": "sequence(datum.cigars.length)"
+                },
+                {
+                    "flatten": [
+                        "cigars",
+                        "cigar_index"
+                    ]
+                },
+                {
+                    "as": "type",
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))"
+                },
+                {
+                    "as": "length",
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))"
+                },
+                {
+                    "as": "offset",
+                    "groupby": [
+                        "name",
+                        "cigar",
+                        "position"
+                    ],
+                    "stack": "length"
+                },
+                {
+                    "as": "start",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 0.7)"
+                },
+                {
+                    "as": "end",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.7)"
+                }
+            ]
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "encoding": {
+                "color": {
+                    "value": "#BBBBBB"
+                },
+                "strokeWidth": {
+                    "value": 1
+                }
+            },
+            "mark": {
+                "clip": true,
+                "type": "rule"
+            },
+            "transform": [
+                {
+                    "as": "start",
+                    "calculate": "if(datum.position < datum.mpos, datum.position - 0.5, datum.mpos - 0.5)"
+                },
+                {
+                    "as": "end",
+                    "calculate": "if(datum.position > datum.mpos, datum.position - 0.5, datum.mpos - 0.5)"
+                }
+            ]
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "encoding": {
+                "color": {
+                    "field": "type",
+                    "legend": {
+                        "symbolSize": 75,
+                        "title": "symbol"
+                    },
+                    "scale": {
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            "#CADB69",
+                            "#F2B671",
+                            "#F28CC2",
+                            "#7284A8",
+                            "#A23E11",
+                            "#BBBBBB",
+                            "#CC1414",
+                            "#047C0A"
+                        ],
+                        "type": "ordinal"
+                    }
+                },
+                "strokeWidth": {
+                    "field": "type",
+                    "legend": null,
+                    "scale": {
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            3,
+                            3,
+                            3,
+                            3,
+                            3,
+                            3,
+                            3,
+                            6
+                        ],
+                        "type": "ordinal"
+                    }
+                },
+                "tooltip": [
+                    {
+                        "field": "name"
+                    },
+                    {
+                        "field": "type"
+                    },
+                    {
+                        "field": "mapq"
+                    },
+                    {
+                        "field": "flags"
+                    }
+                ]
+            },
+            "mark": {
+                "clip": true,
+                "type": "rule"
+            },
+            "transform": [
+                {
+                    "as": "flags",
+                    "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')"
+                },
+                {
+                    "as": "cigars",
+                    "calculate": "split(datum.cigar, '|')"
+                },
+                {
+                    "as": "cigar_index",
+                    "calculate": "sequence(datum.cigars.length)"
+                },
+                {
+                    "flatten": [
+                        "cigars",
+                        "cigar_index"
+                    ]
+                },
+                {
+                    "as": "type",
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))"
+                },
+                {
+                    "as": "length",
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))"
+                },
+                {
+                    "as": "offset",
+                    "groupby": [
+                        "name",
+                        "cigar",
+                        "position"
+                    ],
+                    "stack": "length"
+                },
+                {
+                    "as": "start",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 0.5)"
+                },
+                {
+                    "as": "end",
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
+                }
+            ]
+        }
+    ],
+    "resolve": {
+        "scale": {
+            "strokeWidth": "independent"
+        }
+    },
+    "width": 1024
+}

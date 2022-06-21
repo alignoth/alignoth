@@ -7,9 +7,9 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(
     about = "A tool to create alignment plots from bam files.",
-    name = "bamboo"
+    name = "alignoth"
 )]
-pub struct Bamboo {
+pub struct Alignoth {
     /// BAM file to be visualized.
     #[structopt(long, short = "b", required = true, parse(from_os_str))]
     pub(crate) bam_path: PathBuf,

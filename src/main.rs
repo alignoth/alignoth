@@ -11,7 +11,7 @@ use std::path::Path;
 use structopt::StructOpt;
 
 fn main() -> Result<()> {
-    let opt = cli::Bamboo::from_args();
+    let opt = cli::Alignoth::from_args();
     let (read_data, reference_data, plot_depth) = create_plot_data(
         &opt.bam_path,
         &opt.reference,

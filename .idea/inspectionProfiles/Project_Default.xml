@@ -1,0 +1,12 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="JsonDuplicatePropertyKeys" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="JsonPathEvaluateUnknownKey" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="JsonPathUnknownFunction" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="JsonPathUnknownOperator" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="JsonSchemaCompliance" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="JsonSchemaDeprecation" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="JsonSchemaRefReference" enabled="true" level="ERROR" enabled_by_default="true" />
+  </profile>
+</component>
