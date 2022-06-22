@@ -18,9 +18,9 @@ The following options are available when using bamboo:
 | highlight        | -h    | Interval that will be highlighted in the visualization. Example: 132400-132500                              |        |
 | max-read-depth   | -d    | Set the maximum rows of reads that will be shown in the alignment plots                                     | 500    |
 | output           | -o    | If present, data and vega-lite specs of the generated plot will be split and written to the given directory |        |
-| spec-output      |       | If present vega-lite specs will be written to the given directory                                           |        |
-| read-data-output |       | If present read data will be written to the given directory                                                 |        |
-| ref-data-output  |       | If present reference data will be written to the given directory                                            |        |
+| spec-output      |       | If present vega-lite specs will be written to the given file path                                           |        |
+| read-data-output |       | If present read data will be written to the given file path                                                 |        |
+| ref-data-output  |       | If present reference data will be written to the given file path                                            |        |
 
 
 ## Authors

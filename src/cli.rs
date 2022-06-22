@@ -34,15 +34,15 @@ pub struct Alignoth {
     #[structopt(long, short = "w", default_value = "1024")]
     pub(crate) max_width: i64,
 
-    /// If present vega-lite specs will be written to the given directory
+    /// If present vega-lite specs will be written to the given file path
     #[structopt(long, parse(from_os_str), conflicts_with("output"))]
     pub(crate) spec_output: Option<PathBuf>,
 
-    /// If present reference data will be written to the given directory
+    /// If present reference data will be written to the given file path
     #[structopt(long, parse(from_os_str), conflicts_with("output"))]
     pub(crate) ref_data_output: Option<PathBuf>,
 
-    /// If present read data will be written to the given directory
+    /// If present read data will be written to the given file path
     #[structopt(long, parse(from_os_str), conflicts_with("output"))]
     pub(crate) read_data_output: Option<PathBuf>,
 
