@@ -1,3 +1,10 @@
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/koesterlab/alignoth/CI)](https://github.com/koesterlab/alignoth/actions)
+[![codecov](https://codecov.io/gh/koesterlab/alignoth/branch/main/graph/badge.svg?token=G751JNS6PU)](https://codecov.io/gh/koesterlab/alignoth)
+[![Bioconda downloads](https://img.shields.io/conda/dn/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
+[![Bioconda version](https://img.shields.io/conda/vn/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
+[![Licence](https://img.shields.io/conda/l/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
+
 # alignoth
 
 A tool for creating alignment plots from bam files. The generated [vega-lite](https://vega.github.io/vega-lite/) plots are written to stdout per default.
@@ -22,6 +29,28 @@ The following options are available when using bamboo:
 | read-data-output |       | If present read data will be written to the given file path                                                 |        |
 | ref-data-output  |       | If present reference data will be written to the given file path                                            |        |
 
+## Installation
+
+There a multiple ways to install alignoth:
+
+#### Bioconda
+
+Rust-Bio-Tools is available via [Bioconda](https://bioconda.github.io).
+With Bioconda set up, installation is as easy as
+
+    conda install alignoth
+
+#### Cargo
+
+If the [Rust](https://www.rust-lang.org/tools/install) compiler and associated [Cargo](https://github.com/rust-lang/cargo/) are installed, alignoth may be installed via
+
+    cargo install alignoth
+
+#### Source
+
+Download the source code and within the root directory of source run
+
+    cargo install
 
 ## Authors
 
