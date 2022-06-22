@@ -17,6 +17,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::fmt::Display;
 use std::path::Path;
+use std::str::FromStr;
 
 /// Generates the plot data for a given region of a bam file
 pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
@@ -34,8 +35,11 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
         .collect();
     data.order(max_read_depth)?;
-    let read_depth = data.iter().map(|r| r.row.unwrap()).max().unwrap();
-    let data: Vec<_> = data.iter().map(|r| json!(r)).collect();
+    let read_depth = if data.is_empty() {
+        0
+    } else {
+        data.iter().map(|r| r.row.unwrap()).max().unwrap()
+    };
     let reference_data = Reference {
         start: region.start,
         reference: read_fasta(ref_path, region)?.iter().collect(),
@@ -104,6 +108,56 @@ impl Serialize for PlotCigar {
 impl ToString for PlotCigar {
     fn to_string(&self) -> String {
         self.0.iter().join("|")
+    }
+}
+
+impl FromStr for PlotCigar {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let mut inner_cigars = Vec::new();
+        for inner in s.split('|') {
+            let inner_cigar = match inner.chars().last() {
+                Some('=') => {
+                    let length = inner.chars().take(inner.len() - 1).collect::<String>();
+                    InnerPlotCigar {
+                        cigar_type: CigarType::Match,
+                        bases: None,
+                        length: Some(u32::from_str(&length).unwrap()),
+                    }
+                }
+                Some('d') => {
+                    let length = inner.chars().take(inner.len() - 1).collect::<String>();
+                    InnerPlotCigar {
+                        cigar_type: CigarType::Del,
+                        bases: None,
+                        length: Some(u32::from_str(&length).unwrap()),
+                    }
+                }
+                _ => {
+                    if inner.starts_with('i') {
+                        InnerPlotCigar {
+                            cigar_type: CigarType::Ins,
+                            bases: Some(inner.chars().skip(1).collect()),
+                            length: None,
+                        }
+                    } else {
+                        InnerPlotCigar {
+                            cigar_type: CigarType::Sub,
+                            bases: Some(vec![inner.chars().last().unwrap()]),
+                            length: Some(
+                                u32::from_str(
+                                    &inner.chars().take(inner.len() - 1).collect::<String>(),
+                                )
+                                .unwrap(),
+                            ),
+                        }
+                    }
+                }
+            };
+            inner_cigars.push(inner_cigar);
+        }
+        Ok(PlotCigar(inner_cigars))
     }
 }
 
@@ -267,7 +321,9 @@ impl PlotOrder for Vec<Read> {
                 continue;
             }
             for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
-                if min(read.position, read.mpos) > *row_end + 5 {
+                if min(read.position, read.mpos) > *row_end + 5
+                    || (read.position <= 5 && *row_end == 0)
+                {
                     read.set_row(row as u32);
                     row_ends[row] = max(read.end_position, read.mpos);
                     ordered_reads.insert(&read.name, row);
@@ -275,14 +331,15 @@ impl PlotOrder for Vec<Read> {
                 }
             }
         }
-        let used_rows = *ordered_reads.values().max().unwrap();
-        if max_read_depth < used_rows {
-            let mut rng = StdRng::seed_from_u64(42);
-            let random_rows: HashSet<_> = (0..used_rows as u32)
-                .choose_multiple(&mut rng, max_read_depth as usize)
-                .into_iter()
-                .collect();
-            self.retain(|read| random_rows.contains(&read.row.unwrap()));
+        if let Some(used_rows) = ordered_reads.values().max() {
+            if max_read_depth < *used_rows {
+                let mut rng = StdRng::seed_from_u64(42);
+                let random_rows: HashSet<_> = (0..*used_rows as u32)
+                    .choose_multiple(&mut rng, max_read_depth as usize)
+                    .into_iter()
+                    .collect();
+                self.retain(|read| random_rows.contains(&read.row.unwrap()));
+            }
         }
         Ok(())
     }
@@ -291,12 +348,15 @@ impl PlotOrder for Vec<Read> {
 #[cfg(test)]
 mod tests {
     use crate::cli::Region;
+    use crate::create_plot_data;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
     use crate::plot::{
-        match_bases, read_fasta, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
+        match_bases, read_fasta, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read, Reference,
     };
     use itertools::Itertools;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+    use serde_json::json;
+    use std::str::FromStr;
 
     #[test]
     fn test_plot_cigar_string_serialization() {
@@ -527,5 +587,63 @@ mod tests {
         .unwrap();
         let expected_reference = "TTGCCGGGGTGGGGAGAGAG".chars().collect_vec();
         assert_eq!(reference, expected_reference);
+    }
+
+    #[test]
+    fn test_create_plot_data() {
+        let region = Region {
+            target: "chr1".to_string(),
+            start: 0,
+            end: 20,
+        };
+        let (reads, reference, max_depth) =
+            create_plot_data("tests/reads.bam", "tests/reference.fa", &region, 100).unwrap();
+        let expected_reference = json!(Reference {
+            start: 0,
+            reference: "TTGCCGGGGTGGGGAGAGAG".to_string()
+        });
+        let expected_read = Read {
+            name: "sim_Som1-5-2_chr1_1_1acd6f".to_string(),
+            cigar: PlotCigar::from_str("16=|iAA|80=|1T|1=").unwrap(),
+            position: 4,
+            flags: 99,
+            mapq: 30,
+            row: Some(1),
+            end_position: 0,
+            mpos: 789264,
+        };
+        let expected_reads = json!(vec![expected_read]);
+        let expected_max_depth = json!(1_u32);
+        assert_eq!(reference, expected_reference);
+        assert_eq!(reads, expected_reads);
+        assert_eq!(max_depth, expected_max_depth);
+    }
+
+    #[test]
+    fn test_plot_cigar_from_str() {
+        let plot_cigar = PlotCigar::from_str("16=|iAA|1T|1d").unwrap();
+        let expected_plot_cigar = PlotCigar(vec![
+            InnerPlotCigar {
+                cigar_type: CigarType::Match,
+                bases: None,
+                length: Some(16),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Ins,
+                bases: Some(vec!['A', 'A']),
+                length: None,
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Sub,
+                bases: Some(vec!['T']),
+                length: Some(1),
+            },
+            InnerPlotCigar {
+                cigar_type: CigarType::Del,
+                bases: None,
+                length: Some(1),
+            },
+        ]);
+        assert_eq!(plot_cigar, expected_plot_cigar);
     }
 }
