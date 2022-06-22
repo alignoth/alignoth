@@ -324,7 +324,8 @@ impl PlotOrder for Vec<Read> {
             for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
                 if min(read.position, read.mpos) > *row_end + 5
                     || (read.position <= 5 && *row_end == 0)  // Row is unfilled and read can be placed at the beginning without 5bp distance to the previous read
-                    || (read.mpos == -1 && read.position > *row_end + 5) // Read has no mate and can be placed purely dependent on its own position
+                    || (read.mpos == -1 && read.position > *row_end + 5)
+                // Read has no mate and can be placed purely dependent on its own position
                 {
                     read.set_row(row as u32);
                     row_ends[row] = max(read.end_position, read.mpos);
