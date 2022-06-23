@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/koesterlab/alignoth/compare/v0.2.0...v0.2.1) (2022-06-23)
+
+
+### Bug Fixes
+
+* Fix index out of bounce panic for reads with deletions ([#6](https://github.com/koesterlab/alignoth/issues/6)) ([f412be7](https://github.com/koesterlab/alignoth/commit/f412be7866f9676ed16e5092378187b4b103000e))
+
 ## [0.2.0](https://github.com/koesterlab/alignoth/compare/v0.1.0...v0.2.0) (2022-06-22)
 
 
