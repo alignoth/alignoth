@@ -7,6 +7,7 @@ use rand::prelude::IteratorRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use rust_htslib::bam;
+use rust_htslib::bam::ext::BamRecordExtensions;
 use rust_htslib::bam::record::{Cigar, CigarStringView};
 use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::Read as HtslibRead;
@@ -276,7 +277,7 @@ impl Read {
         let region = cli::Region {
             target: target.to_string(),
             start: record.pos() - record.cigar().leading_softclips(),
-            end: record.pos() + record.seq_len() as i64,
+            end: record.pos() + record.reference_end(),
         };
         let ref_seq = read_fasta(ref_path, &region)?;
         let read_seq = record
@@ -292,7 +293,7 @@ impl Read {
             flags: record.flags(),
             mapq: record.mapq(),
             row: None,
-            end_position: record.pos() + record.seq_len() as i64,
+            end_position: record.pos() + record.reference_end(),
             mpos: record.mpos(),
         })
     }
@@ -322,7 +323,9 @@ impl PlotOrder for Vec<Read> {
             }
             for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
                 if min(read.position, read.mpos) > *row_end + 5
-                    || (read.position <= 5 && *row_end == 0)
+                    || (read.position <= 5 && *row_end == 0)  // Row is unfilled and read can be placed at the beginning without 5bp distance to the previous read
+                    || (read.mpos == -1 && read.position > *row_end + 5)
+                // Read has no mate and can be placed purely dependent on its own position
                 {
                     read.set_row(row as u32);
                     row_ends[row] = max(read.end_position, read.mpos);
