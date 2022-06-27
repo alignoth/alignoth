@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/koesterlab/alignoth/compare/v0.2.1...v0.2.2) (2022-06-27)
+
+
+### Bug Fixes
+
+* Fix output of highlight data ([#8](https://github.com/koesterlab/alignoth/issues/8)) ([cd8c42d](https://github.com/koesterlab/alignoth/commit/cd8c42d094fd24ef0fc38b8eb2c6b02a75a28209))
+
 ## [0.2.1](https://github.com/koesterlab/alignoth/compare/v0.2.0...v0.2.1) (2022-06-23)
 
 
