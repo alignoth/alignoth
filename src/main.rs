@@ -25,9 +25,6 @@ fn main() -> Result<()> {
         opt.region.start as f32 - 0.5,
         opt.region.end as f32 - 0.5
     ]);
-    if let Some(highlight) = opt.highlight {
-        plot_specs["datasets"]["highlight"] = json!(vec![highlight]);
-    }
     if let Some(out_path) = &opt.output {
         let bam_file_name = &opt
             .bam_path
@@ -49,6 +46,14 @@ fn main() -> Result<()> {
         ))
         .unwrap();
         reference_file.write_all(reference_data.to_string().as_bytes())?;
+        if let Some(highlight) = opt.highlight {
+            let mut highlight_file = File::create(Path::join(
+                out_path,
+                format!("{bam_file_name}.highlight.json"),
+            ))
+            .unwrap();
+            highlight_file.write_all(json!(vec![highlight]).to_string().as_bytes())?;
+        }
     } else if let (Some(spec_output), Some(ref_data_output), Some(read_data_output)) = (
         &opt.spec_output,
         &opt.ref_data_output,
@@ -60,6 +65,12 @@ fn main() -> Result<()> {
         read_file.write_all(read_data.to_string().as_bytes())?;
         let mut reference_file = File::create(ref_data_output).unwrap();
         reference_file.write_all(reference_data.to_string().as_bytes())?;
+        if let (Some(highlight), Some(highlight_output)) =
+            (opt.highlight, opt.highlight_data_output)
+        {
+            let mut highlight_file = File::create(highlight_output).unwrap();
+            highlight_file.write_all(json!(vec![highlight]).to_string().as_bytes())?;
+        }
     } else {
         plot_specs["datasets"]["reference"] = reference_data;
         plot_specs["datasets"]["reads"] = read_data;
