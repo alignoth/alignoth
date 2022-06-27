@@ -47,8 +47,11 @@ fn main() -> Result<()> {
         .unwrap();
         reference_file.write_all(reference_data.to_string().as_bytes())?;
         if let Some(highlight) = opt.highlight {
-            let mut highlight_file =
-                File::create(Path::join(out_path, format!("{bam_file_name}.highlight.json"))).unwrap();
+            let mut highlight_file = File::create(Path::join(
+                out_path,
+                format!("{bam_file_name}.highlight.json"),
+            ))
+            .unwrap();
             highlight_file.write_all(json!(vec![highlight]).to_string().as_bytes())?;
         }
     } else if let (Some(spec_output), Some(ref_data_output), Some(read_data_output)) = (
@@ -62,7 +65,9 @@ fn main() -> Result<()> {
         read_file.write_all(read_data.to_string().as_bytes())?;
         let mut reference_file = File::create(ref_data_output).unwrap();
         reference_file.write_all(reference_data.to_string().as_bytes())?;
-        if let (Some(highlight), Some(highlight_output)) = (opt.highlight, opt.highlight_data_output) {
+        if let (Some(highlight), Some(highlight_output)) =
+            (opt.highlight, opt.highlight_data_output)
+        {
             let mut highlight_file = File::create(highlight_output).unwrap();
             highlight_file.write_all(json!(vec![highlight]).to_string().as_bytes())?;
         }

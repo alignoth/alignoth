@@ -47,7 +47,12 @@ pub struct Alignoth {
     pub(crate) read_data_output: Option<PathBuf>,
 
     /// If present highlight data will be written to the given file path
-    #[structopt(long, parse(from_os_str), conflicts_with("output"), requires("highlight"))]
+    #[structopt(
+        long,
+        parse(from_os_str),
+        conflicts_with("output"),
+        requires("highlight")
+    )]
     pub(crate) highlight_data_output: Option<PathBuf>,
 
     /// If present, data and vega-lite specs of the generated plot will be split and written to the given directory
