@@ -90,7 +90,7 @@ impl Region {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Eq, PartialEq, Copy)]
 pub struct Interval {
     pub(crate) start: i64,
     pub(crate) end: i64,
