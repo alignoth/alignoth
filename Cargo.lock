@@ -17,6 +17,7 @@ version = "0.2.2"
 dependencies = [
  "anyhow",
  "bio",
+ "csv",
  "itertools",
  "rand",
  "rust-htslib",
