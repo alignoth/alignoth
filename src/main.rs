@@ -137,7 +137,7 @@ fn write_files(
 mod tests {
     use crate::write_files;
     use std::fs;
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     #[test]
     fn test_write_files() {
@@ -145,16 +145,17 @@ mod tests {
             "test spec".as_bytes(),
             "test ref".as_bytes(),
             "test read".as_bytes(),
-            "".as_bytes(),
+            "test highlight".as_bytes(),
             &Path::new("/tmp/test_spec.json"),
             &Path::new("/tmp/test_ref.json"),
             &Path::new("/tmp/test_read.json"),
-            None,
+            Some(PathBuf::from("/tmp/test_highlight.json")),
         )
         .unwrap();
         assert!(Path::new("/tmp/test_spec.json").exists());
         assert!(Path::new("/tmp/test_ref.json").exists());
         assert!(Path::new("/tmp/test_read.json").exists());
+        assert!(Path::new("/tmp/test_highlight.json").exists());
         assert_eq!(
             fs::read_to_string("/tmp/test_spec.json").unwrap(),
             "test spec"
@@ -167,8 +168,13 @@ mod tests {
             fs::read_to_string("/tmp/test_read.json").unwrap(),
             "test read"
         );
+        assert_eq!(
+            fs::read_to_string("/tmp/test_highlight.json").unwrap(),
+            "test highlight"
+        );
         fs::remove_file("/tmp/test_spec.json").unwrap();
         fs::remove_file("/tmp/test_ref.json").unwrap();
         fs::remove_file("/tmp/test_read.json").unwrap();
+        fs::remove_file("/tmp/test_highlight.json").unwrap();
     }
 }
