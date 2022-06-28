@@ -12,7 +12,6 @@ use rust_htslib::bam::record::{Cigar, CigarStringView};
 use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::Read as HtslibRead;
 use serde::{Serialize, Serializer};
-use serde_json::json;
 use std::cmp::{max, min};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -26,15 +25,15 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: &Region,
     max_read_depth: usize,
-) -> Result<(serde_json::Value, serde_json::Value, u32)> {
+) -> Result<(Vec<Read>, Reference, u32)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam.header().tid(region.target.as_bytes()).unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
-    let mut data: Vec<_> = bam
+    let mut data = bam
         .records()
         .filter_map(|r| r.ok())
         .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
-        .collect();
+        .collect_vec();
     data.order(max_read_depth)?;
     let read_depth = if data.is_empty() {
         0
@@ -45,7 +44,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         start: region.start,
         reference: read_fasta(ref_path, region)?.iter().collect(),
     };
-    Ok((json!(data), json!(reference_data), read_depth))
+    Ok((data, reference_data, read_depth))
 }
 
 /// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
@@ -64,7 +63,7 @@ fn read_fasta<P: AsRef<Path> + std::fmt::Debug>(path: P, region: &Region) -> Res
 }
 
 /// A Read containing all relevant information for being plotted in a read plot
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, PartialEq, Eq)]
 pub struct Read {
     name: String,
     cigar: PlotCigar,
@@ -220,7 +219,7 @@ impl PlotCigar {
                     inner_plot_cigars.push(InnerPlotCigar {
                         cigar_type: CigarType::Ins,
                         bases: Some(read_seq[read_index..read_index + *length as usize].to_vec()),
-                        length: Some(*length),
+                        length: None,
                     });
                     read_index += *length as usize;
                 }
@@ -537,7 +536,7 @@ mod tests {
             InnerPlotCigar {
                 cigar_type: CigarType::Ins,
                 bases: Some(vec!['A']),
-                length: Some(1),
+                length: None,
             },
             InnerPlotCigar {
                 cigar_type: CigarType::Match,
@@ -601,10 +600,10 @@ mod tests {
         };
         let (reads, reference, max_depth) =
             create_plot_data("tests/reads.bam", "tests/reference.fa", &region, 100).unwrap();
-        let expected_reference = json!(Reference {
+        let expected_reference = Reference {
             start: 0,
-            reference: "TTGCCGGGGTGGGGAGAGAG".to_string()
-        });
+            reference: "TTGCCGGGGTGGGGAGAGAG".to_string(),
+        };
         let expected_read = Read {
             name: "sim_Som1-5-2_chr1_1_1acd6f".to_string(),
             cigar: PlotCigar::from_str("16=|iAA|80=|1T|1=").unwrap(),
@@ -612,10 +611,10 @@ mod tests {
             flags: 99,
             mapq: 30,
             row: Some(1),
-            end_position: 0,
+            end_position: 106,
             mpos: 789264,
         };
-        let expected_reads = json!(vec![expected_read]);
+        let expected_reads = vec![expected_read];
         let expected_max_depth = json!(1_u32);
         assert_eq!(reference, expected_reference);
         assert_eq!(reads, expected_reads);

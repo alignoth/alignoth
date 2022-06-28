@@ -1,5 +1,7 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
+use serde::Deserialize;
 use serde::Serialize;
+use std::fmt::Display;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -29,6 +31,10 @@ pub struct Alignoth {
     /// Set the maximum rows of reads that will be shown in the alignment plots.
     #[structopt(long, short = "d", default_value = "500")]
     pub(crate) max_read_depth: usize,
+
+    /// Set the data format of the read, reference and highlight data.
+    #[structopt(long, short = "f", default_value)]
+    pub(crate) data_format: DataFormat,
 
     /// Sets the maximum width of the resulting plot.
     #[structopt(long, short = "w", default_value = "1024")]
@@ -83,6 +89,39 @@ impl FromStr for Region {
     }
 }
 
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub enum DataFormat {
+    Json,
+    Tsv,
+}
+
+impl Display for DataFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DataFormat::Json => write!(f, "json"),
+            DataFormat::Tsv => write!(f, "tsv"),
+        }
+    }
+}
+
+impl Default for DataFormat {
+    fn default() -> Self {
+        DataFormat::Json
+    }
+}
+
+impl FromStr for DataFormat {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "json" => Ok(DataFormat::Json),
+            "tsv" => Ok(DataFormat::Tsv),
+            _ => Err(anyhow!("Unknown data format: {}", s)),
+        }
+    }
+}
+
 impl Region {
     /// Returns the length of the Region
     pub(crate) fn length(&self) -> i64 {
@@ -109,7 +148,7 @@ impl FromStr for Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{Interval, Region};
+    use crate::cli::{DataFormat, Interval, Region};
     use std::str::FromStr;
 
     #[test]
@@ -131,5 +170,27 @@ mod tests {
             end: 3000,
         };
         assert_eq!(interval, expeceted_interval);
+    }
+
+    #[test]
+    fn test_region_length() {
+        let region = Region::from_str("X:2000-3000").unwrap();
+        assert_eq!(region.length(), 1000);
+    }
+
+    #[test]
+    fn test_data_format_deserialization() {
+        let data_format = DataFormat::from_str("json").unwrap();
+        assert_eq!(data_format, DataFormat::Json);
+        let tsv_data_format = DataFormat::from_str("tsv").unwrap();
+        assert_eq!(tsv_data_format, DataFormat::Tsv);
+    }
+
+    #[test]
+    fn test_data_format_to_string() {
+        let data_format = DataFormat::Json;
+        assert_eq!(data_format.to_string(), "json");
+        let data_format = DataFormat::Tsv;
+        assert_eq!(data_format.to_string(), "tsv");
     }
 }

@@ -1,9 +1,10 @@
 mod cli;
 mod plot;
 
-use crate::cli::Interval;
+use crate::cli::DataFormat;
 use crate::plot::create_plot_data;
 use anyhow::Result;
+use csv::WriterBuilder;
 use serde_json::{json, Value};
 use std::cmp::min;
 use std::fs::File;
@@ -26,6 +27,32 @@ fn main() -> Result<()> {
         opt.region.start as f32 - 0.5,
         opt.region.end as f32 - 0.5
     ]);
+    let reference = match opt.data_format {
+        DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            writer.serialize(&reference_data)?;
+            writer.into_inner()?
+        }
+    };
+    let reads = match opt.data_format {
+        DataFormat::Json => json!(read_data).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            for record in &read_data {
+                writer.serialize(record)?;
+            }
+            writer.into_inner()?
+        }
+    };
+    let highlights = match opt.data_format {
+        DataFormat::Json => json!(opt.highlight).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            writer.serialize(opt.highlight)?;
+            writer.into_inner()?
+        }
+    };
     if let Some(out_path) = &opt.output {
         let bam_file_name = &opt
             .bam_path
@@ -38,50 +65,47 @@ fn main() -> Result<()> {
         let highlight_path = if opt.highlight.is_some() {
             Some(Path::join(
                 out_path,
-                format!("{bam_file_name}.highlight.json"),
+                format!("{}.highlight.{}", bam_file_name, opt.data_format),
             ))
         } else {
             None
         };
         write_files(
-            plot_specs.to_string().as_bytes(),
-            reference_data.to_string().as_bytes(),
-            read_data.to_string().as_bytes(),
-            opt.highlight,
+            json!(plot_specs).to_string().as_bytes(),
+            &reference,
+            &reads,
+            &highlights,
             &Path::join(out_path, format!("{bam_file_name}.vl.json")),
-            &Path::join(out_path, format!("{bam_file_name}.reference.json")),
-            &Path::join(out_path, format!("{bam_file_name}.reads.json")),
+            &Path::join(
+                out_path,
+                format!("{}.reference.{}", bam_file_name, opt.data_format),
+            ),
+            &Path::join(
+                out_path,
+                format!("{}.reads.{}", bam_file_name, opt.data_format),
+            ),
             highlight_path,
         )?;
-        if let Some(highlight) = opt.highlight {
-            let mut highlight_file = File::create(Path::join(
-                out_path,
-                format!("{bam_file_name}.highlight.json"),
-            ))
-            .unwrap();
-            highlight_file.write_all(json!(vec![highlight]).to_string().as_bytes())?;
-        }
     } else if let (Some(spec_output), Some(ref_data_output), Some(read_data_output)) = (
         &opt.spec_output,
         &opt.ref_data_output,
         &opt.read_data_output,
     ) {
         write_files(
-            plot_specs.to_string().as_bytes(),
-            reference_data.to_string().as_bytes(),
-            read_data.to_string().as_bytes(),
-            opt.highlight,
+            json!(plot_specs).to_string().as_bytes(),
+            &reference,
+            &reads,
+            &highlights,
             spec_output,
             ref_data_output,
             read_data_output,
             opt.highlight_data_output,
         )?;
     } else {
-        plot_specs["datasets"]["reference"] = reference_data;
-        plot_specs["datasets"]["reads"] = read_data;
+        plot_specs["datasets"]["reference"] = json!(reference_data);
+        plot_specs["datasets"]["reads"] = json!(read_data);
         stdout().write_all(plot_specs.to_string().as_bytes())?;
     }
-
     Ok(())
 }
 
@@ -90,7 +114,7 @@ fn write_files(
     spec_data: &[u8],
     ref_data: &[u8],
     read_data: &[u8],
-    highlight_data: Option<Interval>,
+    highlight_data: &[u8],
     spec_path: &Path,
     ref_path: &Path,
     read_path: &Path,
@@ -102,9 +126,9 @@ fn write_files(
     read_file.write_all(read_data)?;
     let mut reference_file = File::create(ref_path).unwrap();
     reference_file.write_all(ref_data)?;
-    if let (Some(data), Some(path)) = (highlight_data, highlight_path) {
+    if let Some(path) = highlight_path {
         let mut highlight_file = File::create(path).unwrap();
-        highlight_file.write_all(json!(vec![data]).to_string().as_bytes())?;
+        highlight_file.write_all(highlight_data)?;
     }
     Ok(())
 }
@@ -121,7 +145,7 @@ mod tests {
             "test spec".as_bytes(),
             "test ref".as_bytes(),
             "test read".as_bytes(),
-            None,
+            "".as_bytes(),
             &Path::new("/tmp/test_spec.json"),
             &Path::new("/tmp/test_ref.json"),
             &Path::new("/tmp/test_read.json"),
