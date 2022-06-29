@@ -352,7 +352,6 @@ mod tests {
     };
     use itertools::Itertools;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
-    use serde_json::json;
     use std::str::FromStr;
 
     #[test]
@@ -593,7 +592,7 @@ mod tests {
             start: 0,
             end: 20,
         };
-        let (reads, reference, max_depth) =
+        let (reads, reference) =
             create_plot_data("tests/reads.bam", "tests/reference.fa", &region, 100).unwrap();
         let expected_reference = Reference {
             start: 0,
@@ -610,10 +609,8 @@ mod tests {
             mpos: 789264,
         };
         let expected_reads = vec![expected_read];
-        let expected_max_depth = json!(1_u32);
         assert_eq!(reference, expected_reference);
         assert_eq!(reads, expected_reads);
-        assert_eq!(max_depth, expected_max_depth);
     }
 
     #[test]
