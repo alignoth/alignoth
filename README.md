@@ -13,6 +13,10 @@ The name alignoth is derived from the visualized **align**ments combined with th
 
 ```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 > plot.vl.json```
 
+To directly generate a plot in svg, png or pdf format we advice using the [vega-cli](https://vega.github.io/vega/usage/#cli) package:
+
+```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 | vg2pdf > plot.pdf```
+
 ### Arguments
 
 The following options are available when using alignoth:
