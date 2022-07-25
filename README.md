@@ -8,14 +8,14 @@
 # alignoth
 
 A tool for creating alignment plots from bam files. The generated [vega-lite](https://vega.github.io/vega-lite/) plots are written to stdout per default.
-
+The name alignoth is derived from the visualized **align**ments combined with the star **alioth** (usage of vega plots).
 ## Usage
 
 ```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 > plot.vl.json```
 
 ### Arguments
 
-The following options are available when using bamboo:
+The following options are available when using alignoth:
 
 | argument              | short | explanation                                                                                                 | default |
 |-----------------------|-------|-------------------------------------------------------------------------------------------------------------|---------|
