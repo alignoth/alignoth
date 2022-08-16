@@ -64,6 +64,10 @@ pub struct Alignoth {
     /// If present, data and vega-lite specs of the generated plot will be split and written to the given directory
     #[structopt(long, short = "o", parse(from_os_str))]
     pub(crate) output: Option<PathBuf>,
+
+    /// If present, the generated plot will inserted into a plain html file containing the plot centered which is then written to stdout
+    #[structopt(long, conflicts_with("output"))]
+    pub(crate) html: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

@@ -11,6 +11,7 @@ use std::fs::File;
 use std::io::{stdout, Write};
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
+use tera::{Context, Tera};
 
 fn main() -> Result<()> {
     let opt = cli::Alignoth::from_args();
@@ -103,7 +104,16 @@ fn main() -> Result<()> {
     } else {
         plot_specs["datasets"]["reference"] = json!(reference_data);
         plot_specs["datasets"]["reads"] = json!(read_data);
-        stdout().write_all(plot_specs.to_string().as_bytes())?;
+        if opt.html {
+            let mut templates = Tera::default();
+            templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
+            let mut context = Context::new();
+            context.insert("spec", &plot_specs.to_string());
+            let html = templates.render("plot", &context)?;
+            stdout().write_all(html.as_bytes())?;
+        } else {
+            stdout().write_all(plot_specs.to_string().as_bytes())?;
+        }
     }
     Ok(())
 }
