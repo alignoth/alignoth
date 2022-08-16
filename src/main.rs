@@ -109,6 +109,9 @@ fn main() -> Result<()> {
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
             let mut context = Context::new();
             context.insert("spec", &plot_specs.to_string());
+            context.insert("vega", include_str!("../resources/vega.min.js"));
+            context.insert("vegalite", include_str!("../resources/vega-lite.min.js"));
+            context.insert("vegaembed", include_str!("../resources/vega-embed.min.js"));
             let html = templates.render("plot", &context)?;
             stdout().write_all(html.as_bytes())?;
         } else {
