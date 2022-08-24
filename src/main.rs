@@ -110,9 +110,27 @@ async fn main() -> Result<()> {
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
             let mut context = Context::new();
             context.insert("spec", &plot_specs.to_string());
-            context.insert("vega", &reqwest::get("https://cdn.jsdelivr.net/npm/vega@5").await?.text().await?);
-            context.insert("vegalite", &reqwest::get("https://cdn.jsdelivr.net/npm/vega-lite@5").await?.text().await?);
-            context.insert("vegaembed", &reqwest::get("https://cdn.jsdelivr.net/npm/vega-embed@6").await?.text().await?);
+            context.insert(
+                "vega",
+                &reqwest::get("https://cdn.jsdelivr.net/npm/vega@5")
+                    .await?
+                    .text()
+                    .await?,
+            );
+            context.insert(
+                "vegalite",
+                &reqwest::get("https://cdn.jsdelivr.net/npm/vega-lite@5")
+                    .await?
+                    .text()
+                    .await?,
+            );
+            context.insert(
+                "vegaembed",
+                &reqwest::get("https://cdn.jsdelivr.net/npm/vega-embed@6")
+                    .await?
+                    .text()
+                    .await?,
+            );
             let html = templates.render("plot", &context)?;
             stdout().write_all(html.as_bytes())?;
         } else {
