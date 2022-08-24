@@ -8,6 +8,7 @@
 # alignoth
 
 A tool for creating alignment plots from bam files. The generated [vega-lite](https://vega.github.io/vega-lite/) plots are written to stdout per default.
+An example of a generated plot can be seen [here](http://htmlpreview.github.io/?https://github.com/koesterlab/alignoth/blob/main/examples/plot.html)
 The name alignoth is derived from the visualized **align**ments combined with the star **alioth** (usage of vega plots).
 ## Usage
 
