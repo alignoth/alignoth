@@ -9,7 +9,29 @@
 <div id="vis" style="display: flex; justify-content: center;"></div>
 <script>
     const spec = {{ spec | safe }};
-    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(console.log).catch(console.warn);
+    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(function() {
+        const el = document.getElementById("vis");
+
+        const used_libs = document.createElement('a');
+        used_libs.textContent = "Used libraries:";
+        used_libs.setAttribute("style","font-size: 18px; border-top: 2px solid #000;");
+        el.querySelector('.vega-actions').appendChild(used_libs);
+
+        const vega_lite_link = document.createElement('a');
+        vega_lite_link.setAttribute("href","https://github.com/vega/vega-lite");
+        vega_lite_link.textContent = "vega-lite";
+        el.querySelector('.vega-actions').appendChild(vega_lite_link);
+
+        const vega_link = document.createElement('a');
+        vega_link.setAttribute("href","https://github.com/vega/vega");
+        vega_link.textContent = "vega";
+        el.querySelector('.vega-actions').appendChild(vega_link);
+
+        const vega_embed_link = document.createElement('a');
+        vega_embed_link.setAttribute("href","https://github.com/vega/vega-embed");
+        vega_embed_link.textContent = "vega-embed";
+        el.querySelector('.vega-actions').appendChild(vega_embed_link);
+    }).catch(console.warn);
 </script>
 </body>
 </html>
