@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/koesterlab/alignoth/compare/v0.3.0...v0.4.0) (2022-08-24)
+
+
+### Features
+
+* Add option to output resulting plot in an html file ([#14](https://github.com/koesterlab/alignoth/issues/14)) ([e36ebc4](https://github.com/koesterlab/alignoth/commit/e36ebc45159262dc0956dd7c202d70747bc2b0f9))
+* Resize markers of read plots ([#16](https://github.com/koesterlab/alignoth/issues/16)) ([748d180](https://github.com/koesterlab/alignoth/commit/748d1805c41e5dac164db59feedacf8a50e4035c))
+
 ## [0.3.0](https://github.com/koesterlab/alignoth/compare/v0.2.2...v0.3.0) (2022-07-25)
 
 
