@@ -1,6 +1,6 @@
 {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "height": {"step": 8},
+    "height": {"step": 12},
     "resolve": {
         "scale": {
             "strokeWidth": "independent"
@@ -112,7 +112,7 @@
                     }
                 ],
                 "strokeWidth": {
-                    "value": 5
+                    "value": 8
                 },
                 "color": {
                     "field": "base",
@@ -208,14 +208,14 @@
                             "insertion"
                         ],
                         "range": [
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            5,
-                            8
+                            8,
+                            8,
+                            8,
+                            8,
+                            8,
+                            8,
+                            8,
+                            11
                         ]
                     },
                     "legend": null
@@ -351,14 +351,14 @@
                             "insertion"
                         ],
                         "range": [
-                            3,
-                            3,
-                            3,
-                            3,
-                            3,
-                            3,
-                            3,
-                            6
+                            6,
+                            6,
+                            6,
+                            6,
+                            6,
+                            6,
+                            6,
+                            9
                         ]
                     },
                     "legend": null
