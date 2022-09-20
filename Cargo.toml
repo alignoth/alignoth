@@ -10,7 +10,7 @@ edition = "2021"
 
 [dependencies]
 structopt = "0.3.26"
-rust-htslib = "0.38.2"
+rust-htslib = "0.39.5"
 bio = "0.41.0"
 anyhow = "1.0.56"
 serde = { version = "1", features = ["derive"] }
