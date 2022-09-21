@@ -225,8 +225,8 @@
                     "type": "quantitative",
                     "scale": {
                         "domain": [
-                            60,
-                            0
+                            0,
+                            60
                         ],
                         "range": [
                             "#910000",
