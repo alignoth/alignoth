@@ -181,11 +181,11 @@
                 },
                 {
                     "as": "start",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 0.7)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 1)"
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.7)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 1)"
                 }
             ],
             "mark": {
@@ -208,14 +208,14 @@
                             "insertion"
                         ],
                         "range": [
-                            8,
-                            8,
-                            8,
-                            8,
-                            8,
-                            8,
-                            8,
-                            11
+                            9,
+                            9,
+                            9,
+                            9,
+                            9,
+                            9,
+                            9,
+                            12
                         ]
                     },
                     "legend": null
