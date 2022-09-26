@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/koesterlab/alignoth/compare/v0.4.0...v0.5.0) (2022-09-26)
+
+
+### Features
+
+* Increase mapq border size ([#27](https://github.com/koesterlab/alignoth/issues/27)) ([f409509](https://github.com/koesterlab/alignoth/commit/f4095091932c6d292e24be73c3f5faa1d0d99418))
+
+
+### Bug Fixes
+
+* Reverse map color scale ([#25](https://github.com/koesterlab/alignoth/issues/25)) ([d6bac11](https://github.com/koesterlab/alignoth/commit/d6bac1121da17c51290b46f2052ff69de51e914a))
+
 ## [0.4.0](https://github.com/koesterlab/alignoth/compare/v0.3.0...v0.4.0) (2022-08-24)
 
 
