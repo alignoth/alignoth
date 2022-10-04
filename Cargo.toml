@@ -19,5 +19,5 @@ rand = "0.8.5"
 itertools = "0.10.4"
 csv = "1.1.6"
 tera = "1.17.1"
-reqwest = "0.11.11"
+reqwest = "0.11.12"
 tokio = { version = "1", features = ["full"] }
