@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/koesterlab/alignoth/compare/v0.5.0...v0.5.1) (2022-10-24)
+
+
+### Bug Fixes
+
+* fix interval position ([#35](https://github.com/koesterlab/alignoth/issues/35)) ([a2ddcfa](https://github.com/koesterlab/alignoth/commit/a2ddcfacbf779d6521596d97107bace77ead13d9))
+
 ## [0.5.0](https://github.com/koesterlab/alignoth/compare/v0.4.0...v0.5.0) (2022-09-26)
 
 
