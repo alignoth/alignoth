@@ -14,9 +14,9 @@ The name alignoth is derived from the visualized **align**ments combined with th
 
 ```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 > plot.vl.json```
 
-To directly generate a plot in svg, png or pdf format we advice using the [vega-cli](https://vega.github.io/vega/usage/#cli) package:
+To directly generate a plot in svg, png or pdf format we advice using the [vega-cli](https://vega.github.io/vega/usage/#cli) and [vega-lite-cli]( https://vega.github.io/vega-lite/usage/compile.html#cli) packages:
 
-```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 | vg2pdf > plot.pdf```
+```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 | vl2vg | vg2pdf > plot.pdf```
 
 To generate an interactive view within an html file use `--html` and capture the output to a file:
 

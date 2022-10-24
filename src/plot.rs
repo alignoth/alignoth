@@ -271,7 +271,7 @@ impl Read {
         let region = cli::Region {
             target: target.to_string(),
             start: record.pos() - record.cigar().leading_softclips(),
-            end: record.pos() + record.reference_end(),
+            end: record.reference_end() + record.cigar().trailing_softclips(),
         };
         let ref_seq = read_fasta(ref_path, &region)?;
         let read_seq = record
