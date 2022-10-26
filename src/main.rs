@@ -105,6 +105,7 @@ async fn main() -> Result<()> {
     } else {
         plot_specs["datasets"]["reference"] = json!(reference_data);
         plot_specs["datasets"]["reads"] = json!(read_data);
+        plot_specs["datasets"]["highlight"] = json!(opt.highlight);
         if opt.html {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
