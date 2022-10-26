@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2](https://github.com/koesterlab/alignoth/compare/v0.5.1...v0.5.2) (2022-10-26)
+
+
+### Bug Fixes
+
+* Fix highlighting region for html and json output ([5ce5d17](https://github.com/koesterlab/alignoth/commit/5ce5d172319c523096d3b7baca672f7ca220bf30))
+
 ## [0.5.1](https://github.com/koesterlab/alignoth/compare/v0.5.0...v0.5.1) (2022-10-24)
 
 
