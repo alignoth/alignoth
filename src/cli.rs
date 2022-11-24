@@ -133,7 +133,7 @@ impl Region {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Copy)]
+#[derive(Debug, Clone, Serialize, PartialEq, Copy)]
 pub struct Interval {
     pub(crate) start: f64,
     pub(crate) end: f64,
@@ -170,8 +170,8 @@ mod tests {
     fn test_interval_deserialization() {
         let interval = Interval::from_str("2000-3000").unwrap();
         let expeceted_interval = Interval {
-            start: 2000,
-            end: 3000,
+            start: 2000.0,
+            end: 3000.0,
         };
         assert_eq!(interval, expeceted_interval);
     }
