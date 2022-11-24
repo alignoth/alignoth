@@ -133,10 +133,10 @@ impl Region {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Eq, PartialEq, Copy)]
+#[derive(Debug, Clone, Serialize, PartialEq, Copy)]
 pub struct Interval {
-    pub(crate) start: i64,
-    pub(crate) end: i64,
+    pub(crate) start: f64,
+    pub(crate) end: f64,
 }
 
 impl FromStr for Interval {
@@ -144,8 +144,8 @@ impl FromStr for Interval {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (start, end) = s.split_once('-').context("No '-' in interval string")?;
-        let start = start.parse::<i64>()?;
-        let end = end.parse::<i64>()?;
+        let start = start.parse::<f64>()?;
+        let end = end.parse::<f64>()?;
         Ok(Interval { start, end })
     }
 }
@@ -170,8 +170,8 @@ mod tests {
     fn test_interval_deserialization() {
         let interval = Interval::from_str("2000-3000").unwrap();
         let expeceted_interval = Interval {
-            start: 2000,
-            end: 3000,
+            start: 2000.0,
+            end: 3000.0,
         };
         assert_eq!(interval, expeceted_interval);
     }
