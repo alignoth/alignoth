@@ -1,7 +1,7 @@
 mod cli;
 mod plot;
 
-use crate::cli::DataFormat;
+use crate::cli::{DataFormat, Interval};
 use crate::plot::create_plot_data;
 use anyhow::Result;
 use csv::WriterBuilder;
@@ -22,6 +22,10 @@ async fn main() -> Result<()> {
         &opt.region,
         opt.max_read_depth,
     )?;
+    let highlight = opt.highlight.map(|h| Interval {
+        start: h.start - 0.5,
+        end: h.end + 0.5,
+    });
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
     plot_specs["width"] = json!(min(opt.max_width, 5 * (opt.region.length())));
     plot_specs["encoding"]["x"]["scale"]["domain"] = json!(vec![
@@ -47,10 +51,10 @@ async fn main() -> Result<()> {
         }
     };
     let highlights = match opt.data_format {
-        DataFormat::Json => json!(opt.highlight).to_string().as_bytes().to_vec(),
+        DataFormat::Json => json!(highlight).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
             let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            writer.serialize(opt.highlight)?;
+            writer.serialize(highlight)?;
             writer.into_inner()?
         }
     };
@@ -105,7 +109,7 @@ async fn main() -> Result<()> {
     } else {
         plot_specs["datasets"]["reference"] = json!(reference_data);
         plot_specs["datasets"]["reads"] = json!(read_data);
-        plot_specs["datasets"]["highlight"] = json!(opt.highlight);
+        plot_specs["datasets"]["highlight"] = json!(highlight);
         if opt.html {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
