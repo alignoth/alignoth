@@ -32,7 +32,14 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     let mut data = bam
         .records()
         .filter_map(|r| r.ok())
-        .map(|r| Read::from_record(r, &ref_path, &region.target).unwrap())
+        .map(|r| {
+            Read::from_record(r, &ref_path, &region.target)
+                .context(format!(
+                    "bam file does not contain given region target {}",
+                    &region.target
+                ))
+                .unwrap()
+        })
         .collect_vec();
     data.order(max_read_depth)?;
     let reference_data = Reference {
