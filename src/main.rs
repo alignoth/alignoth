@@ -32,6 +32,7 @@ async fn main() -> Result<()> {
         opt.region.start as f32 - 0.5,
         opt.region.end as f32 - 0.5
     ]);
+    plot_specs["title"] = json!(&opt.region.target);
     let reference = match opt.data_format {
         DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
