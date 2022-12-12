@@ -28,7 +28,8 @@
             "field": "start",
             "type": "quantitative",
             "axis": {
-                "title": "position"
+                "orient": "top",
+                "title": "position (1-based)"
             },
             "scale": {
                 "domain": []
@@ -109,6 +110,9 @@
                 "tooltip": [
                     {
                         "field": "base"
+                    },
+                    {
+                        "field": "position"
                     }
                 ],
                 "strokeWidth": {
