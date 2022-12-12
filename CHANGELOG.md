@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/koesterlab/alignoth/compare/v0.5.3...v0.6.0) (2022-12-12)
+
+
+### Features
+
+* Improve identification of base positions ([#48](https://github.com/koesterlab/alignoth/issues/48)) ([5464a3f](https://github.com/koesterlab/alignoth/commit/5464a3f9e9147533010b768705cb52a129814e92))
+
 ## [0.5.3](https://github.com/koesterlab/alignoth/compare/v0.5.2...v0.5.3) (2022-12-12)
 
 
