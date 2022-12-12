@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.3](https://github.com/koesterlab/alignoth/compare/v0.5.2...v0.5.3) (2022-12-12)
+
+
+### Bug Fixes
+
+* Fix highlighting offset ([#42](https://github.com/koesterlab/alignoth/issues/42)) ([1ae9c68](https://github.com/koesterlab/alignoth/commit/1ae9c68cde1c47ddc9411aa9579a1ef97a42f1da))
+* Improve error message when bam header doesn't contain given target ([#47](https://github.com/koesterlab/alignoth/issues/47)) ([25df0fd](https://github.com/koesterlab/alignoth/commit/25df0fdba6cb70fb1d17e28123e3b11b77f0f7b9))
+
 ## [0.5.2](https://github.com/koesterlab/alignoth/compare/v0.5.1...v0.5.2) (2022-10-26)
 
 
