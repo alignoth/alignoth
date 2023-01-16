@@ -27,7 +27,14 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     max_read_depth: usize,
 ) -> Result<(Vec<Read>, Reference)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
-    let tid = bam.header().tid(region.target.as_bytes()).unwrap() as i32;
+    let tid = bam
+        .header()
+        .tid(region.target.as_bytes())
+        .context(format!(
+            "bam header does not contain given region target {}",
+            &region.target
+        ))
+        .unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
     let mut data = bam
         .records()
