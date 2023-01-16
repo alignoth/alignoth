@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/koesterlab/alignoth/compare/v0.6.0...v0.6.1) (2023-01-16)
+
+
+### Bug Fixes
+
+* Improve error message on missing when bam header doesn't contain given target ([#59](https://github.com/koesterlab/alignoth/issues/59)) ([9bc3f86](https://github.com/koesterlab/alignoth/commit/9bc3f868657cec5998f6268f30656555b8b8893c))
+
 ## [0.6.0](https://github.com/koesterlab/alignoth/compare/v0.5.3...v0.6.0) (2022-12-12)
 
 
