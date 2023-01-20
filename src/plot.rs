@@ -319,7 +319,7 @@ pub trait PlotOrder {
 impl PlotOrder for Vec<Read> {
     /// Assigns given Reads their vertical position (row) in the read plot respecting the given max_read_depth by subsampling rows.
     fn order(&mut self, max_read_depth: usize) -> Result<()> {
-        let mut row_ends = vec![0; 10000];
+        let mut row_ends = vec![0; 2];
         let mut ordered_reads = HashMap::new();
         for read in self.iter_mut() {
             if let Some(row) = ordered_reads.get(&read.name) {
@@ -329,7 +329,7 @@ impl PlotOrder for Vec<Read> {
                 }
                 continue;
             }
-            for (row, row_end) in row_ends.iter().enumerate().take(10000).skip(1) {
+            for (row, row_end) in row_ends.iter().enumerate().skip(1) {
                 if min(read.position, read.mpos) > *row_end + 5
                     || (read.position <= 5 && *row_end == 0)  // Row is unfilled and read can be placed at the beginning without 5bp distance to the previous read
                     || (read.mpos == -1 && read.position > *row_end + 5)
@@ -338,6 +338,10 @@ impl PlotOrder for Vec<Read> {
                     read.set_row(row as u32);
                     row_ends[row] = max(read.end_position, read.mpos);
                     ordered_reads.insert(&read.name, row);
+                    // All rows seem to be filled so we append a new empty row for the next read
+                    if row == row_ends.len() {
+                        row_ends.push(0)
+                    }
                     break;
                 }
             }
