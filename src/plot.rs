@@ -339,7 +339,7 @@ impl PlotOrder for Vec<Read> {
                     row_ends[row] = max(read.end_position, read.mpos);
                     ordered_reads.insert(&read.name, row);
                     // We placed a read in the last row available so all rows seem to be filled so we append a new empty row for the next read
-                    if row == row_ends.len() {
+                    if row == row_ends.len() - 1 {
                         row_ends.push(0)
                     }
                     break;
