@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/koesterlab/alignoth/compare/v0.6.1...v0.6.2) (2023-01-23)
+
+
+### Bug Fixes
+
+* Remove potential risk of unplaced reads for bam files with very high density ([#63](https://github.com/koesterlab/alignoth/issues/63)) ([b84c9fc](https://github.com/koesterlab/alignoth/commit/b84c9fc52a47143e78071d81f636a9e69554deff))
+
 ## [0.6.1](https://github.com/koesterlab/alignoth/compare/v0.6.0...v0.6.1) (2023-01-16)
 
 
