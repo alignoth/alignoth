@@ -110,8 +110,8 @@ impl FromStr for Region {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (target, range) = s.split_once(':').context("No ':' in region string")?;
         let (start, end) = range.split_once('-').context("No '-' in region string")?;
-        let start = start.parse::<i64>()?;
-        let end = end.parse::<i64>()?;
+        let start = start.parse::<i64>().context(format!("Could not parse integer from given region start {start}"))?;
+        let end = end.parse::<i64>().context(format!("Could not parse integer from given region end {end}"))?;
         Ok(Region {
             target: target.into(),
             start,
@@ -145,7 +145,7 @@ impl FromStr for Around {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (target, p) = s.split_once(':').context("No ':' in around string")?;
-        let position = p.parse::<i64>()?;
+        let position = p.parse::<i64>().context(format!("Could not parse integer from given base position {p}"))?;
         Ok(Around {
             target: target.into(),
             position,
