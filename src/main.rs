@@ -6,7 +6,9 @@ use crate::cli::{DataFormat, Interval, Preprocess};
 use crate::plot::create_plot_data;
 use anyhow::Result;
 use csv::WriterBuilder;
+use log::LevelFilter;
 use serde_json::{json, Value};
+use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::cmp::min;
 use std::fs::File;
 use std::io::{stdout, Write};
@@ -17,6 +19,12 @@ use tera::{Context, Tera};
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut opt = cli::Alignoth::from_args();
+    let _ = TermLogger::init(
+        LevelFilter::Warn,
+        Config::default(),
+        TerminalMode::Stderr,
+        ColorChoice::Auto,
+    );
     opt.preprocess()?;
     let (read_data, reference_data) = create_plot_data(
         &opt.bam_path.as_ref().unwrap(),

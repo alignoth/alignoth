@@ -1,5 +1,6 @@
 use crate::utils::get_ref_and_bam_from_cwd;
 use anyhow::{anyhow, Context, Result};
+use log::warn;
 use rust_htslib::bam;
 use rust_htslib::bam::{FetchDefinition, Read};
 use serde::Deserialize;
@@ -121,7 +122,7 @@ impl Preprocess for Alignoth {
             ));
         }
         if self.plot_all {
-            println!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
+            warn!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
             self.region = Some(Region::from_bam(self.bam_path.as_ref().unwrap())?);
         }
         Ok(())
