@@ -212,7 +212,7 @@ impl FromStr for Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{DataFormat, Interval, Region};
+    use crate::cli::{Around, DataFormat, FromAround, Interval, Region};
     use std::str::FromStr;
 
     #[test]
@@ -240,6 +240,28 @@ mod tests {
     fn test_region_length() {
         let region = Region::from_str("X:2000-3000").unwrap();
         assert_eq!(region.length(), 1000);
+    }
+
+    #[test]
+    fn test_around_deserialization() {
+        let around = Around::from_str("X:2000").unwrap();
+        let expeceted_around = Around {
+            target: "X".to_string(),
+            position: 2000,
+        };
+        assert_eq!(around, expeceted_around);
+    }
+
+    #[test]
+    fn test_region_from_around() {
+        let around = Around::from_str("X:2000").unwrap();
+        let region = Region::from_around(&around);
+        let expeceted_region = Region {
+            target: "X".to_string(),
+            start: 1500,
+            end: 2500,
+        };
+        assert_eq!(region, expeceted_region);
     }
 
     #[test]
