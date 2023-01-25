@@ -1,5 +1,8 @@
 use crate::utils::get_ref_and_bam_from_cwd;
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, Context, Result};
+use bio_types::sequence::SequenceRead;
+use rust_htslib::bam;
+use rust_htslib::bam::{FetchDefinition, Read};
 use serde::Deserialize;
 use serde::Serialize;
 use std::fmt::Display;
@@ -28,6 +31,10 @@ pub struct Alignoth {
     /// Chromosome and single base for the visualization. The plotted region will start 500bp before and end 500bp after the given base. Example: 2:20000
     #[structopt(long, short = "a")]
     pub(crate) around: Option<Around>,
+
+    /// A short command to plot the whole bam file. We advise to only use this command for small bam files.
+    #[structopt(long)]
+    pub(crate) plot_all: bool,
 
     /// Interval that will be highlighted in the visualization. Example: 132440-132450
     #[structopt(long, short = "h")]
@@ -81,14 +88,14 @@ pub(crate) trait Preprocess {
 
 impl Preprocess for Alignoth {
     fn preprocess(&mut self) -> anyhow::Result<()> {
-        if self.region.is_some() && self.around.is_some() {
+        if self.region.is_some() && self.around.is_some() && !self.plot_all {
             return Err(anyhow!(
                 "You can only specify either a region or a base to plot around."
             ));
         }
-        if self.region.is_none() && self.around.is_none() {
+        if self.region.is_none() && self.around.is_none() && !self.plot_all {
             return Err(anyhow!(
-                "You have to specify either a region or a base to plot around."
+                "You have to specify either a region or a base to plot around or use the --plot-all option."
             ));
         }
         if let Some(around) = &self.around {
@@ -113,6 +120,10 @@ impl Preprocess for Alignoth {
             return Err(anyhow!(
                 "Missing reference file. Please use the -r flag to specify the reference file."
             ));
+        }
+        if self.plot_all {
+            println!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
+            self.region = Some(Region::from_bam(&self.bam_path.as_ref().unwrap())?);
         }
         Ok(())
     }
@@ -156,6 +167,34 @@ impl FromAround for Region {
             start: around.position - 500,
             end: around.position + 500,
         }
+    }
+}
+
+pub(crate) trait FromBam {
+    fn from_bam(bam_path: &PathBuf) -> Result<Self>
+    where
+        Self: Sized;
+}
+
+impl FromBam for Region {
+    fn from_bam(bam_path: &PathBuf) -> Result<Self> {
+        let mut bam = bam::IndexedReader::from_path(bam_path)?;
+        let header = bam.header();
+        let target = header.target_names()[0];
+        let target = std::str::from_utf8(target)?.to_string();
+        bam.fetch(FetchDefinition::All)?;
+        let start = bam
+            .records()
+            .next()
+            .context(
+                "Could not find first alignment in bam file. Please specify a region with -g.",
+            )??
+            .pos();
+        let last_read = bam.records().last().context(
+            "Could not find last alignment in bam file. Please specify a region with -g.",
+        )??;
+        let end = last_read.pos() + last_read.len() as i64;
+        Ok(Region { target, start, end })
     }
 }
 
