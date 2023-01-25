@@ -28,7 +28,10 @@ async fn main() -> Result<()> {
         end: h.end + 0.5,
     });
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
-    plot_specs["width"] = json!(min(opt.max_width, 5 * (opt.region.as_ref().unwrap().length())));
+    plot_specs["width"] = json!(min(
+        opt.max_width,
+        5 * (opt.region.as_ref().unwrap().length())
+    ));
     plot_specs["encoding"]["x"]["scale"]["domain"] = json!(vec![
         opt.region.as_ref().unwrap().start as f32 - 0.5,
         opt.region.as_ref().unwrap().end as f32 - 0.5
