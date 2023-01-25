@@ -9,27 +9,25 @@ pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, PathBuf)>> {
     for entry in fs::read_dir(".")? {
         let entry = entry?;
         let path = entry.path();
-        if path.is_file() {
-            if path.extension().is_some() {
-                let ext = path.extension().unwrap().to_str().unwrap();
-                if ext == "fa" || ext == "fasta" || ext == "fa.gz" || ext == "fasta.gz" {
-                    if fasta_path.is_some() {
-                        // There is already a fasta file in the cwd
-                        return Ok(None);
-                    }
-                    fasta_path = Some(path);
-                } else if ext == "bam" || ext == "bam.gz" {
-                    if bam_path.is_some() {
-                        // There is already a bam file in the cwd
-                        return Ok(None);
-                    }
-                    bam_path = Some(path);
+        if path.is_file() && path.extension().is_some() {
+            let ext = path.extension().unwrap().to_str().unwrap();
+            if ext == "fa" || ext == "fasta" || ext == "fa.gz" || ext == "fasta.gz" {
+                if fasta_path.is_some() {
+                    // There is already a fasta file in the cwd
+                    return Ok(None);
                 }
+                fasta_path = Some(path);
+            } else if ext == "bam" || ext == "bam.gz" {
+                if bam_path.is_some() {
+                    // There is already a bam file in the cwd
+                    return Ok(None);
+                }
+                bam_path = Some(path);
             }
         }
     }
-    if fasta_path.is_some() && bam_path.is_some() {
-        Ok(Some((fasta_path.unwrap(), bam_path.unwrap())))
+    if let (Some(fasta), Some(bam)) = (fasta_path,bam_path) {
+        Ok(Some((fasta, bam)))
     } else {
         Ok(None)
     }
