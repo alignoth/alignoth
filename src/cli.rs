@@ -1,3 +1,4 @@
+use crate::utils::get_ref_and_bam_from_cwd;
 use anyhow::{anyhow, Context};
 use serde::Deserialize;
 use serde::Serialize;
@@ -13,12 +14,12 @@ use structopt::StructOpt;
 )]
 pub struct Alignoth {
     /// BAM file to be visualized.
-    #[structopt(long, short = "b", required = true, parse(from_os_str))]
-    pub(crate) bam_path: PathBuf,
+    #[structopt(long, short = "b", parse(from_os_str))]
+    pub(crate) bam_path: Option<PathBuf>,
 
     /// Path to the reference fasta file.
-    #[structopt(long, short = "r", required = true, parse(from_os_str))]
-    pub(crate) reference: PathBuf,
+    #[structopt(long, short = "r", parse(from_os_str))]
+    pub(crate) reference: Option<PathBuf>,
 
     /// Chromosome and region for the visualization. Example: 2:132424-132924
     #[structopt(long, short = "g")]
@@ -92,6 +93,26 @@ impl Preprocess for Alignoth {
         }
         if let Some(around) = &self.around {
             self.region = Some(Region::from_around(around));
+        }
+        if self.bam_path.is_none() && self.reference.is_none() {
+            if let Some(files) = get_ref_and_bam_from_cwd()? {
+                self.reference = Some(files.0);
+                self.bam_path = Some(files.1);
+            } else {
+                return Err(anyhow!(
+                    "Could not find single reference and single bam file in current working directory. Please use the -r and -b flags to specify the reference and bam file."
+                ));
+            }
+        }
+        if self.bam_path.is_none() {
+            return Err(anyhow!(
+                "Missing bam file. Please use the -b flag to specify the bam file."
+            ));
+        }
+        if self.reference.is_none() {
+            return Err(anyhow!(
+                "Missing reference file. Please use the -r flag to specify the reference file."
+            ));
         }
         Ok(())
     }

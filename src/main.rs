@@ -1,5 +1,6 @@
 mod cli;
 mod plot;
+mod utils;
 
 use crate::cli::{DataFormat, Interval, Preprocess};
 use crate::plot::create_plot_data;
@@ -18,8 +19,8 @@ async fn main() -> Result<()> {
     let mut opt = cli::Alignoth::from_args();
     opt.preprocess()?;
     let (read_data, reference_data) = create_plot_data(
-        &opt.bam_path,
-        &opt.reference,
+        &opt.bam_path.as_ref().unwrap(),
+        &opt.reference.as_ref().unwrap(),
         opt.region.as_ref().unwrap(),
         opt.max_read_depth,
     )?;
@@ -64,8 +65,8 @@ async fn main() -> Result<()> {
         }
     };
     if let Some(out_path) = &opt.output {
-        let bam_file_name = &opt
-            .bam_path
+        let bam_path = opt.bam_path.unwrap();
+        let bam_file_name = bam_path
             .file_name()
             .unwrap()
             .to_str()
