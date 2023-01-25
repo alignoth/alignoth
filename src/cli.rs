@@ -282,7 +282,7 @@ impl FromStr for Interval {
                     "Could not parse float from given interval end {end}"
                 ))?,
             })
-        } else if let Some(p) = s.parse::<f64>().ok() {
+        } else if let Ok(p) = s.parse::<f64>() {
             Ok(Interval { start: p, end: p })
         } else {
             Err(anyhow!(
