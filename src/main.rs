@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
     let (read_data, reference_data) = create_plot_data(
         &opt.bam_path,
         &opt.reference,
-        &opt.region.as_ref().unwrap(),
+        opt.region.as_ref().unwrap(),
         opt.max_read_depth,
     )?;
     let highlight = opt.highlight.map(|h| Interval {
@@ -187,9 +187,9 @@ mod tests {
             "test ref".as_bytes(),
             "test read".as_bytes(),
             "test highlight".as_bytes(),
-            &Path::new("/tmp/test_spec.json"),
-            &Path::new("/tmp/test_ref.json"),
-            &Path::new("/tmp/test_read.json"),
+            Path::new("/tmp/test_spec.json"),
+            Path::new("/tmp/test_ref.json"),
+            Path::new("/tmp/test_read.json"),
             Some(PathBuf::from("/tmp/test_highlight.json")),
         )
         .unwrap();

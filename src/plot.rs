@@ -350,7 +350,7 @@ impl PlotOrder for Vec<Read> {
             if max_read_depth < *used_rows {
                 let mut rng = StdRng::seed_from_u64(42);
                 let random_rows: HashSet<_> = (0..*used_rows as u32)
-                    .choose_multiple(&mut rng, max_read_depth as usize)
+                    .choose_multiple(&mut rng, max_read_depth)
                     .into_iter()
                     .collect();
                 self.retain(|read| random_rows.contains(&read.row.unwrap()));
