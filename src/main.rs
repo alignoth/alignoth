@@ -1,7 +1,7 @@
 mod cli;
 mod plot;
 
-use crate::cli::{DataFormat, Interval};
+use crate::cli::{DataFormat, Interval, Preprocess};
 use crate::plot::create_plot_data;
 use anyhow::Result;
 use csv::WriterBuilder;
@@ -15,11 +15,12 @@ use tera::{Context, Tera};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let opt = cli::Alignoth::from_args();
+    let mut opt = cli::Alignoth::from_args();
+    opt.preprocess()?;
     let (read_data, reference_data) = create_plot_data(
         &opt.bam_path,
         &opt.reference,
-        &opt.region,
+        opt.region.as_ref().unwrap(),
         opt.max_read_depth,
     )?;
     let highlight = opt.highlight.map(|h| Interval {
@@ -27,12 +28,15 @@ async fn main() -> Result<()> {
         end: h.end + 0.5,
     });
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
-    plot_specs["width"] = json!(min(opt.max_width, 5 * (opt.region.length())));
+    plot_specs["width"] = json!(min(
+        opt.max_width,
+        5 * (opt.region.as_ref().unwrap().length())
+    ));
     plot_specs["encoding"]["x"]["scale"]["domain"] = json!(vec![
-        opt.region.start as f32 - 0.5,
-        opt.region.end as f32 - 0.5
+        opt.region.as_ref().unwrap().start as f32 - 0.5,
+        opt.region.as_ref().unwrap().end as f32 - 0.5
     ]);
-    plot_specs["title"] = json!(&opt.region.target);
+    plot_specs["title"] = json!(&opt.region.unwrap().target);
     let reference = match opt.data_format {
         DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
@@ -183,9 +187,9 @@ mod tests {
             "test ref".as_bytes(),
             "test read".as_bytes(),
             "test highlight".as_bytes(),
-            &Path::new("/tmp/test_spec.json"),
-            &Path::new("/tmp/test_ref.json"),
-            &Path::new("/tmp/test_read.json"),
+            Path::new("/tmp/test_spec.json"),
+            Path::new("/tmp/test_ref.json"),
+            Path::new("/tmp/test_read.json"),
             Some(PathBuf::from("/tmp/test_highlight.json")),
         )
         .unwrap();

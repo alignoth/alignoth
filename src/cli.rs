@@ -22,7 +22,11 @@ pub struct Alignoth {
 
     /// Chromosome and region for the visualization. Example: 2:132424-132924
     #[structopt(long, short = "g")]
-    pub(crate) region: Region,
+    pub(crate) region: Option<Region>,
+
+    /// Chromosome and single base for the visualization. The plotted region will start 500bp before and end 500bp after the given base. Example: 2:20000
+    #[structopt(long, short = "a")]
+    pub(crate) around: Option<Around>,
 
     /// Interval that will be highlighted in the visualization. Example: 132440-132450
     #[structopt(long, short = "h")]
@@ -70,6 +74,29 @@ pub struct Alignoth {
     pub(crate) html: bool,
 }
 
+pub(crate) trait Preprocess {
+    fn preprocess(&mut self) -> anyhow::Result<()>;
+}
+
+impl Preprocess for Alignoth {
+    fn preprocess(&mut self) -> anyhow::Result<()> {
+        if self.region.is_some() && self.around.is_some() {
+            return Err(anyhow!(
+                "You can only specify either a region or a base to plot around."
+            ));
+        }
+        if self.region.is_none() && self.around.is_none() {
+            return Err(anyhow!(
+                "You have to specify either a region or a base to plot around."
+            ));
+        }
+        if let Some(around) = &self.around {
+            self.region = Some(Region::from_around(around));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Region {
     pub(crate) target: String,
@@ -83,12 +110,51 @@ impl FromStr for Region {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (target, range) = s.split_once(':').context("No ':' in region string")?;
         let (start, end) = range.split_once('-').context("No '-' in region string")?;
-        let start = start.parse::<i64>()?;
-        let end = end.parse::<i64>()?;
+        let start = start.parse::<i64>().context(format!(
+            "Could not parse integer from given region start {start}"
+        ))?;
+        let end = end.parse::<i64>().context(format!(
+            "Could not parse integer from given region end {end}"
+        ))?;
         Ok(Region {
             target: target.into(),
             start,
             end,
+        })
+    }
+}
+
+pub(crate) trait FromAround {
+    fn from_around(around: &Around) -> Self;
+}
+
+impl FromAround for Region {
+    fn from_around(around: &Around) -> Self {
+        Region {
+            target: around.target.to_string(),
+            start: around.position - 500,
+            end: around.position + 500,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Around {
+    pub(crate) target: String,
+    pub(crate) position: i64,
+}
+
+impl FromStr for Around {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (target, p) = s.split_once(':').context("No ':' in around string")?;
+        let position = p.parse::<i64>().context(format!(
+            "Could not parse integer from given base position {p}"
+        ))?;
+        Ok(Around {
+            target: target.into(),
+            position,
         })
     }
 }
@@ -152,7 +218,7 @@ impl FromStr for Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{DataFormat, Interval, Region};
+    use crate::cli::{Around, DataFormat, FromAround, Interval, Region};
     use std::str::FromStr;
 
     #[test]
@@ -180,6 +246,28 @@ mod tests {
     fn test_region_length() {
         let region = Region::from_str("X:2000-3000").unwrap();
         assert_eq!(region.length(), 1000);
+    }
+
+    #[test]
+    fn test_around_deserialization() {
+        let around = Around::from_str("X:2000").unwrap();
+        let expeceted_around = Around {
+            target: "X".to_string(),
+            position: 2000,
+        };
+        assert_eq!(around, expeceted_around);
+    }
+
+    #[test]
+    fn test_region_from_around() {
+        let around = Around::from_str("X:2000").unwrap();
+        let region = Region::from_around(&around);
+        let expeceted_region = Region {
+            target: "X".to_string(),
+            start: 1500,
+            end: 2500,
+        };
+        assert_eq!(region, expeceted_region);
     }
 
     #[test]
