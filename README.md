@@ -32,7 +32,7 @@ The following options are available when using alignoth:
 | reference             | -r    | The path to the reference fasta file                                                                                                                              |         |
 | region                | -g    | Chromosome and region for the visualization. Example: 2:132424-132924                                                                                             |         |
 | around                | -a    | A chromosome and a base position that will define the region that will be plotted starting 500bp before and end 500bp behind the given position. Example: 2:17348 |         |
-| highlight             | -h    | Interval that will be highlighted in the visualization. Example: 132400-132500                                                                                    |         |
+| highlight             | -h    | Interval or single base position that will be highlighted in the visualization. Example: 132400-132500 or 132440                                                  |         |
 | plot-all              | -p    | Plot all reads in the given region. We advise to only use this command for small bam files with a single target.                                                  | false   |
 | max-read-depth        | -d    | Set the maximum rows of reads that will be shown in the alignment plots                                                                                           | 500     |
 | max-width             | -w    | Set the maximum width of the resulting alignment plot                                                                                                             | 1024    |
