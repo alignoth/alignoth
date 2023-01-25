@@ -22,7 +22,11 @@ pub struct Alignoth {
 
     /// Chromosome and region for the visualization. Example: 2:132424-132924
     #[structopt(long, short = "g")]
-    pub(crate) region: Region,
+    pub(crate) region: Option<Region>,
+
+    /// Chromosome and single base for the visualization. The plotted region will start 500bp before and end 500bp after the given base. Example: 2:20000
+    #[structopt(long, short = "a")]
+    pub(crate) around: Option<Around>,
 
     /// Interval that will be highlighted in the visualization. Example: 132440-132450
     #[structopt(long, short = "h")]
@@ -70,6 +74,29 @@ pub struct Alignoth {
     pub(crate) html: bool,
 }
 
+pub(crate) trait Preprocess {
+    fn preprocess(&mut self) -> anyhow::Result<()>;
+}
+
+impl Preprocess for Alignoth {
+    fn preprocess(&mut self) -> anyhow::Result<()> {
+        if self.region.is_some() && self.around.is_some() {
+            return Err(anyhow!(
+                "You can only specify either a region or a base to plot around."
+            ));
+        }
+        if self.region.is_none() && self.around.is_none() {
+            return Err(anyhow!(
+                "You have to specify either a region or a base to plot around."
+            ));
+        }
+        if let Some(around) = &self.around {
+            self.region = Some(Region::from_around(around));
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Region {
     pub(crate) target: String,
@@ -89,6 +116,39 @@ impl FromStr for Region {
             target: target.into(),
             start,
             end,
+        })
+    }
+}
+
+pub(crate) trait FromAround {
+    fn from_around(around: &Around) -> Self;
+}
+
+impl FromAround for Region {
+    fn from_around(around: &Around) -> Self {
+        Region {
+            target: around.target.to_string(),
+            start: around.position - 500,
+            end: around.position + 500,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Around {
+    pub(crate) target: String,
+    pub(crate) position: i64,
+}
+
+impl FromStr for Around {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (target, p) = s.split_once(':').context("No ':' in around string")?;
+        let position = p.parse::<i64>()?;
+        Ok(Around {
+            target: target.into(),
+            position,
         })
     }
 }
