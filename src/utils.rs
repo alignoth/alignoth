@@ -26,7 +26,7 @@ pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, PathBuf)>> {
             }
         }
     }
-    if let (Some(fasta), Some(bam)) = (fasta_path,bam_path) {
+    if let (Some(fasta), Some(bam)) = (fasta_path, bam_path) {
         Ok(Some((fasta, bam)))
     } else {
         Ok(None)
