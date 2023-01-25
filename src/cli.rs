@@ -6,7 +6,7 @@ use rust_htslib::bam::{FetchDefinition, Read};
 use serde::Deserialize;
 use serde::Serialize;
 use std::fmt::Display;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use structopt::StructOpt;
 
@@ -123,7 +123,7 @@ impl Preprocess for Alignoth {
         }
         if self.plot_all {
             println!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
-            self.region = Some(Region::from_bam(&self.bam_path.as_ref().unwrap())?);
+            self.region = Some(Region::from_bam(self.bam_path.as_ref().unwrap())?);
         }
         Ok(())
     }
@@ -171,13 +171,13 @@ impl FromAround for Region {
 }
 
 pub(crate) trait FromBam {
-    fn from_bam(bam_path: &PathBuf) -> Result<Self>
+    fn from_bam(bam_path: &Path) -> Result<Self>
     where
         Self: Sized;
 }
 
 impl FromBam for Region {
-    fn from_bam(bam_path: &PathBuf) -> Result<Self> {
+    fn from_bam(bam_path: &Path) -> Result<Self> {
         let mut bam = bam::IndexedReader::from_path(bam_path)?;
         let header = bam.header();
         let target = header.target_names()[0];
