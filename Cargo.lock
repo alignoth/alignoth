@@ -17,7 +17,6 @@ version = "0.6.2"
 dependencies = [
  "anyhow",
  "bio",
- "bio-types",
  "csv",
  "itertools",
  "rand",

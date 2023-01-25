@@ -1,6 +1,5 @@
 use crate::utils::get_ref_and_bam_from_cwd;
 use anyhow::{anyhow, Context, Result};
-use bio_types::sequence::SequenceRead;
 use rust_htslib::bam;
 use rust_htslib::bam::{FetchDefinition, Read};
 use serde::Deserialize;
@@ -190,10 +189,14 @@ impl FromBam for Region {
                 "Could not find first alignment in bam file. Please specify a region with -g.",
             )??
             .pos();
-        let last_read = bam.records().last().context(
-            "Could not find last alignment in bam file. Please specify a region with -g.",
-        )??;
-        let end = last_read.pos() + last_read.len() as i64;
+        let end = bam
+            .records()
+            .last()
+            .context(
+                "Could not find last alignment in bam file. Please specify a region with -g.",
+            )??
+            .cigar()
+            .end_pos();
         Ok(Region { target, start, end })
     }
 }
