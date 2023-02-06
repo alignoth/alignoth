@@ -95,11 +95,11 @@
                 },
                 {
                     "as": "start",
-                    "calculate": "datum.position - 0.5"
+                    "calculate": "datum.position + 0.5"
                 },
                 {
                     "as": "end",
-                    "calculate": "datum.position + 0.5"
+                    "calculate": "datum.position + 1.5"
                 }
             ],
             "mark": {
@@ -185,11 +185,11 @@
                 },
                 {
                     "as": "start",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 1)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1, datum.position + datum.offset)"
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 1)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length + 1, datum.position + datum.offset + datum.length + 2)"
                 }
             ],
             "mark": {
@@ -252,11 +252,11 @@
             "transform": [
                 {
                     "as": "start",
-                    "calculate": "if(datum.position < datum.mpos, datum.position - 0.5, datum.mpos - 0.5)"
+                    "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.position > datum.mpos, datum.position - 0.5, datum.mpos - 0.5)"
+                    "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
                 }
             ],
             "mark": {
@@ -314,11 +314,11 @@
                 },
                 {
                     "as": "start",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset, datum.position + datum.offset - 0.5)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1, datum.position + datum.offset + 0.5)"
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length + 1, datum.position + datum.offset + datum.length + 1.5)"
                 }
             ],
             "mark": {
