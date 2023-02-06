@@ -36,7 +36,7 @@ pub struct Alignoth {
     #[structopt(long)]
     pub(crate) plot_all: bool,
 
-    /// Interval that will be highlighted in the visualization. Example: 132440-132450
+    /// Interval or single base position that will be highlighted in the visualization. Example: 132440-132450 or 132440
     #[structopt(long, short = "h")]
     pub(crate) highlight: Option<Interval>,
 
@@ -273,10 +273,22 @@ impl FromStr for Interval {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (start, end) = s.split_once('-').context("No '-' in interval string")?;
-        let start = start.parse::<f64>()?;
-        let end = end.parse::<f64>()?;
-        Ok(Interval { start, end })
+        if let Some((start, end)) = s.split_once('-') {
+            Ok(Interval {
+                start: start.parse::<f64>().context(format!(
+                    "Could not parse float from given interval start {start}"
+                ))?,
+                end: end.parse::<f64>().context(format!(
+                    "Could not parse float from given interval end {end}"
+                ))?,
+            })
+        } else if let Ok(p) = s.parse::<f64>() {
+            Ok(Interval { start: p, end: p })
+        } else {
+            Err(anyhow!(
+                "No '-' in interval string nor a single position to highlight."
+            ))
+        }
     }
 }
 
