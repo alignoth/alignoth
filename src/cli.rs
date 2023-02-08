@@ -144,10 +144,10 @@ impl FromStr for Region {
         let (start, end) = range.split_once('-').context("No '-' in region string")?;
         let start = start.parse::<i64>().context(format!(
             "Could not parse integer from given region start {start}"
-        ))?;
+        ))? - 1; // Compensate 1-based region specification
         let end = end.parse::<i64>().context(format!(
             "Could not parse integer from given region end {end}"
-        ))?;
+        ))? - 1; // Compensate 1-based region specification
         Ok(Region {
             target: target.into(),
             start,
@@ -302,8 +302,8 @@ mod tests {
         let region = Region::from_str("X:2000-3000").unwrap();
         let expeceted_region = Region {
             target: "X".to_string(),
-            start: 2000,
-            end: 3000,
+            start: 1999,
+            end: 2999,
         };
         assert_eq!(region, expeceted_region);
     }
