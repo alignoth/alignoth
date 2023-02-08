@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.0](https://github.com/koesterlab/alignoth/compare/v0.6.2...v0.7.0) (2023-02-08)
+
+
+### Features
+
+* Add around parameter ([#72](https://github.com/koesterlab/alignoth/issues/72)) ([5cb48fc](https://github.com/koesterlab/alignoth/commit/5cb48fce922cb08ac3530bc6f0bdfb1a8814c4e3))
+* Add option to plot full bam file ([#76](https://github.com/koesterlab/alignoth/issues/76)) ([21fafcf](https://github.com/koesterlab/alignoth/commit/21fafcf03ada66ae93fb17e4e1f67d42ede998de))
+* Allow highlighting of single base position ([#77](https://github.com/koesterlab/alignoth/issues/77)) ([8d16897](https://github.com/koesterlab/alignoth/commit/8d168970e3dcb0a97fbf9d97a56457be9156d179))
+* Allow omitting reference and bam files if cwd only contains one of each ([#74](https://github.com/koesterlab/alignoth/issues/74)) ([e44ec4d](https://github.com/koesterlab/alignoth/commit/e44ec4d6a3a2c73c77f8f303b32c5fcf43dcd082))
+
+
+### Bug Fixes
+
+* Fix offset of 1 base for reference and reads ([#81](https://github.com/koesterlab/alignoth/issues/81)) ([48fdaaa](https://github.com/koesterlab/alignoth/commit/48fdaaa27e079f9b31146e68044669a559a479bc))
+
 ## [0.6.2](https://github.com/koesterlab/alignoth/compare/v0.6.1...v0.6.2) (2023-01-23)
 
 
