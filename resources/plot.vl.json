@@ -100,6 +100,10 @@
                 {
                     "as": "end",
                     "calculate": "datum.position + 1.5"
+                },
+                {
+                    "as": "position (1-based)",
+                    "calculate": "datum.position + 1"
                 }
             ],
             "mark": {
@@ -112,7 +116,7 @@
                         "field": "base"
                     },
                     {
-                        "field": "position"
+                        "field": "position (1-based)"
                     }
                 ],
                 "strokeWidth": {

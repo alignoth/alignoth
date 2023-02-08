@@ -144,10 +144,10 @@ impl FromStr for Region {
         let (start, end) = range.split_once('-').context("No '-' in region string")?;
         let start = start.parse::<i64>().context(format!(
             "Could not parse integer from given region start {start}"
-        ))?;
+        ))? - 1; // Compensate 1-based region specification
         let end = end.parse::<i64>().context(format!(
             "Could not parse integer from given region end {end}"
-        ))?;
+        ))? - 1; // Compensate 1-based region specification
         Ok(Region {
             target: target.into(),
             start,
