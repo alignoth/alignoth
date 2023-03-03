@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/koesterlab/alignoth/compare/v0.7.0...v0.7.1) (2023-03-03)
+
+
+### Bug Fixes
+
+* Update htslib ([#86](https://github.com/koesterlab/alignoth/issues/86)) ([022a70c](https://github.com/koesterlab/alignoth/commit/022a70c9f9f2b79a650f71a1b72ff495ac739a1c))
+
 ## [0.7.0](https://github.com/koesterlab/alignoth/compare/v0.6.2...v0.7.0) (2023-02-08)
 
 
