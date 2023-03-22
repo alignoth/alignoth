@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/koesterlab/alignoth/compare/v0.7.1...v0.7.2) (2023-03-22)
+
+
+### Bug Fixes
+
+* Clamp around parameter according to target length ([#98](https://github.com/koesterlab/alignoth/issues/98)) ([7db5f07](https://github.com/koesterlab/alignoth/commit/7db5f07011d12318de604de375ea55cf6e7ab340))
+
 ## [0.7.1](https://github.com/koesterlab/alignoth/compare/v0.7.0...v0.7.1) (2023-03-03)
 
 
