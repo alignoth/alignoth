@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bio::io::fasta;
 use std::fs;
 use std::path::PathBuf;
 
@@ -31,4 +32,13 @@ pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, PathBuf)>> {
     } else {
         Ok(None)
     }
+}
+
+// Get length of fasta file and given target
+pub(crate) fn get_fasta_length(fasta_path: &PathBuf, target: &str) -> Result<usize> {
+    let mut fasta_reader = fasta::IndexedReader::from_file(fasta_path)?;
+    let mut seq: Vec<u8> = Vec::new();
+    fasta_reader.fetch_all(target)?;
+    fasta_reader.read(&mut seq)?;
+    Ok(seq.len())
 }

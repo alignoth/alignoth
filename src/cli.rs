@@ -1,10 +1,11 @@
-use crate::utils::get_ref_and_bam_from_cwd;
+use crate::utils::{get_fasta_length, get_ref_and_bam_from_cwd};
 use anyhow::{anyhow, Context, Result};
 use log::warn;
 use rust_htslib::bam;
 use rust_htslib::bam::{FetchDefinition, Read};
 use serde::Deserialize;
 use serde::Serialize;
+use std::cmp;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -98,9 +99,6 @@ impl Preprocess for Alignoth {
                 "You have to specify either a region or a base to plot around or use the --plot-all option."
             ));
         }
-        if let Some(around) = &self.around {
-            self.region = Some(Region::from_around(around));
-        }
         if self.bam_path.is_none() && self.reference.is_none() {
             if let Some(files) = get_ref_and_bam_from_cwd()? {
                 self.reference = Some(files.0);
@@ -125,6 +123,14 @@ impl Preprocess for Alignoth {
             warn!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
             self.region = Some(Region::from_bam(self.bam_path.as_ref().unwrap())?);
         }
+        if let Some(around) = &self.around {
+            self.region = Some(Region::from_around(around));
+            let target = self.region.as_ref().unwrap().target.clone();
+            let target_length =
+                get_fasta_length(self.reference.as_ref().unwrap(), &target).unwrap() as i64;
+            let region = self.region.as_mut().unwrap();
+            self.region = Some(region.clamp(0, target_length - 1));
+        }
         Ok(())
     }
 }
@@ -134,6 +140,20 @@ pub struct Region {
     pub(crate) target: String,
     pub(crate) start: i64,
     pub(crate) end: i64,
+}
+
+pub(crate) trait Clamp {
+    fn clamp(&mut self, min: i64, max: i64) -> Self;
+}
+
+impl Clamp for Region {
+    fn clamp(&mut self, min: i64, max: i64) -> Self {
+        Region {
+            target: self.target.clone(),
+            start: cmp::max(self.start, min),
+            end: cmp::min(self.end, max),
+        }
+    }
 }
 
 impl FromStr for Region {
