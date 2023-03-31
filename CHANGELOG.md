@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/koesterlab/alignoth/compare/v0.7.2...v0.7.3) (2023-03-31)
+
+
+### Bug Fixes
+
+* Fix wrong read offset when read starts with softclips ([#104](https://github.com/koesterlab/alignoth/issues/104)) ([16153cf](https://github.com/koesterlab/alignoth/commit/16153cf604332effdc05e22329934009d0dbe9db))
+
 ## [0.7.2](https://github.com/koesterlab/alignoth/compare/v0.7.1...v0.7.2) (2023-03-22)
 
 
