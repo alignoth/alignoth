@@ -297,7 +297,7 @@ impl Read {
         Ok(Read {
             name: String::from_utf8(record.qname().to_vec())?,
             cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
-            position: record.pos(),
+            position: record.pos() - record.cigar().leading_softclips(),
             flags: record.flags(),
             mapq: record.mapq(),
             row: None,
