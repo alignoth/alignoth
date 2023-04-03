@@ -42,3 +42,23 @@ pub(crate) fn get_fasta_length(fasta_path: &PathBuf, target: &str) -> Result<usi
     fasta_reader.read(&mut seq)?;
     Ok(seq.len())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::{get_fasta_length, get_ref_and_bam_from_cwd};
+    use std::path::PathBuf;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_get_fasta_length() {
+        let length =
+            get_fasta_length(&PathBuf::from_str("tests/reference.fa").unwrap(), "chr1").unwrap();
+        assert_eq!(length, 123)
+    }
+
+    #[test]
+    fn test_get_ref_and_bam_from_empty_cwd() {
+        let result = get_ref_and_bam_from_cwd().unwrap();
+        assert_eq!(result, None)
+    }
+}
