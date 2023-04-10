@@ -505,6 +505,38 @@ mod tests {
     }
 
     #[test]
+    fn test_read_position_with_softclips() {
+        let region = Region {
+            target: "chr6".to_string(),
+            start: 300,
+            end: 500,
+        };
+        let (reads, _reference) = create_plot_data(
+            "tests/sample_2/sample.bam",
+            "tests/sample_2/ref.fa",
+            &region,
+            500,
+        )
+        .unwrap();
+
+        let expected_read = Read {
+            name: "HLA:HLA00318-1144".to_string(),
+            cigar: PlotCigar::from_str("1C|1=|1G|1=|1G|6=|1T|9=|1A|8=|1T|1G|1=|1T|2=|1T|4=|1G|10=|1C|1=|1C|36=|1T|16=|1T|1C|10=|1T|25=|1A|1=|1C|1=").unwrap(),
+            position: 368,
+            flags: 83,
+            mapq: 60,
+            row: Some(
+                87,
+            ),
+            end_position: 887,
+            mpos: 333,
+
+        };
+
+        assert!(reads.contains(&expected_read));
+    }
+
+    #[test]
     fn test_plot_cigar_match() {
         let cigar_string = CigarStringView::new(CigarString::from(vec![Cigar::Match(10)]), 0);
         let reference = vec!['A', 'A', 'G', 'C', 'T', 'A', 'T', 'A', 'T', 'A'];
@@ -591,7 +623,7 @@ mod tests {
     #[test]
     fn test_fetch_reference() {
         let reference = read_fasta(
-            "tests/reference.fa",
+            "tests/sample_1/reference.fa",
             &Region {
                 target: "chr1".to_string(),
                 start: 0,
@@ -610,8 +642,13 @@ mod tests {
             start: 0,
             end: 20,
         };
-        let (reads, reference) =
-            create_plot_data("tests/reads.bam", "tests/reference.fa", &region, 100).unwrap();
+        let (reads, reference) = create_plot_data(
+            "tests/sample_1/reads.bam",
+            "tests/sample_1/reference.fa",
+            &region,
+            100,
+        )
+        .unwrap();
         let expected_reference = Reference {
             start: 0,
             reference: "TTGCCGGGGTGGGGAGAGAG".to_string(),
