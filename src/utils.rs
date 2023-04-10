@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn test_get_fasta_length() {
         let length =
-            get_fasta_length(&PathBuf::from_str("tests/reference.fa").unwrap(), "chr1").unwrap();
+            get_fasta_length(&PathBuf::from_str("tests/sample_1/reference.fa").unwrap(), "chr1").unwrap();
         assert_eq!(length, 123)
     }
 
