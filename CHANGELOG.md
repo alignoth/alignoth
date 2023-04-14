@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/koesterlab/alignoth/compare/v0.7.3...v0.8.0) (2023-04-14)
+
+
+### Features
+
+* Show length of deletions via tooltip ([#112](https://github.com/koesterlab/alignoth/issues/112)) ([aad66c2](https://github.com/koesterlab/alignoth/commit/aad66c237ded4174510bf4a86d135ba2730b1989))
+
 ## [0.7.3](https://github.com/koesterlab/alignoth/compare/v0.7.2...v0.7.3) (2023-03-31)
 
 
