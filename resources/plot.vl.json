@@ -376,10 +376,7 @@
                 },
                 "color": {
                     "field": "type",
-                    "legend": {
-                        "symbolSize": 75,
-                        "title": "symbol"
-                    },
+                    "legend": null,
                     "scale": {
                         "type": "ordinal",
                         "domain": [
