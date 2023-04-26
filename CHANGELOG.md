@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.1](https://github.com/koesterlab/alignoth/compare/v0.8.0...v0.8.1) (2023-04-26)
+
+
+### Bug Fixes
+
+* Reduce vertical mapq border size ([#119](https://github.com/koesterlab/alignoth/issues/119)) ([554288c](https://github.com/koesterlab/alignoth/commit/554288c9c8d77273eefee33c3b6382fb0fbd2aaf))
+* Remove duplicated legend ([#117](https://github.com/koesterlab/alignoth/issues/117)) ([9f2412c](https://github.com/koesterlab/alignoth/commit/9f2412c0a7a62fea1bb2d99dc0c673225c69b8d8))
+* Remove end offset of 1 ([#120](https://github.com/koesterlab/alignoth/issues/120)) ([6d63973](https://github.com/koesterlab/alignoth/commit/6d639739500eb6ff4c9af923b0455ffcbe90107a))
+
 ## [0.8.0](https://github.com/koesterlab/alignoth/compare/v0.7.3...v0.8.0) (2023-04-14)
 
 
