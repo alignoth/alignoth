@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/koesterlab/alignoth/compare/v0.8.1...v0.8.2) (2023-05-10)
+
+
+### Bug Fixes
+
+* Fix non-displayed insertions ([#125](https://github.com/koesterlab/alignoth/issues/125)) ([04c91ce](https://github.com/koesterlab/alignoth/commit/04c91ce83ed926e3a36c2e3aaa9742a9a0d796df))
+
 ## [0.8.1](https://github.com/koesterlab/alignoth/compare/v0.8.0...v0.8.1) (2023-04-26)
 
 
