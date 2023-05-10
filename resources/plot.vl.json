@@ -318,11 +318,11 @@
                 },
                 {
                     "as": "start",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1, datum.position + datum.offset + 0.5)"
+                    "calculate": "datum.position + datum.offset + 0.5"
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
+                    "calculate": "datum.position + datum.offset + datum.length + 0.5"
                 },
                 {
                     "filter": "datum.type != 'deletion'"
