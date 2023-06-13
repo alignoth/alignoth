@@ -11,7 +11,7 @@ edition = "2021"
 [dependencies]
 structopt = "0.3.26"
 rust-htslib = "0.43.1"
-bio = "1.1.0"
+bio = "1.2.0"
 log = "0.4.19"
 simplelog = "0.12.1"
 anyhow = "1.0.71"
