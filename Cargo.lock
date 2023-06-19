@@ -89,13 +89,13 @@ checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
 name = "bio"
-version = "1.2.0"
+version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd6b34e241a9992b9a896c7939147875818217e00a25fe0eeb0da234f0d7aafe"
+checksum = "b55f42d2f1632ae6453f58124d75f3f7e32ba2a265188a920ae57a3f3cf08cbe"
 dependencies = [
  "anyhow",
  "approx",
- "bio-types",
+ "bio-types 1.0.0",
  "bit-set",
  "bv",
  "bytecount",
@@ -131,6 +131,19 @@ name = "bio-types"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa990f40a28735fa598dc3dd58d73e62e6b41458959d623903b927ba7b04c80"
+dependencies = [
+ "derive-new",
+ "lazy_static",
+ "regex",
+ "strum_macros",
+ "thiserror",
+]
+
+[[package]]
+name = "bio-types"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c915bf6c578d40e1e497f8c571a4514bc89c3195cec2abb8be6dd5500405c752"
 dependencies = [
  "derive-new",
  "lazy_static",
@@ -1591,7 +1604,7 @@ version = "0.43.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53881800f22b91fa893cc3f6d70e6e9aa96d200133bfe112e36aee37aad70bf5"
 dependencies = [
- "bio-types",
+ "bio-types 0.13.0",
  "byteorder",
  "custom_derive",
  "derive-new",
