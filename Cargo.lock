@@ -95,7 +95,7 @@ checksum = "b55f42d2f1632ae6453f58124d75f3f7e32ba2a265188a920ae57a3f3cf08cbe"
 dependencies = [
  "anyhow",
  "approx",
- "bio-types 1.0.0",
+ "bio-types",
  "bit-set",
  "bv",
  "bytecount",
@@ -124,19 +124,6 @@ dependencies = [
  "thiserror",
  "triple_accel",
  "vec_map",
-]
-
-[[package]]
-name = "bio-types"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfa990f40a28735fa598dc3dd58d73e62e6b41458959d623903b927ba7b04c80"
-dependencies = [
- "derive-new",
- "lazy_static",
- "regex",
- "strum_macros",
- "thiserror",
 ]
 
 [[package]]
@@ -1604,7 +1591,7 @@ version = "0.43.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53881800f22b91fa893cc3f6d70e6e9aa96d200133bfe112e36aee37aad70bf5"
 dependencies = [
- "bio-types 0.13.0",
+ "bio-types",
  "byteorder",
  "custom_derive",
  "derive-new",
@@ -1730,9 +1717,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.96"
+version = "1.0.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "057d394a50403bcac12672b2b18fb387ab6d289d957dab67dd201875391e52f1"
+checksum = "bdf3bf93142acad5821c99197022e170842cdbc1c30482b98750c688c640842a"
 dependencies = [
  "itoa",
  "ryu",
