@@ -734,9 +734,9 @@ dependencies = [
 
 [[package]]
 name = "hts-sys"
-version = "2.0.3"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dba4fc406d3686926c84f98fd53026b625319d119e6056a40313862a6e3c4eb"
+checksum = "deebfb779c734d542e7f14c298597914b9b5425e4089aef482eacb5cab941915"
 dependencies = [
  "bzip2-sys",
  "cc",
@@ -1594,9 +1594,9 @@ dependencies = [
 
 [[package]]
 name = "rust-htslib"
-version = "0.43.1"
+version = "0.44.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53881800f22b91fa893cc3f6d70e6e9aa96d200133bfe112e36aee37aad70bf5"
+checksum = "7c7eb0f29fce64a4e22578905efef3d72389058016023279a58b282eb5c0c467"
 dependencies = [
  "bio-types",
  "byteorder",
