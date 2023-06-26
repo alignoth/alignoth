@@ -18,7 +18,7 @@ dependencies = [
  "anyhow",
  "bio",
  "csv",
- "itertools 0.11.0",
+ "itertools",
  "log",
  "rand",
  "reqwest",
@@ -89,9 +89,9 @@ checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
 name = "bio"
-version = "1.3.0"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b55f42d2f1632ae6453f58124d75f3f7e32ba2a265188a920ae57a3f3cf08cbe"
+checksum = "549b4c9b9f56970dd6c169a59d04cf4b940aba860c4023cb8427ec4967b4d84e"
 dependencies = [
  "anyhow",
  "approx",
@@ -101,10 +101,11 @@ dependencies = [
  "bytecount",
  "csv",
  "custom_derive",
+ "editdistancek",
  "enum-map",
  "fxhash",
  "getset",
- "itertools 0.10.5",
+ "itertools",
  "itertools-num",
  "lazy_static",
  "multimap",
@@ -460,6 +461,12 @@ dependencies = [
  "block-buffer",
  "crypto-common",
 ]
+
+[[package]]
+name = "editdistancek"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f29d6b9c01703ebe02ed4bbe894777cdd7d4818b8e5b3819c36ab42ffc1bc5d3"
 
 [[package]]
 name = "either"
@@ -902,15 +909,6 @@ name = "ipnet"
 version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30e22bd8629359895450b59ea7a776c850561b96a3b1d31321c1949d9e6c9146"
-
-[[package]]
-name = "itertools"
-version = "0.10.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
-]
 
 [[package]]
 name = "itertools"
