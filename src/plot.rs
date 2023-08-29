@@ -415,6 +415,7 @@ mod tests {
         Reference,
     };
     use itertools::Itertools;
+    use rust_htslib::bam;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
     use std::collections::HashMap;
     use std::str::FromStr;
@@ -749,5 +750,14 @@ mod tests {
             },
         ]);
         assert_eq!(plot_cigar, expected_plot_cigar);
+    }
+
+    // Write test for AuxRecord
+    #[test]
+    fn test_empty_aux_record() {
+        let record = bam::Record::new();
+        let aux_record = AuxRecord::new(&record, &None);
+        let expected_aux_record = AuxRecord(HashMap::new());
+        assert_eq!(aux_record, expected_aux_record);
     }
 }
