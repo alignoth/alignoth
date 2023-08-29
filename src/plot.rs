@@ -416,7 +416,7 @@ mod tests {
     };
     use itertools::Itertools;
     use rust_htslib::bam;
-    use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+    use rust_htslib::bam::record::{Aux, Cigar, CigarString, CigarStringView};
     use std::collections::HashMap;
     use std::str::FromStr;
 
@@ -752,12 +752,35 @@ mod tests {
         assert_eq!(plot_cigar, expected_plot_cigar);
     }
 
-    // Write test for AuxRecord
     #[test]
     fn test_empty_aux_record() {
         let record = bam::Record::new();
         let aux_record = AuxRecord::new(&record, &None);
         let expected_aux_record = AuxRecord(HashMap::new());
         assert_eq!(aux_record, expected_aux_record);
+    }
+
+    #[test]
+    fn test_aux_record() {
+        let mut record = bam::Record::new();
+        let aux_integer_field = Aux::I32(1234);
+        record.push_aux(b"XI", aux_integer_field).unwrap();
+        let aux_record = AuxRecord::new(&record, &Some(vec!["XI".to_string()]));
+        let expected_aux_record = AuxRecord(HashMap::from_iter(vec![(
+            "XI".to_string(),
+            "1234".to_string(),
+        )]));
+        assert_eq!(aux_record, expected_aux_record);
+    }
+
+    #[test]
+    fn test_aux_record_to_string() {
+        let mut record = bam::Record::new();
+        let aux_integer_field = Aux::I32(1234);
+        record.push_aux(b"XI", aux_integer_field).unwrap();
+        let aux_record = AuxRecord::new(&record, &Some(vec!["XI".to_string()]));
+        let aux_record_string = aux_record.to_string();
+        let expected_aux_record_string = "XI: 1234".to_string();
+        assert_eq!(aux_record_string, expected_aux_record_string);
     }
 }
