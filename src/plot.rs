@@ -115,7 +115,7 @@ impl ToString for AuxRecord {
         self.0
             .iter()
             .map(|(k, v)| format!("{}: {}", k, v))
-            .join("\n")
+            .join(", ")
     }
 }
 
