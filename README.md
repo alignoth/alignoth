@@ -38,6 +38,7 @@ The following options are available when using alignoth:
 | max-width             | -w    | Set the maximum width of the resulting alignment plot                                                                                                             | 1024    |
 | output                | -o    | If present, data and vega-lite specs of the generated plot will be split and written to the given directory                                                       |         |
 | data-format           | -f    | Sets the output format for the read, reference and highlight data                                                                                                 | json    |
+| aux_tags              | -x    | Displays the given content of the aux tags in the tooltip of the plot                                                                                             |         |
 | spec-output           |       | If present vega-lite specs will be written to the given file path                                                                                                 |         |
 | read-data-output      |       | If present read data will be written to the given file path                                                                                                       |         |
 | ref-data-output       |       | If present reference data will be written to the given file path                                                                                                  |         |

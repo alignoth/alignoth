@@ -1,5 +1,6 @@
 use crate::cli;
 use crate::cli::Region;
+use crate::utils::aux_to_string;
 use anyhow::{Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
@@ -25,6 +26,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: &Region,
     max_read_depth: usize,
+    aux_tags: Option<Vec<String>>,
 ) -> Result<(Vec<Read>, Reference)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
@@ -40,7 +42,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .records()
         .filter_map(|r| r.ok())
         .map(|r| {
-            Read::from_record(r, &ref_path, &region.target)
+            Read::from_record(r, &ref_path, &region.target, &aux_tags)
                 .context(format!(
                     "bam file does not contain given region target {}",
                     &region.target
@@ -83,6 +85,44 @@ pub struct Read {
     #[serde(skip)]
     end_position: i64,
     mpos: i64,
+    aux: AuxRecord,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct AuxRecord(HashMap<String, String>);
+
+impl AuxRecord {
+    pub fn new(record: &bam::Record, aux_tags: &Option<Vec<String>>) -> Self {
+        let mut aux_values = HashMap::new();
+        if let Some(aux_tags) = aux_tags {
+            for tag in aux_tags {
+                match record.aux(tag.as_bytes()) {
+                    Ok(aux) => {
+                        aux_values.insert(tag.clone(), aux_to_string(aux));
+                    }
+                    Err(_) => {
+                        aux_values.insert(tag.clone(), String::from("None"));
+                    }
+                }
+            }
+        }
+        AuxRecord(aux_values)
+    }
+}
+
+impl ToString for AuxRecord {
+    fn to_string(&self) -> String {
+        self.0
+            .iter()
+            .map(|(k, v)| format!("{}: {}", k, v))
+            .join(", ")
+    }
+}
+
+impl Serialize for AuxRecord {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 /// A reference with all relevant information base for being plotted in a read plot
@@ -281,6 +321,7 @@ impl Read {
         record: rust_htslib::bam::record::Record,
         ref_path: P,
         target: &str,
+        aux_tags: &Option<Vec<String>>,
     ) -> Result<Read> {
         let region = cli::Region {
             target: target.to_string(),
@@ -303,6 +344,7 @@ impl Read {
             row: None,
             end_position: record.pos() + record.reference_end(),
             mpos: record.mpos(),
+            aux: AuxRecord::new(&record, aux_tags),
         })
     }
 
@@ -421,6 +463,7 @@ mod tests {
             row: None,
             end_position: 120,
             mpos: 100,
+            aux: vec![],
         };
 
         let read2 = Read {
@@ -432,6 +475,7 @@ mod tests {
             row: None,
             end_position: 140,
             mpos: 120,
+            aux: vec![],
         };
 
         let mut reads = vec![read1, read2];
@@ -450,6 +494,7 @@ mod tests {
             row: None,
             end_position: 120,
             mpos: 100,
+            aux: vec![],
         };
 
         let read2 = Read {
@@ -516,6 +561,7 @@ mod tests {
             "tests/sample_2/ref.fa",
             &region,
             500,
+            None,
         )
         .unwrap();
 
@@ -530,7 +576,7 @@ mod tests {
             ),
             end_position: 887,
             mpos: 333,
-
+            aux: vec![],
         };
 
         assert!(reads.contains(&expected_read));
@@ -647,6 +693,7 @@ mod tests {
             "tests/sample_1/reference.fa",
             &region,
             100,
+            None,
         )
         .unwrap();
         let expected_reference = Reference {
