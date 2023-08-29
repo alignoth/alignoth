@@ -120,7 +120,10 @@ impl ToString for AuxRecord {
 }
 
 impl Serialize for AuxRecord {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(&self.to_string())
     }
 }
@@ -408,10 +411,12 @@ mod tests {
     use crate::create_plot_data;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
     use crate::plot::{
-        match_bases, read_fasta, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read, Reference,
+        match_bases, read_fasta, AuxRecord, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
+        Reference,
     };
     use itertools::Itertools;
     use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+    use std::collections::HashMap;
     use std::str::FromStr;
 
     #[test]
@@ -463,7 +468,7 @@ mod tests {
             row: None,
             end_position: 120,
             mpos: 100,
-            aux: vec![],
+            aux: AuxRecord(HashMap::new()),
         };
 
         let read2 = Read {
@@ -475,7 +480,7 @@ mod tests {
             row: None,
             end_position: 140,
             mpos: 120,
-            aux: vec![],
+            aux: AuxRecord(HashMap::new()),
         };
 
         let mut reads = vec![read1, read2];
@@ -494,7 +499,7 @@ mod tests {
             row: None,
             end_position: 120,
             mpos: 100,
-            aux: vec![],
+            aux: AuxRecord(HashMap::new()),
         };
 
         let read2 = Read {
@@ -506,6 +511,7 @@ mod tests {
             row: None,
             end_position: 140,
             mpos: 120,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let read3 = Read {
@@ -517,6 +523,7 @@ mod tests {
             row: None,
             end_position: 150,
             mpos: 140,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let mut reads = vec![read1, read2, read3];
@@ -576,7 +583,7 @@ mod tests {
             ),
             end_position: 887,
             mpos: 333,
-            aux: vec![],
+            aux: AuxRecord(HashMap::new()),
         };
 
         assert!(reads.contains(&expected_read));
@@ -709,6 +716,7 @@ mod tests {
             row: Some(1),
             end_position: 106,
             mpos: 789264,
+            aux: AuxRecord(HashMap::new()),
         };
         let expected_reads = vec![expected_read];
         assert_eq!(reference, expected_reference);
