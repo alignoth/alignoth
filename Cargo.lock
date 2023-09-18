@@ -119,9 +119,9 @@ checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
 name = "bio"
-version = "1.3.1"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "549b4c9b9f56970dd6c169a59d04cf4b940aba860c4023cb8427ec4967b4d84e"
+checksum = "ea643e25059ce02b94e8f6eb4e902d160baa6d0beb91834ed971dd5a880c02ba"
 dependencies = [
  "anyhow",
  "approx",
