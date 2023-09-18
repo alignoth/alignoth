@@ -255,6 +255,9 @@
             },
             "transform": [
                 {
+                    "filter": "datum.mpos >= 0"
+                },
+                {
                     "as": "start",
                     "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
                 },
