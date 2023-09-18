@@ -193,7 +193,7 @@
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length + 0.6, datum.position + datum.offset + datum.length + 1.6)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length - 0.4, datum.position + datum.offset + datum.length + 0.6)"
                 }
             ],
             "mark": {
@@ -321,11 +321,11 @@
                 },
                 {
                     "as": "start",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1, datum.position + datum.offset + 0.5)"
+                    "calculate": "datum.position + datum.offset + 0.5"
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length + 1, datum.position + datum.offset + datum.length + 1.5)"
+                    "calculate": "datum.position + datum.offset + datum.length + 0.5"
                 },
                 {
                     "filter": "datum.type != 'deletion'"
@@ -452,7 +452,7 @@
                 },
                 {
                     "as": "end",
-                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length + 1, datum.position + datum.offset + datum.length + 1.5)"
+                    "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
                 },
                 {
                     "filter": "datum.type == 'deletion'"
