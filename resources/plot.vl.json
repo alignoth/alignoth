@@ -348,6 +348,9 @@
                     },
                     {
                         "field": "flags"
+                    },
+                    {
+                        "field": "aux"
                     }
                 ],
                 "strokeWidth": {
@@ -478,6 +481,9 @@
                     },
                     {
                         "field": "length"
+                    },
+                    {
+                        "field": "aux"
                     }
                 ],
                 "strokeWidth": {
