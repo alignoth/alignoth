@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/koesterlab/alignoth/compare/v0.8.2...v0.9.0) (2023-09-25)
+
+
+### Features
+
+* Allow displaying user defined aux tags in read tooltip ([#164](https://github.com/koesterlab/alignoth/issues/164)) ([3e969aa](https://github.com/koesterlab/alignoth/commit/3e969aaec2ed8d31c15710a14395dd136028d683))
+
+
+### Bug Fixes
+
+* Remove unconnected lines for unpaired reads ([#167](https://github.com/koesterlab/alignoth/issues/167)) ([6e25855](https://github.com/koesterlab/alignoth/commit/6e258553e2ea4e9c133ccbc68d12d7820944bffd))
+
 ## [0.8.2](https://github.com/koesterlab/alignoth/compare/v0.8.1...v0.8.2) (2023-05-10)
 
 
