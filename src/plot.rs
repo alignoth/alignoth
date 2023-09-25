@@ -338,6 +338,11 @@ impl Read {
             .iter()
             .map(|u| char::from(*u))
             .collect_vec();
+        let mpos = if record.is_paired() {
+            record.mpos()
+        } else {
+            -1
+        };
         Ok(Read {
             name: String::from_utf8(record.qname().to_vec())?,
             cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
@@ -346,7 +351,7 @@ impl Read {
             mapq: record.mapq(),
             row: None,
             end_position: record.pos() + record.reference_end(),
-            mpos: record.mpos(),
+            mpos,
             aux: AuxRecord::new(&record, aux_tags),
         })
     }
