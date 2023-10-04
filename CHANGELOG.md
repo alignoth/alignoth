@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/koesterlab/alignoth/compare/v0.9.0...v0.10.0) (2023-10-04)
+
+
+### Features
+
+* Allow single selection of a read ([#172](https://github.com/koesterlab/alignoth/issues/172)) ([b365680](https://github.com/koesterlab/alignoth/commit/b3656800a95dd8e6f010065c91998a4204de6d9b))
+
 ## [0.9.0](https://github.com/koesterlab/alignoth/compare/v0.8.2...v0.9.0) (2023-09-25)
 
 
