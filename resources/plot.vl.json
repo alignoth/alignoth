@@ -200,7 +200,15 @@
                 "type": "rule",
                 "clip": true
             },
+            "params": [{
+                "name": "rplc",
+                "select": {"type": "point", "toggle": false}
+            }],
             "encoding": {
+                "opacity": {
+                    "condition": {"param": "rplc", "value": 1},
+                    "value": 0.2
+                },
                 "strokeWidth": {
                     "field": "type",
                     "scale": {
@@ -271,6 +279,10 @@
                 "clip": true
             },
             "encoding": {
+                "opacity": {
+                    "condition": {"param": "rplc", "value": 1},
+                    "value": 0.2
+                },
                 "strokeWidth": {
                     "value": 1
                 },
@@ -353,6 +365,10 @@
                         "field": "aux"
                     }
                 ],
+                "opacity": {
+                    "condition": {"param": "rplc", "value": 1},
+                    "value": 0.2
+                },
                 "strokeWidth": {
                     "field": "type",
                     "scale": {
@@ -486,6 +502,10 @@
                         "field": "aux"
                     }
                 ],
+                "opacity": {
+                    "condition": {"param": "rplc", "value": 1},
+                    "value": 0.2
+                },
                 "strokeWidth": {
                     "field": "type",
                     "scale": {
