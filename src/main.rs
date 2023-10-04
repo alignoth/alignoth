@@ -31,6 +31,7 @@ async fn main() -> Result<()> {
         &opt.reference.as_ref().unwrap(),
         opt.region.as_ref().unwrap(),
         opt.max_read_depth,
+        opt.aux_tag,
     )?;
     let highlight = opt.highlight.map(|h| Interval {
         start: h.start - 0.5,

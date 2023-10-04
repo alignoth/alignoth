@@ -81,6 +81,10 @@ pub struct Alignoth {
     /// If present, the generated plot will inserted into a plain html file containing the plot centered which is then written to stdout
     #[structopt(long, conflicts_with("output"))]
     pub(crate) html: bool,
+
+    /// Displays the given content of the aux tags in the tooltip of the plot. Multiple usage for more than one tag is possible.
+    #[structopt(long, short = "x")]
+    pub(crate) aux_tag: Option<Vec<String>>,
 }
 
 pub(crate) trait Preprocess {

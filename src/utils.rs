@@ -1,5 +1,6 @@
 use anyhow::Result;
 use bio::io::fasta;
+use itertools::Itertools;
 use std::fs;
 use std::path::PathBuf;
 
@@ -41,6 +42,30 @@ pub(crate) fn get_fasta_length(fasta_path: &PathBuf, target: &str) -> Result<usi
     fasta_reader.fetch_all(target)?;
     fasta_reader.read(&mut seq)?;
     Ok(seq.len())
+}
+
+/// Takes any given aux and returns a string representation of it.
+pub(crate) fn aux_to_string(aux: rust_htslib::bam::record::Aux) -> String {
+    match aux {
+        rust_htslib::bam::record::Aux::Char(c) => String::from_utf8(vec![c]).unwrap(),
+        rust_htslib::bam::record::Aux::I8(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::U8(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::I16(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::U16(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::I32(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::U32(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::Float(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::Double(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::String(s) => s.to_owned(),
+        rust_htslib::bam::record::Aux::HexByteArray(i) => i.to_string(),
+        rust_htslib::bam::record::Aux::ArrayI8(a) => a.iter().join(","),
+        rust_htslib::bam::record::Aux::ArrayU8(a) => a.iter().join(","),
+        rust_htslib::bam::record::Aux::ArrayU16(a) => a.iter().join(","),
+        rust_htslib::bam::record::Aux::ArrayI16(a) => a.iter().join(","),
+        rust_htslib::bam::record::Aux::ArrayU32(a) => a.iter().join(","),
+        rust_htslib::bam::record::Aux::ArrayI32(a) => a.iter().join(","),
+        rust_htslib::bam::record::Aux::ArrayFloat(a) => a.iter().join(","),
+    }
 }
 
 #[cfg(test)]

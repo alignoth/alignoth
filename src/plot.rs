@@ -1,5 +1,6 @@
 use crate::cli;
 use crate::cli::Region;
+use crate::utils::aux_to_string;
 use anyhow::{Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
@@ -25,6 +26,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     ref_path: P,
     region: &Region,
     max_read_depth: usize,
+    aux_tags: Option<Vec<String>>,
 ) -> Result<(Vec<Read>, Reference)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
@@ -40,7 +42,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .records()
         .filter_map(|r| r.ok())
         .map(|r| {
-            Read::from_record(r, &ref_path, &region.target)
+            Read::from_record(r, &ref_path, &region.target, &aux_tags)
                 .context(format!(
                     "bam file does not contain given region target {}",
                     &region.target
@@ -83,6 +85,47 @@ pub struct Read {
     #[serde(skip)]
     end_position: i64,
     mpos: i64,
+    aux: AuxRecord,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct AuxRecord(HashMap<String, String>);
+
+impl AuxRecord {
+    pub fn new(record: &bam::Record, aux_tags: &Option<Vec<String>>) -> Self {
+        let mut aux_values = HashMap::new();
+        if let Some(aux_tags) = aux_tags {
+            for tag in aux_tags {
+                match record.aux(tag.as_bytes()) {
+                    Ok(aux) => {
+                        aux_values.insert(tag.clone(), aux_to_string(aux));
+                    }
+                    Err(_) => {
+                        aux_values.insert(tag.clone(), String::from("None"));
+                    }
+                }
+            }
+        }
+        AuxRecord(aux_values)
+    }
+}
+
+impl ToString for AuxRecord {
+    fn to_string(&self) -> String {
+        self.0
+            .iter()
+            .map(|(k, v)| format!("{}: {}", k, v))
+            .join(", ")
+    }
+}
+
+impl Serialize for AuxRecord {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
 }
 
 /// A reference with all relevant information base for being plotted in a read plot
@@ -281,6 +324,7 @@ impl Read {
         record: rust_htslib::bam::record::Record,
         ref_path: P,
         target: &str,
+        aux_tags: &Option<Vec<String>>,
     ) -> Result<Read> {
         let region = cli::Region {
             target: target.to_string(),
@@ -294,6 +338,11 @@ impl Read {
             .iter()
             .map(|u| char::from(*u))
             .collect_vec();
+        let mpos = if record.is_paired() {
+            record.mpos()
+        } else {
+            -1
+        };
         Ok(Read {
             name: String::from_utf8(record.qname().to_vec())?,
             cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
@@ -302,7 +351,8 @@ impl Read {
             mapq: record.mapq(),
             row: None,
             end_position: record.pos() + record.reference_end(),
-            mpos: record.mpos(),
+            mpos,
+            aux: AuxRecord::new(&record, aux_tags),
         })
     }
 
@@ -366,10 +416,13 @@ mod tests {
     use crate::create_plot_data;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
     use crate::plot::{
-        match_bases, read_fasta, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read, Reference,
+        match_bases, read_fasta, AuxRecord, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
+        Reference,
     };
     use itertools::Itertools;
-    use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
+    use rust_htslib::bam;
+    use rust_htslib::bam::record::{Aux, Cigar, CigarString, CigarStringView};
+    use std::collections::HashMap;
     use std::str::FromStr;
 
     #[test]
@@ -421,6 +474,7 @@ mod tests {
             row: None,
             end_position: 120,
             mpos: 100,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let read2 = Read {
@@ -432,6 +486,7 @@ mod tests {
             row: None,
             end_position: 140,
             mpos: 120,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let mut reads = vec![read1, read2];
@@ -450,6 +505,7 @@ mod tests {
             row: None,
             end_position: 120,
             mpos: 100,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let read2 = Read {
@@ -461,6 +517,7 @@ mod tests {
             row: None,
             end_position: 140,
             mpos: 120,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let read3 = Read {
@@ -472,6 +529,7 @@ mod tests {
             row: None,
             end_position: 150,
             mpos: 140,
+            aux: AuxRecord(HashMap::new()),
         };
 
         let mut reads = vec![read1, read2, read3];
@@ -516,6 +574,7 @@ mod tests {
             "tests/sample_2/ref.fa",
             &region,
             500,
+            None,
         )
         .unwrap();
 
@@ -530,7 +589,7 @@ mod tests {
             ),
             end_position: 887,
             mpos: 333,
-
+            aux: AuxRecord(HashMap::new()),
         };
 
         assert!(reads.contains(&expected_read));
@@ -647,6 +706,7 @@ mod tests {
             "tests/sample_1/reference.fa",
             &region,
             100,
+            None,
         )
         .unwrap();
         let expected_reference = Reference {
@@ -662,6 +722,7 @@ mod tests {
             row: Some(1),
             end_position: 106,
             mpos: 789264,
+            aux: AuxRecord(HashMap::new()),
         };
         let expected_reads = vec![expected_read];
         assert_eq!(reference, expected_reference);
@@ -694,5 +755,37 @@ mod tests {
             },
         ]);
         assert_eq!(plot_cigar, expected_plot_cigar);
+    }
+
+    #[test]
+    fn test_empty_aux_record() {
+        let record = bam::Record::new();
+        let aux_record = AuxRecord::new(&record, &None);
+        let expected_aux_record = AuxRecord(HashMap::new());
+        assert_eq!(aux_record, expected_aux_record);
+    }
+
+    #[test]
+    fn test_aux_record() {
+        let mut record = bam::Record::new();
+        let aux_integer_field = Aux::I32(1234);
+        record.push_aux(b"XI", aux_integer_field).unwrap();
+        let aux_record = AuxRecord::new(&record, &Some(vec!["XI".to_string()]));
+        let expected_aux_record = AuxRecord(HashMap::from_iter(vec![(
+            "XI".to_string(),
+            "1234".to_string(),
+        )]));
+        assert_eq!(aux_record, expected_aux_record);
+    }
+
+    #[test]
+    fn test_aux_record_to_string() {
+        let mut record = bam::Record::new();
+        let aux_integer_field = Aux::I32(1234);
+        record.push_aux(b"XI", aux_integer_field).unwrap();
+        let aux_record = AuxRecord::new(&record, &Some(vec!["XI".to_string()]));
+        let aux_record_string = aux_record.to_string();
+        let expected_aux_record_string = "XI: 1234".to_string();
+        assert_eq!(aux_record_string, expected_aux_record_string);
     }
 }
