@@ -207,7 +207,7 @@
             "encoding": {
                 "opacity": {
                     "condition": {"param": "rplc", "value": 1},
-                    "value": 0.1
+                    "value": 0.2
                 },
                 "strokeWidth": {
                     "field": "type",
@@ -278,7 +278,7 @@
             "encoding": {
                 "opacity": {
                     "condition": {"param": "rplc", "value": 1},
-                    "value": 0.1
+                    "value": 0.2
                 },
                 "strokeWidth": {
                     "value": 1
@@ -361,7 +361,7 @@
                 ],
                 "opacity": {
                     "condition": {"param": "rplc", "value": 1},
-                    "value": 0.1
+                    "value": 0.2
                 },
                 "strokeWidth": {
                     "field": "type",
@@ -495,7 +495,7 @@
                 ],
                 "opacity": {
                     "condition": {"param": "rplc", "value": 1},
-                    "value": 0.1
+                    "value": 0.2
                 },
                 "strokeWidth": {
                     "field": "type",
