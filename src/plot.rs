@@ -27,7 +27,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     region: &Region,
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
-) -> Result<(Vec<Read>, Reference)> {
+) -> Result<(Vec<Read>, Reference, usize, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
         .header()
@@ -50,12 +50,14 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
                 .unwrap()
         })
         .collect_vec();
+    let total_read_count = data.len();
     data.order(max_read_depth)?;
+    let retained_reads = data.len();
     let reference_data = Reference {
         start: region.start,
         reference: read_fasta(ref_path, region)?.iter().collect(),
     };
-    Ok((data, reference_data))
+    Ok((data, reference_data, total_read_count, retained_reads))
 }
 
 /// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
