@@ -47,9 +47,9 @@ async fn main() -> Result<()> {
         opt.region.as_ref().unwrap().end as f32 - 0.5
     ]);
     let subsampling_warning = if total_reads > retained_reads {
-        format!("Only showing {retained_reads} of {total_reads} due to max_read_depth setting.")
+        format!("{retained_reads} of {total_reads} reads (subsampled)")
     } else {
-        format!("Total reads: {total_reads}")
+        format!("{total_reads} reads")
     };
     plot_specs["title"] = json!({
             "text": &opt.region.unwrap().target,
