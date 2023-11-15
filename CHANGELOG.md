@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/koesterlab/alignoth/compare/v0.10.0...v0.11.0) (2023-11-15)
+
+
+### Features
+
+* Show warning in plot when reads are downsampled ([#183](https://github.com/koesterlab/alignoth/issues/183)) ([e7587fc](https://github.com/koesterlab/alignoth/commit/e7587fc84c8e9cd4fab9ca3175a7b125a6e772e2))
+
 ## [0.10.0](https://github.com/koesterlab/alignoth/compare/v0.9.0...v0.10.0) (2023-10-04)
 
 
