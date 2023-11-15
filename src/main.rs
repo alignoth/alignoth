@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
         ColorChoice::Auto,
     );
     opt.preprocess()?;
-    let (read_data, reference_data) = create_plot_data(
+    let (read_data, reference_data, total_reads, retained_reads) = create_plot_data(
         &opt.bam_path.as_ref().unwrap(),
         &opt.reference.as_ref().unwrap(),
         opt.region.as_ref().unwrap(),
@@ -46,7 +46,15 @@ async fn main() -> Result<()> {
         opt.region.as_ref().unwrap().start as f32 - 0.5,
         opt.region.as_ref().unwrap().end as f32 - 0.5
     ]);
-    plot_specs["title"] = json!(&opt.region.unwrap().target);
+    let subsampling_warning = if total_reads > retained_reads {
+        format!("{retained_reads} of {total_reads} reads (subsampled)")
+    } else {
+        format!("{total_reads} reads")
+    };
+    plot_specs["title"] = json!({
+            "text": &opt.region.unwrap().target,
+            "subtitle": subsampling_warning,
+    });
     let reference = match opt.data_format {
         DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
