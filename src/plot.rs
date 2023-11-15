@@ -571,7 +571,7 @@ mod tests {
             start: 300,
             end: 500,
         };
-        let (reads, _reference) = create_plot_data(
+        let (reads, _reference, _, _) = create_plot_data(
             "tests/sample_2/sample.bam",
             "tests/sample_2/ref.fa",
             &region,
@@ -703,7 +703,7 @@ mod tests {
             start: 0,
             end: 20,
         };
-        let (reads, reference) = create_plot_data(
+        let (reads, reference, total_reads, subsampled_reads) = create_plot_data(
             "tests/sample_1/reads.bam",
             "tests/sample_1/reference.fa",
             &region,
@@ -729,6 +729,8 @@ mod tests {
         let expected_reads = vec![expected_read];
         assert_eq!(reference, expected_reference);
         assert_eq!(reads, expected_reads);
+        assert_eq!(total_reads, 1);
+        assert_eq!(subsampled_reads, 1);
     }
 
     #[test]
