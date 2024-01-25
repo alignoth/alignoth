@@ -135,6 +135,7 @@
                             "N",
                             "match",
                             "deletion",
+                            "ref skip",
                             "insertion"
                         ],
                         "range": [
@@ -145,6 +146,7 @@
                             "#A23E11",
                             "#BBBBBB",
                             "#CC1414",
+                            "#000000",
                             "#047C0A"
                         ]
                     }
@@ -171,11 +173,11 @@
                     ]
                 },
                 {
-                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'r', 'ref skip', substring(datum.cigars, 1, length(datum.cigars))))))",
                     "as": "type"
                 },
                 {
-                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion' || datum.type == 'ref skip', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
                     "as": "length"
                 },
                 {
@@ -221,9 +223,11 @@
                             "N",
                             "match",
                             "deletion",
+                            "ref skip",
                             "insertion"
                         ],
                         "range": [
+                            9,
                             9,
                             9,
                             9,
@@ -315,11 +319,11 @@
                     ]
                 },
                 {
-                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'r', 'ref skip', substring(datum.cigars, 1, length(datum.cigars))))))",
                     "as": "type"
                 },
                 {
-                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion' || datum.type == 'ref skip', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
                     "as": "length"
                 },
                 {
@@ -340,7 +344,7 @@
                     "calculate": "datum.position + datum.offset + datum.length + 0.5"
                 },
                 {
-                    "filter": "datum.type != 'deletion'"
+                    "filter": "datum.type != 'deletion' && datum.type != 'ref skip'"
                 }
             ],
             "mark": {
@@ -381,9 +385,11 @@
                             "N",
                             "match",
                             "deletion",
+                            "ref skip",
                             "insertion"
                         ],
                         "range": [
+                            6,
                             6,
                             6,
                             6,
@@ -409,6 +415,7 @@
                             "N",
                             "match",
                             "deletion",
+                            "ref skip",
                             "insertion"
                         ],
                         "range": [
@@ -419,6 +426,7 @@
                             "#A23E11",
                             "#BBBBBB",
                             "#CC1414",
+                            "#000000",
                             "#047C0A"
                         ]
                     }
@@ -449,11 +457,11 @@
                     ]
                 },
                 {
-                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion',  if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'r', 'ref skip', substring(datum.cigars, 1, length(datum.cigars))))))",
                     "as": "type"
                 },
                 {
-                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion' || datum.type == 'ref skip', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
                     "as": "length"
                 },
                 {
@@ -474,7 +482,7 @@
                     "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
                 },
                 {
-                    "filter": "datum.type == 'deletion'"
+                    "filter": "datum.type == 'deletion' || datum.type == 'ref skip'"
                 }
             ],
             "mark": {
@@ -518,9 +526,11 @@
                             "N",
                             "match",
                             "deletion",
+                            "ref skip",
                             "insertion"
                         ],
                         "range": [
+                            6,
                             6,
                             6,
                             6,
@@ -549,6 +559,7 @@
                             "N",
                             "match",
                             "deletion",
+                            "ref skip",
                             "insertion"
                         ],
                         "range": [
@@ -559,6 +570,7 @@
                             "#A23E11",
                             "#BBBBBB",
                             "#CC1414",
+                            "#000000",
                             "#047C0A"
                         ]
                     }

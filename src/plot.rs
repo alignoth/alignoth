@@ -143,6 +143,7 @@ pub(crate) struct Reference {
 /// |---------------|-----------------|
 /// | Match         | `<#matches>=`   |
 /// | Deletion      | `<#deletions>d` |
+/// | Ref Skip      | `<#deletions>r` |
 /// | Substitutions | `<#><base>`     |
 /// | Insertions    | `i<bases>`      |
 ///
@@ -184,6 +185,14 @@ impl FromStr for PlotCigar {
                     let length = inner.chars().take(inner.len() - 1).collect::<String>();
                     InnerPlotCigar {
                         cigar_type: CigarType::Del,
+                        bases: None,
+                        length: Some(u32::from_str(&length).unwrap()),
+                    }
+                }
+                Some('r') => {
+                    let length = inner.chars().take(inner.len() - 1).collect::<String>();
+                    InnerPlotCigar {
+                        cigar_type: CigarType::RefSkip,
                         bases: None,
                         length: Some(u32::from_str(&length).unwrap()),
                     }
@@ -232,6 +241,7 @@ impl Display for InnerPlotCigar {
                 self.bases.as_ref().unwrap().iter().collect::<String>()
             ),
             CigarType::Del => write!(f, "{}d", self.length.unwrap()),
+            CigarType::RefSkip => write!(f, "{}r", self.length.unwrap()),
             CigarType::Sub => write!(
                 f,
                 "{}{}",
@@ -247,6 +257,7 @@ enum CigarType {
     Match,
     Ins,
     Del,
+    RefSkip,
     Sub,
 }
 
@@ -280,6 +291,14 @@ impl PlotCigar {
                 Cigar::Del(length) => {
                     inner_plot_cigars.push(InnerPlotCigar {
                         cigar_type: CigarType::Del,
+                        bases: None,
+                        length: Some(*length),
+                    });
+                    ref_index += *length as usize;
+                }
+                Cigar::RefSkip(length) => {
+                    inner_plot_cigars.push(InnerPlotCigar {
+                        cigar_type: CigarType::RefSkip,
                         bases: None,
                         length: Some(*length),
                     });
