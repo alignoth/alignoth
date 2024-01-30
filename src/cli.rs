@@ -247,8 +247,9 @@ impl FromStr for Around {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Default)]
 pub enum DataFormat {
+    #[default]
     Json,
     Tsv,
 }
@@ -259,12 +260,6 @@ impl Display for DataFormat {
             DataFormat::Json => write!(f, "json"),
             DataFormat::Tsv => write!(f, "tsv"),
         }
-    }
-}
-
-impl Default for DataFormat {
-    fn default() -> Self {
-        DataFormat::Json
     }
 }
 
