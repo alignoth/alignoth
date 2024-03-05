@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/alignoth/alignoth/compare/v0.11.0...v0.12.0) (2024-03-05)
+
+
+### Features
+
+* Show inserted bases in tooltip ([#212](https://github.com/alignoth/alignoth/issues/212)) ([cacadbe](https://github.com/alignoth/alignoth/commit/cacadbed0af23b4d3bbb37cddaf482878944b903))
+
 ## [0.11.0](https://github.com/koesterlab/alignoth/compare/v0.10.0...v0.11.0) (2023-11-15)
 
 
