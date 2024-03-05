@@ -490,7 +490,7 @@
                     "calculate": "datum.position + datum.offset + datum.length + 0.5"
                 },
                 {
-                    "as": "inserted_bases",
+                    "as": "inserted bases",
                     "calculate": "substring(datum.cigars, 1, length(datum.cigars))"
                 },
                 {
@@ -519,7 +519,7 @@
                         "field": "aux"
                     },
                     {
-                        "field": "inserted_bases"
+                        "field": "inserted bases"
                     }
                 ],
                 "opacity": {
