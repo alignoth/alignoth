@@ -1,6 +1,8 @@
 {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "height": {"step": 12},
+    "height": {
+        "step": 12
+    },
     "resolve": {
         "scale": {
             "strokeWidth": "independent"
@@ -200,13 +202,21 @@
                 "type": "rule",
                 "clip": true
             },
-            "params": [{
-                "name": "rplc",
-                "select": {"type": "point", "toggle": false}
-            }],
+            "params": [
+                {
+                    "name": "rplc",
+                    "select": {
+                        "type": "point",
+                        "toggle": false
+                    }
+                }
+            ],
             "encoding": {
                 "opacity": {
-                    "condition": {"param": "rplc", "value": 1},
+                    "condition": {
+                        "param": "rplc",
+                        "value": 1
+                    },
                     "value": 0.2
                 },
                 "strokeWidth": {
@@ -280,7 +290,10 @@
             },
             "encoding": {
                 "opacity": {
-                    "condition": {"param": "rplc", "value": 1},
+                    "condition": {
+                        "param": "rplc",
+                        "value": 1
+                    },
                     "value": 0.2
                 },
                 "strokeWidth": {
@@ -340,7 +353,7 @@
                     "calculate": "datum.position + datum.offset + datum.length + 0.5"
                 },
                 {
-                    "filter": "datum.type != 'deletion'"
+                    "filter": "datum.type != 'deletion' && datum.type != 'insertion'"
                 }
             ],
             "mark": {
@@ -366,7 +379,154 @@
                     }
                 ],
                 "opacity": {
-                    "condition": {"param": "rplc", "value": 1},
+                    "condition": {
+                        "param": "rplc",
+                        "value": 1
+                    },
+                    "value": 0.2
+                },
+                "strokeWidth": {
+                    "field": "type",
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            6,
+                            6,
+                            6,
+                            6,
+                            6,
+                            6,
+                            6,
+                            9
+                        ]
+                    },
+                    "legend": null
+                },
+                "color": {
+                    "field": "type",
+                    "legend": null,
+                    "scale": {
+                        "type": "ordinal",
+                        "domain": [
+                            "A",
+                            "C",
+                            "G",
+                            "T",
+                            "N",
+                            "match",
+                            "deletion",
+                            "insertion"
+                        ],
+                        "range": [
+                            "#CADB69",
+                            "#F2B671",
+                            "#F28CC2",
+                            "#7284A8",
+                            "#A23E11",
+                            "#BBBBBB",
+                            "#CC1414",
+                            "#047C0A"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "data": {
+                "name": "reads"
+            },
+            "transform": [
+                {
+                    "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
+                    "as": "flags"
+                },
+                {
+                    "as": "cigars",
+                    "calculate": "split(datum.cigar, '|')"
+                },
+                {
+                    "as": "cigar_index",
+                    "calculate": "sequence(datum.cigars.length)"
+                },
+                {
+                    "flatten": [
+                        "cigars",
+                        "cigar_index"
+                    ]
+                },
+                {
+                    "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+                    "as": "type"
+                },
+                {
+                    "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+                    "as": "length"
+                },
+                {
+                    "stack": "length",
+                    "groupby": [
+                        "name",
+                        "cigar",
+                        "position"
+                    ],
+                    "as": "offset"
+                },
+                {
+                    "as": "start",
+                    "calculate": "datum.position + datum.offset + 0.5"
+                },
+                {
+                    "as": "end",
+                    "calculate": "datum.position + datum.offset + datum.length + 0.5"
+                },
+                {
+                    "as": "inserted bases",
+                    "calculate": "substring(datum.cigars, 1, length(datum.cigars))"
+                },
+                {
+                    "filter": "datum.type == 'insertion'"
+                }
+            ],
+            "mark": {
+                "type": "rule",
+                "clip": true
+            },
+            "encoding": {
+                "tooltip": [
+                    {
+                        "field": "name"
+                    },
+                    {
+                        "field": "type"
+                    },
+                    {
+                        "field": "mapq"
+                    },
+                    {
+                        "field": "flags"
+                    },
+                    {
+                        "field": "aux"
+                    },
+                    {
+                        "field": "inserted bases"
+                    }
+                ],
+                "opacity": {
+                    "condition": {
+                        "param": "rplc",
+                        "value": 1
+                    },
                     "value": 0.2
                 },
                 "strokeWidth": {
@@ -503,7 +663,10 @@
                     }
                 ],
                 "opacity": {
-                    "condition": {"param": "rplc", "value": 1},
+                    "condition": {
+                        "param": "rplc",
+                        "value": 1
+                    },
                     "value": 0.2
                 },
                 "strokeWidth": {
