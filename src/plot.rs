@@ -298,7 +298,7 @@ fn match_bases(read_seq: &[char], ref_seq: &[char]) -> Vec<InnerPlotCigar> {
     for (is_match, group) in &read_seq
         .iter()
         .zip_eq(ref_seq.iter())
-        .group_by(|(read, reference)| read == reference)
+        .chunk_by(|(read, reference)| read == reference)
     {
         if is_match {
             inner_plot_cigars.push(InnerPlotCigar {
