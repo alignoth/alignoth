@@ -27,7 +27,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     region: &Region,
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
-) -> Result<(Vec<Read>, Reference, usize, usize)> {
+) -> Result<(Vec<Read>, Reference, usize, usize, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
         .header()
@@ -51,13 +51,19 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         })
         .collect_vec();
     let total_read_count = data.len();
-    data.order(max_read_depth)?;
+    let plot_depth = data.order(max_read_depth)?;
     let retained_reads = data.len();
     let reference_data = Reference {
         start: region.start,
         reference: read_fasta(ref_path, region)?.iter().collect(),
     };
-    Ok((data, reference_data, total_read_count, retained_reads))
+    Ok((
+        data,
+        reference_data,
+        total_read_count,
+        retained_reads,
+        plot_depth,
+    ))
 }
 
 /// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
@@ -365,12 +371,12 @@ impl Read {
 }
 
 pub trait PlotOrder {
-    fn order(&mut self, max_read_depth: usize) -> Result<()>;
+    fn order(&mut self, max_read_depth: usize) -> Result<usize>;
 }
 
 impl PlotOrder for Vec<Read> {
-    /// Assigns given Reads their vertical position (row) in the read plot respecting the given max_read_depth by subsampling rows.
-    fn order(&mut self, max_read_depth: usize) -> Result<()> {
+    /// Assigns given Reads their vertical position (row) in the read plot respecting the given max_read_depth by subsampling rows. Returns the number of rows used.
+    fn order(&mut self, max_read_depth: usize) -> Result<usize> {
         let mut row_ends = vec![0; 2];
         let mut ordered_reads = HashMap::new();
         for read in self.iter_mut() {
@@ -408,7 +414,7 @@ impl PlotOrder for Vec<Read> {
                 self.retain(|read| random_rows.contains(&read.row.unwrap()));
             }
         }
-        Ok(())
+        Ok(row_ends.len())
     }
 }
 
@@ -571,7 +577,7 @@ mod tests {
             start: 300,
             end: 500,
         };
-        let (reads, _reference, _, _) = create_plot_data(
+        let (reads, _reference, _, _, _) = create_plot_data(
             "tests/sample_2/sample.bam",
             "tests/sample_2/ref.fa",
             &region,
@@ -703,7 +709,7 @@ mod tests {
             start: 0,
             end: 20,
         };
-        let (reads, reference, total_reads, subsampled_reads) = create_plot_data(
+        let (reads, reference, total_reads, subsampled_reads, _) = create_plot_data(
             "tests/sample_1/reads.bam",
             "tests/sample_1/reference.fa",
             &region,

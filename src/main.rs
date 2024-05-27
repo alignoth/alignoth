@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
         ColorChoice::Auto,
     );
     opt.preprocess()?;
-    let (read_data, reference_data, total_reads, retained_reads) = create_plot_data(
+    let (read_data, reference_data, total_reads, retained_reads, _plot_depth) = create_plot_data(
         &opt.bam_path.as_ref().unwrap(),
         &opt.reference.as_ref().unwrap(),
         opt.region.as_ref().unwrap(),
