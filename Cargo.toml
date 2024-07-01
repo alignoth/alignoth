@@ -12,7 +12,7 @@ edition = "2021"
 structopt = "0.3.26"
 rust-htslib = "0.47.0"
 bio = "1.6.0"
-log = "0.4.21"
+log = "0.4.22"
 simplelog = "0.12.2"
 anyhow = "1.0.86"
 serde = { version = "1", features = ["derive"] }
