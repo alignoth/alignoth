@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.1](https://github.com/alignoth/alignoth/compare/v0.12.0...v0.12.1) (2024-07-01)
+
+
+### Bug Fixes
+
+* Fix potentially unplaced read error ([#244](https://github.com/alignoth/alignoth/issues/244)) ([49dc637](https://github.com/alignoth/alignoth/commit/49dc637c446146a1327c4c78c04707ab8bfc77da))
+* Fix read placement ([49dc637](https://github.com/alignoth/alignoth/commit/49dc637c446146a1327c4c78c04707ab8bfc77da))
+
 ## [0.12.0](https://github.com/alignoth/alignoth/compare/v0.11.0...v0.12.0) (2024-03-05)
 
 
