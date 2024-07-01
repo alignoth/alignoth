@@ -383,9 +383,9 @@ impl PlotOrder for Vec<Read> {
             }
             for (row, row_end) in row_ends.iter().enumerate().skip(1) {
                 if min(read.position, read.mpos) > *row_end + 5
-                    || (read.position <= 5 && *row_end == 0)  // Row is unfilled and read can be placed at the beginning without 5bp distance to the previous read
-                    || (read.mpos == -1 && read.position > *row_end + 5)
-                // Read has no mate and can be placed purely dependent on its own position
+                    || (read.mpos <= -1 && read.position >= *row_end + 5) // Read has no mate and can be placed purely dependent on its own position
+                    || *row_end == 0
+                // No previous rows fit the read. New row is unfilled and read can be placed at the beginning
                 {
                     read.set_row(row as u32);
                     row_ends[row] = max(read.end_position, read.mpos);
@@ -421,10 +421,12 @@ mod tests {
         match_bases, read_fasta, AuxRecord, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
         Reference,
     };
+    use crate::utils::get_fasta_length;
     use itertools::Itertools;
     use rust_htslib::bam;
     use rust_htslib::bam::record::{Aux, Cigar, CigarString, CigarStringView};
     use std::collections::HashMap;
+    use std::path::PathBuf;
     use std::str::FromStr;
 
     #[test]
@@ -731,6 +733,24 @@ mod tests {
         assert_eq!(reads, expected_reads);
         assert_eq!(total_reads, 1);
         assert_eq!(subsampled_reads, 1);
+    }
+
+    #[test]
+    fn test_create_plot_data_2() {
+        let len = get_fasta_length(&PathBuf::from("tests/sample_3/ref.fa"), "1").unwrap();
+        let region = Region {
+            target: "1".to_string(),
+            start: 1,
+            end: len as i64,
+        };
+        let result = create_plot_data(
+            "tests/sample_3/NA12878.bam",
+            "tests/sample_3/ref.fa",
+            &region,
+            500,
+            None,
+        );
+        assert!(result.is_ok());
     }
 
     #[test]
