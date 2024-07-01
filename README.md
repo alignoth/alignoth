@@ -1,5 +1,5 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/koesterlab/alignoth/rust.yml?branch=main&label=tests)](https://github.com/koesterlab/alignoth/actions)
-[![codecov](https://codecov.io/gh/koesterlab/alignoth/branch/main/graph/badge.svg?token=G751JNS6PU)](https://codecov.io/gh/koesterlab/alignoth)
+[![codecov](https://codecov.io/gh/alignoth/alignoth/branch/main/graph/badge.svg?token=G751JNS6PU)](https://codecov.io/gh/koesterlab/alignoth)
 [![Bioconda downloads](https://img.shields.io/conda/dn/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
 [![Bioconda version](https://img.shields.io/conda/vn/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
