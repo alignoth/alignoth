@@ -16,7 +16,7 @@ log = "0.4.22"
 simplelog = "0.12.2"
 anyhow = "1.0.86"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1.0.120"
+serde_json = "1.0.124"
 rand = "0.8.5"
 itertools = "0.13.0"
 csv = "1.3.0"
