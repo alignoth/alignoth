@@ -6,6 +6,14 @@
     <script>{{ vegaembed | safe }}</script>
 </head>
 <body>
+<details id="manual">
+    <summary>Plot manual</summary>
+    <ul>
+        <li><strong>Zoom:</strong> Use the mouse wheel to zoom in and out of the plot.</li>
+        <li><strong>Pan:</strong> Click and drag to pan through the reads horizontally.</li>
+        <li><strong>Highlight Reads:</strong> Click on a read to highlight it. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
+    </ul>
+</details>
 <div id="vis" style="display: flex; justify-content: center;"></div>
 <script>
     const spec = {{ spec | safe }};
