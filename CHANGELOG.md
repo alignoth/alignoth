@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/alignoth/alignoth/compare/v0.12.1...v0.13.0) (2024-09-18)
+
+
+### Features
+
+* Add manual for plot usage into HTML output ([#269](https://github.com/alignoth/alignoth/issues/269)) ([47d0f1d](https://github.com/alignoth/alignoth/commit/47d0f1df66502ed785dd7b72f48546fa644af4f0))
+
 ## [0.12.1](https://github.com/alignoth/alignoth/compare/v0.12.0...v0.12.1) (2024-07-01)
 
 
