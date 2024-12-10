@@ -247,6 +247,8 @@
                     "legend": null
                 },
                 "color": {
+                    "condition":{"test": "(datum.flags & 1024) > 0",
+                    "value": "#8A2BE2"},
                     "field": "mapq",
                     "type": "quantitative",
                     "scale": {
