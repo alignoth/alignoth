@@ -112,12 +112,15 @@ impl AuxRecord {
     }
 }
 
-impl ToString for AuxRecord {
-    fn to_string(&self) -> String {
-        self.0
+impl Display for AuxRecord {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let formatted: String = self
+            .0
             .iter()
             .map(|(k, v)| format!("{}: {}", k, v))
-            .join(", ")
+            .collect::<Vec<_>>()
+            .join(", ");
+        write!(f, "{}", formatted)
     }
 }
 
@@ -159,9 +162,10 @@ impl Serialize for PlotCigar {
     }
 }
 
-impl ToString for PlotCigar {
-    fn to_string(&self) -> String {
-        self.0.iter().join("|")
+impl Display for PlotCigar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let formatted: String = self.0.iter().join("|");
+        write!(f, "{}", formatted)
     }
 }
 
