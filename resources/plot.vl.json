@@ -213,11 +213,17 @@
             ],
             "encoding": {
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.1
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 1
+                        }
+                    ],
+                    "value": 0.7
                 },
                 "strokeWidth": {
                     "field": "type",
@@ -290,11 +296,17 @@
             },
             "encoding": {
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.1
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 1
+                        }
+                    ],
+                    "value": 0.7
                 },
                 "strokeWidth": {
                     "value": 1
