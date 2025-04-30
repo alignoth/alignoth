@@ -5,6 +5,16 @@
     <script>{{ vegalite | safe }}</script>
     <script>{{ vegaembed | safe }}</script>
     <style>
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem auto;
+            max-width: 1000px;
+            padding: 0 1rem;
+            flex-wrap: nowrap;
+        }
+
         #read-info {
             margin: 1rem auto;
             border-collapse: collapse;
@@ -47,14 +57,17 @@
         }
 
         #manual {
-            max-width: 600px;
-            margin: 1rem auto;
             font-family: system-ui, sans-serif;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             padding: 0.75rem 1rem;
             color: #333;
+            flex: 0 0 45%;
+        }
+
+        #manual:hover {
+            background-color: #eef2f7;
         }
 
         #manual summary {
@@ -78,17 +91,38 @@
             margin-bottom: 0.5rem;
             line-height: 1.5;
         }
+
+        #filter-container {
+            flex: 0 0 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            #read-filter {
+            padding: 0.5rem;
+            font-size: 1rem;
+            width: 300px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
-<details id="manual">
+<div id="controls">
+  <details id="manual">
     <summary>Plot manual</summary>
     <ul>
-        <li><strong>Zoom:</strong> Use the mouse wheel to zoom in and out of the plot.</li>
-        <li><strong>Pan:</strong> Click and drag to pan through the reads horizontally.</li>
-        <li><strong>Highlight Reads:</strong> Click on a read to highlight it. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
+      <li><strong>Zoom:</strong> Use the mouse wheel to zoom in and out of the plot.</li>
+      <li><strong>Pan:</strong> Click and drag to pan through the reads horizontally.</li>
+      <li><strong>Highlight Reads:</strong> Click on a read to highlight it. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
     </ul>
-</details>
+  </details>
+
+  <div id="filter-container">
+    <input type="text" id="read-filter" placeholder="Filter by read name...">
+  </div>
+</div>
 <table id="read-info" border="1">
   <thead>
     <tr><th>Name</th><th>Position</th><th>Flags</th></tr>
@@ -100,7 +134,9 @@
 <div id="vis" style="display: flex; justify-content: center;"></div>
 <script>
     const spec = {{ spec | safe }};
+    let fullData = [];
     vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(({ view }) => {
+        fullReads = view.data('reads');
         const el = document.getElementById("vis");
 
         const used_libs = document.createElement('a');
@@ -138,6 +174,21 @@
             } else {
             tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
             }
+        });
+
+        const input = document.getElementById("read-filter");
+        input.addEventListener("input", () => {
+            const query = input.value.toLowerCase();
+
+            const filtered = fullReads.filter(d => d.name.toLowerCase().includes(query));
+
+            view.change(
+                'reads',
+                vega
+                    .changeset()
+                    .remove(() => true)    // Remove all current reads
+                    .insert(filtered)      // Insert only filtered reads
+            ).run();
         });
     }).catch(console.warn);
 </script>
