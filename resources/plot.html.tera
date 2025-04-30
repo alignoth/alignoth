@@ -4,6 +4,81 @@
     <script>{{ vega | safe }}</script>
     <script>{{ vegalite | safe }}</script>
     <script>{{ vegaembed | safe }}</script>
+    <style>
+        #read-info {
+            margin: 1rem auto;
+            border-collapse: collapse;
+            font-family: system-ui, sans-serif;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #read-info th,
+        #read-info td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        #read-info thead {
+            background-color: #f5f7fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        #read-info tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        #read-info tbody tr:hover {
+            background-color: #eef2f7;
+        }
+
+        #read-info td {
+            color: #444;
+        }
+
+        #read-info caption {
+            caption-side: bottom;
+            padding-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        #manual {
+            max-width: 600px;
+            margin: 1rem auto;
+            font-family: system-ui, sans-serif;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 0.75rem 1rem;
+            color: #333;
+        }
+
+        #manual summary {
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            padding: 0.25rem 0;
+        }
+
+        #manual summary::-webkit-details-marker {
+            display: none; /* Optional: remove the default marker */
+        }
+
+        #manual ul {
+            margin-top: 0.75rem;
+            padding-left: 1.25rem;
+        }
+
+        #manual li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+    </style>
 </head>
 <body>
 <details id="manual">
@@ -14,10 +89,18 @@
         <li><strong>Highlight Reads:</strong> Click on a read to highlight it. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
     </ul>
 </details>
+<table id="read-info" border="1">
+  <thead>
+    <tr><th>Name</th><th>Position</th><th>Flags</th></tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="3">Click a read</td></tr>
+  </tbody>
+</table>
 <div id="vis" style="display: flex; justify-content: center;"></div>
 <script>
     const spec = {{ spec | safe }};
-    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(function() {
+    vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(({ view }) => {
         const el = document.getElementById("vis");
 
         const used_libs = document.createElement('a');
@@ -39,6 +122,23 @@
         vega_embed_link.setAttribute("href","https://github.com/vega/vega-embed");
         vega_embed_link.textContent = "vega-embed";
         el.querySelector('.vega-actions').appendChild(vega_embed_link);
+
+        view.addEventListener('click', function(event, item) {
+            const tableBody = document.querySelector("#read-info tbody");
+
+            if (item && item.datum) {
+            const datum = item.datum;
+            tableBody.innerHTML = `
+                <tr>
+                <td>${datum.name}</td>
+                <td>${datum.position}</td>
+                <td>${datum.flags}</td>
+                </tr>
+            `;
+            } else {
+            tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
+            }
+        });
     }).catch(console.warn);
 </script>
 </body>
