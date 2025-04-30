@@ -88,6 +88,7 @@ pub struct Read {
     end_position: i64,
     mpos: i64,
     aux: AuxRecord,
+    raw_cigar: String,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -359,6 +360,7 @@ impl Read {
             end_position: record.pos() + record.reference_end(),
             mpos,
             aux: AuxRecord::new(&record, aux_tags),
+            raw_cigar: record.cigar().to_string(),
         })
     }
 
@@ -483,6 +485,7 @@ mod tests {
             end_position: 120,
             mpos: 100,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "100M".to_string(),
         };
 
         let read2 = Read {
@@ -495,6 +498,7 @@ mod tests {
             end_position: 140,
             mpos: 120,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "100M".to_string(),
         };
 
         let mut reads = vec![read1, read2];
@@ -514,6 +518,7 @@ mod tests {
             end_position: 120,
             mpos: 100,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "100M".to_string(),
         };
 
         let read2 = Read {
@@ -526,6 +531,7 @@ mod tests {
             end_position: 140,
             mpos: 120,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "100M".to_string(),
         };
 
         let read3 = Read {
@@ -538,6 +544,7 @@ mod tests {
             end_position: 150,
             mpos: 140,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "100M".to_string(),
         };
 
         let mut reads = vec![read1, read2, read3];
@@ -598,8 +605,9 @@ mod tests {
             end_position: 887,
             mpos: 333,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "5S141M4S".to_string(),
         };
-
+        dbg!(&reads);
         assert!(reads.contains(&expected_read));
     }
 
@@ -731,6 +739,7 @@ mod tests {
             end_position: 106,
             mpos: 789264,
             aux: AuxRecord(HashMap::new()),
+            raw_cigar: "16M2I82M".to_string(),
         };
         let expected_reads = vec![expected_read];
         assert_eq!(reference, expected_reference);

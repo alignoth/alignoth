@@ -376,6 +376,9 @@
                     },
                     {
                         "field": "aux"
+                    },
+                    {
+                      "field": "raw_cigar"
                     }
                 ],
                 "opacity": {
@@ -520,6 +523,9 @@
                     },
                     {
                         "field": "inserted bases"
+                    },
+                    {
+                      "field": "raw_cigar"
                     }
                 ],
                 "opacity": {
@@ -660,6 +666,9 @@
                     },
                     {
                         "field": "aux"
+                    },
+                    {
+                      "field": "raw_cigar"
                     }
                 ],
                 "opacity": {
