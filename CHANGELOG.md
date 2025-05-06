@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.14.0](https://github.com/alignoth/alignoth/compare/v0.13.0...v0.14.0) (2025-05-06)
+
+
+### Features
+
+* Add filtering functionality and improve layout for plot controls ([#318](https://github.com/alignoth/alignoth/issues/318)) ([e246dc8](https://github.com/alignoth/alignoth/commit/e246dc8c2dc9677254175938b0eee3437ef0a69b))
+* Add interactive read info table and styling to plot page ([#316](https://github.com/alignoth/alignoth/issues/316)) ([493332b](https://github.com/alignoth/alignoth/commit/493332b7955e90178dfe8633f47b029e7a6e7be1))
+* Add raw_cigar field to tooltip ([#319](https://github.com/alignoth/alignoth/issues/319)) ([05b6282](https://github.com/alignoth/alignoth/commit/05b6282e61540574e316c4c6757030d2a7fbb5c1))
+* Enhanced multi-read selection with shift-click functionality ([#320](https://github.com/alignoth/alignoth/issues/320)) ([b9d6453](https://github.com/alignoth/alignoth/commit/b9d6453af1264c3579d65ee78bbac097ab64a750))
+
+
+### Bug Fixes
+
+* Adjust control panel margins in html view ([85eacba](https://github.com/alignoth/alignoth/commit/85eacba530776bb58715351562b43d8290a286f8))
+* Keep controls fixed at top ([#321](https://github.com/alignoth/alignoth/issues/321)) ([4e8c1a5](https://github.com/alignoth/alignoth/commit/4e8c1a584cf68f29fa779d4a3cba599379d042ba))
+
 ## [0.13.0](https://github.com/alignoth/alignoth/compare/v0.12.1...v0.13.0) (2024-09-18)
 
 
