@@ -152,6 +152,11 @@
             border-style: solid;
             border-color: #333 transparent transparent transparent;
         }
+
+        #vis {
+            overflow: auto;
+            height: calc(100vh - 220px);
+        }
     </style>
 </head>
 <body>
