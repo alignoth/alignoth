@@ -207,7 +207,8 @@
                     "name": "rplc",
                     "select": {
                         "type": "point",
-                        "toggle": false
+                        "toggle": "event.shiftKey",
+                        "fields": ["name", "position"]
                     }
                 }
             ],

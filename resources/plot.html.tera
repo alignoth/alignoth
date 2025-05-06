@@ -106,6 +106,52 @@
             border-radius: 6px;
             border: 1px solid #ccc;
         }
+
+        .flag-pill {
+            position: relative;
+            display: inline-block;
+            padding: 3px 6px;
+            background-color: #007acc;
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 12px;
+            cursor: default;
+        }
+
+        .flag-pill:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.1s ease-in-out;
+            z-index: 9999;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
     </style>
 </head>
 <body>
@@ -115,7 +161,7 @@
     <ul>
       <li><strong>Zoom:</strong> Use the mouse wheel to zoom in and out of the plot.</li>
       <li><strong>Pan:</strong> Click and drag to pan through the reads horizontally.</li>
-      <li><strong>Highlight Reads:</strong> Click on a read to highlight it. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
+      <li><strong>Highlight Reads:</strong> Click on a read to highlight it. Hold shift to select multiple. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
     </ul>
   </details>
 
@@ -159,21 +205,40 @@
         vega_embed_link.textContent = "vega-embed";
         el.querySelector('.vega-actions').appendChild(vega_embed_link);
 
-        view.addEventListener('click', function(event, item) {
+        view.addSignalListener("rplc", (name, value) => {
             const tableBody = document.querySelector("#read-info tbody");
 
-            if (item && item.datum) {
-            const datum = item.datum;
-            tableBody.innerHTML = `
-                <tr>
-                <td>${datum.name}</td>
-                <td>${datum.position}</td>
-                <td>${datum.flags}</td>
-                </tr>
-            `;
-            } else {
-            tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
+            if (!value?.vlPoint?.or?.length) {
+                tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
+                return;
             }
+
+            const selected = value.vlPoint.or;
+
+            const reads = view.data("reads");
+            const selectedReads = reads.filter(r =>
+                selected.some(s => s.name === r.name && s.position === r.position)
+            );
+
+            if (selectedReads.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = selectedReads.map(r => `
+                <tr>
+                    <td>${r.name}</td>
+                    <td>${r.position}</td>
+                    <td>${
+                        decodeFlags(r.flags).map(pill =>
+                            `<span class="flag-pill">
+                                ${pill.label}
+                                <span class="tooltip">${pill.bit}</span>
+                            </span>`
+                        ).join(" ")
+                    }</td>
+                </tr>
+            `).join("");
         });
 
         const input = document.getElementById("read-filter");
@@ -191,6 +256,35 @@
             ).run();
         });
     }).catch(console.warn);
+
+    function decodeFlags(flag) {
+        const meanings = {
+            1: "read paired",
+            2: "read mapped in proper pair",
+            4: "read unmapped",
+            8: "mate unmapped",
+            16: "read reverse strand",
+            32: "mate reverse strand",
+            64: "first in pair",
+            128: "second in pair",
+            256: "not primary alignment",
+            512: "read fails platform/vendor quality checks",
+            1024: "PCR or optical duplicate",
+            2048: "supplementary alignment"
+        };
+        const pills = [];
+
+        Object.keys(meanings).forEach(bit => {
+            if (flag & bit) {
+                pills.push({
+                    bit,
+                    label: meanings[bit]
+                });
+            }
+        });
+
+        return pills;
+    }
 </script>
 </body>
 </html>
