@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.1](https://github.com/alignoth/alignoth/compare/v0.14.0...v0.14.1) (2025-05-08)
+
+
+### Bug Fixes
+
+* Fix library fetching by downgrading reqwest to 0.11 ([dffcc01](https://github.com/alignoth/alignoth/commit/dffcc01dc30f1054ec0b673f7bc879038b410826))
+* Fix library fetching by downgrading reqwest to 0.11 ([3ee2348](https://github.com/alignoth/alignoth/commit/3ee2348899ea1e28590d4ced4c1b777052c776d3))
+
 ## [0.14.0](https://github.com/alignoth/alignoth/compare/v0.13.0...v0.14.0) (2025-05-06)
 
 
