@@ -27,7 +27,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     region: &Region,
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
-) -> Result<(Vec<Read>, Reference, usize, usize)> {
+) -> Result<(Vec<EncodedRead>, Reference, usize, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
         .header()
@@ -57,7 +57,12 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         start: region.start,
         reference: read_fasta(ref_path, region)?.iter().collect(),
     };
-    Ok((data, reference_data, total_read_count, retained_reads))
+    Ok((
+        vec![EncodedRead::from_reads(data)],
+        reference_data,
+        total_read_count,
+        retained_reads,
+    ))
 }
 
 /// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
@@ -89,6 +94,59 @@ pub struct Read {
     mpos: i64,
     aux: AuxRecord,
     raw_cigar: String,
+}
+
+impl Read {
+    pub fn encode(&self) -> String {
+        let aux_str = self.aux.to_string().replace(' ', "_");
+        let row_str = self.row.map_or(".".to_string(), |r| r.to_string());
+
+        format!(
+            "{} {} {} {} {} {} {} {} {}",
+            aux_str,
+            self.cigar,
+            self.flags,
+            self.mapq,
+            self.mpos,
+            self.name,
+            self.position,
+            row_str,
+            self.raw_cigar,
+        )
+    }
+}
+
+/// A compact string representation of multiple reads for embedding in Vega-Lite specifications.
+///
+/// Each read is serialized using whitespace-separated fields:
+/// `aux cigar flags mapq mpos name position row raw_cigar`.
+///
+/// - Fields within a read are separated by a single space (`' '`).
+/// - Multiple reads are concatenated using the section symbol delimiter (`§`).
+/// - Spaces within auxiliary tags are replaced with underscores (`_`) to preserve structure.
+///
+/// This format avoids repetitive JSON keys and minimizes payload size,
+/// making it suitable for inline data embedding in visualization specs.
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub struct EncodedRead {
+    values: String,
+}
+
+impl EncodedRead {
+    /// Converts a list of `Read` structs into a single `EncodedRead`,
+    /// joining the encoded strings using `§` as a delimiter.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let encoded = EncodedRead::from_reads(vec![read1, read2]);
+    /// println!("{}", serde_json::to_string(&encoded).unwrap());
+    /// ```
+    fn from_reads(reads: Vec<Read>) -> Self {
+        EncodedRead {
+            values: reads.iter().map(|r| r.encode()).join("§"),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -424,8 +482,8 @@ mod tests {
     use crate::create_plot_data;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
     use crate::plot::{
-        match_bases, read_fasta, AuxRecord, CigarType, InnerPlotCigar, PlotCigar, PlotOrder, Read,
-        Reference,
+        match_bases, read_fasta, AuxRecord, CigarType, EncodedRead, InnerPlotCigar, PlotCigar,
+        PlotOrder, Read, Reference,
     };
     use crate::utils::get_fasta_length;
     use itertools::Itertools;
@@ -607,8 +665,7 @@ mod tests {
             aux: AuxRecord(HashMap::new()),
             raw_cigar: "5S141M4S".to_string(),
         };
-        dbg!(&reads);
-        assert!(reads.contains(&expected_read));
+        assert!(reads[0].values.contains(&expected_read.encode()));
     }
 
     #[test]
@@ -741,7 +798,8 @@ mod tests {
             aux: AuxRecord(HashMap::new()),
             raw_cigar: "16M2I82M".to_string(),
         };
-        let expected_reads = vec![expected_read];
+
+        let expected_reads = vec![EncodedRead::from_reads(vec![expected_read])];
         assert_eq!(reference, expected_reference);
         assert_eq!(reads, expected_reads);
         assert_eq!(total_reads, 1);

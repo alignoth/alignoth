@@ -159,6 +159,53 @@
             },
             "transform": [
                 {
+                  "calculate": "split(datum.values, '§')",
+                  "as": "reads"
+                },
+                {
+                  "flatten": ["reads"]
+                },
+                {
+                  "calculate": "split(datum.reads, ' ')",
+                  "as": "fields"
+                },
+                {
+                  "calculate": "replace(datum.fields[0], '_', ' ')",
+                  "as": "aux"
+                },
+                {
+                  "calculate": "datum.fields[1]",
+                  "as": "cigar"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[2])",
+                  "as": "flags"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[3])",
+                  "as": "mapq"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[4])",
+                  "as": "mpos"
+                },
+                {
+                  "calculate": "datum.fields[5]",
+                  "as": "name"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[6])",
+                  "as": "position"
+                },
+                {
+                  "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+                  "as": "row"
+                },
+                {
+                  "calculate": "datum.fields[8]",
+                  "as": "raw_cigar"
+                },
+                {
                     "as": "cigars",
                     "calculate": "split(datum.cigar, '|')"
                 },
@@ -274,6 +321,53 @@
             },
             "transform": [
                 {
+                  "calculate": "split(datum.values, '§')",
+                  "as": "reads"
+                },
+                {
+                  "flatten": ["reads"]
+                },
+                {
+                  "calculate": "split(datum.reads, ' ')",
+                  "as": "fields"
+                },
+                {
+                  "calculate": "replace(datum.fields[0], '_', ' ')",
+                  "as": "aux"
+                },
+                {
+                  "calculate": "datum.fields[1]",
+                  "as": "cigar"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[2])",
+                  "as": "flags"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[3])",
+                  "as": "mapq"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[4])",
+                  "as": "mpos"
+                },
+                {
+                  "calculate": "datum.fields[5]",
+                  "as": "name"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[6])",
+                  "as": "position"
+                },
+                {
+                  "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+                  "as": "row"
+                },
+                {
+                  "calculate": "datum.fields[8]",
+                  "as": "raw_cigar"
+                },
+                {
                     "filter": "datum.mpos >= 0"
                 },
                 {
@@ -310,6 +404,53 @@
                 "name": "reads"
             },
             "transform": [
+                {
+                  "calculate": "split(datum.values, '§')",
+                  "as": "reads"
+                },
+                {
+                  "flatten": ["reads"]
+                },
+                {
+                  "calculate": "split(datum.reads, ' ')",
+                  "as": "fields"
+                },
+                {
+                  "calculate": "replace(datum.fields[0], '_', ' ')",
+                  "as": "aux"
+                },
+                {
+                  "calculate": "datum.fields[1]",
+                  "as": "cigar"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[2])",
+                  "as": "flags"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[3])",
+                  "as": "mapq"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[4])",
+                  "as": "mpos"
+                },
+                {
+                  "calculate": "datum.fields[5]",
+                  "as": "name"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[6])",
+                  "as": "position"
+                },
+                {
+                  "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+                  "as": "row"
+                },
+                {
+                  "calculate": "datum.fields[8]",
+                  "as": "raw_cigar"
+                },
                 {
                     "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
                     "as": "flags"
@@ -450,6 +591,53 @@
                 "name": "reads"
             },
             "transform": [
+                {
+                  "calculate": "split(datum.values, '§')",
+                  "as": "reads"
+                },
+                {
+                  "flatten": ["reads"]
+                },
+                {
+                  "calculate": "split(datum.reads, ' ')",
+                  "as": "fields"
+                },
+                {
+                  "calculate": "replace(datum.fields[0], '_', ' ')",
+                  "as": "aux"
+                },
+                {
+                  "calculate": "datum.fields[1]",
+                  "as": "cigar"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[2])",
+                  "as": "flags"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[3])",
+                  "as": "mapq"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[4])",
+                  "as": "mpos"
+                },
+                {
+                  "calculate": "datum.fields[5]",
+                  "as": "name"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[6])",
+                  "as": "position"
+                },
+                {
+                  "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+                  "as": "row"
+                },
+                {
+                  "calculate": "datum.fields[8]",
+                  "as": "raw_cigar"
+                },
                 {
                     "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
                     "as": "flags"
@@ -597,6 +785,53 @@
                 "name": "reads"
             },
             "transform": [
+                {
+                  "calculate": "split(datum.values, '§')",
+                  "as": "reads"
+                },
+                {
+                  "flatten": ["reads"]
+                },
+                {
+                  "calculate": "split(datum.reads, ' ')",
+                  "as": "fields"
+                },
+                {
+                  "calculate": "replace(datum.fields[0], '_', ' ')",
+                  "as": "aux"
+                },
+                {
+                  "calculate": "datum.fields[1]",
+                  "as": "cigar"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[2])",
+                  "as": "flags"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[3])",
+                  "as": "mapq"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[4])",
+                  "as": "mpos"
+                },
+                {
+                  "calculate": "datum.fields[5]",
+                  "as": "name"
+                },
+                {
+                  "calculate": "toNumber(datum.fields[6])",
+                  "as": "position"
+                },
+                {
+                  "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+                  "as": "row"
+                },
+                {
+                  "calculate": "datum.fields[8]",
+                  "as": "raw_cigar"
+                },
                 {
                     "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
                     "as": "flags"

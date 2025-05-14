@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <script>{{ vega | safe }}</script>
     <script>{{ vegalite | safe }}</script>
     <script>{{ vegaembed | safe }}</script>
@@ -220,7 +221,8 @@
 
             const selected = value.vlPoint.or;
 
-            const reads = view.data("reads");
+            var reads = view.data("reads");
+            reads = parseReadObjects(reads[0]["values"]);
             const selectedReads = reads.filter(r =>
                 selected.some(s => s.name === r.name && s.position === r.position)
             );
@@ -249,15 +251,13 @@
         const input = document.getElementById("read-filter");
         input.addEventListener("input", () => {
             const query = input.value.toLowerCase();
-
-            const filtered = fullReads.filter(d => d.name.toLowerCase().includes(query));
-
+            const filtered = fullReads[0]["values"].split("§").filter(d => d.toLowerCase().split(" ")[5].includes(query)).join("§");
             view.change(
                 'reads',
                 vega
                     .changeset()
-                    .remove(() => true)    // Remove all current reads
-                    .insert(filtered)      // Insert only filtered reads
+                    .remove(() => true) // Remove all current reads
+                    .insert([{"values": filtered}]) // Insert only filtered reads
             ).run();
         });
     }).catch(console.warn);
@@ -289,6 +289,13 @@
         });
 
         return pills;
+    }
+
+    function parseReadObjects(s) {
+        return s.split('§').map(line => {
+            const [aux, cigar, flags, mapq, mpos, name, position, row, raw_cigar] = line.split(' ');
+            return { aux, cigar, flags, mapq, mpos, name, position: +position, row, raw_cigar };
+        });
     }
 </script>
 </body>
