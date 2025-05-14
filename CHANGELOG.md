@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.2](https://github.com/alignoth/alignoth/compare/v0.14.1...v0.14.2) (2025-05-14)
+
+
+### Performance Improvements
+
+* Improve storage footprint ([9c3dd3f](https://github.com/alignoth/alignoth/commit/9c3dd3fcffa3116793c14115c747786ccc62650b))
+
 ## [0.14.1](https://github.com/alignoth/alignoth/compare/v0.14.0...v0.14.1) (2025-05-08)
 
 
