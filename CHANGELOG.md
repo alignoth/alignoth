@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.3](https://github.com/alignoth/alignoth/compare/v0.14.2...v0.14.3) (2025-05-15)
+
+
+### Performance Improvements
+
+* Update release profile ([ef671e3](https://github.com/alignoth/alignoth/commit/ef671e347d700c6419c3f105d766f4d637ca2806))
+
 ## [0.14.2](https://github.com/alignoth/alignoth/compare/v0.14.1...v0.14.2) (2025-05-14)
 
 
