@@ -151,9 +151,9 @@ dependencies = [
 
 [[package]]
 name = "bio"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0875bce309de30d684a736aaf628bf9edbd3bdad896eb11b72a182155a5fb97f"
+checksum = "add46f280e82963d4abb6f2c78f491a1f45be23ba27516856a1efbf194107bb7"
 dependencies = [
  "anyhow",
  "approx",
@@ -176,7 +176,6 @@ dependencies = [
  "num-traits",
  "ordered-float",
  "petgraph",
- "rand 0.9.1",
  "regex",
  "serde",
  "serde_derive",
