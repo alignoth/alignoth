@@ -10,7 +10,14 @@
 A tool for creating alignment plots from bam files. The generated [vega-lite](https://vega.github.io/vega-lite/) plots are written to stdout per default.
 An example of a generated plot can be seen [here](http://htmlpreview.github.io/?https://github.com/koesterlab/alignoth/blob/main/examples/plot.html)
 The name alignoth is derived from the visualized **align**ments combined with the star **alioth** (usage of vega plots).
+To run ```alignoth``` in interactive mode, simply execute it without any arguments.
+This launches a wizard that guides you through selecting input files, defining the region of interest, and choosing between an interactive HTML output or a Vega-Lite specification.
+
 ## Usage
+
+```alignoth```
+
+To activate the interactive mode guiding you through the process of creating an alignment plot.
 
 ```alignoth -b path/to/my.bam -r path/to/my/reference.fa -g chr1:200-300 > plot.vl.json```
 
