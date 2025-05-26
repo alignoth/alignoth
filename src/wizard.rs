@@ -1,7 +1,7 @@
-use crate::cli::{Alignoth, Interval, Region};
+use crate::cli::{Alignoth, Around, FromAround, Interval, Region};
 use crate::utils::get_fasta_contigs;
 use anyhow::Result;
-use inquire::{Confirm, Select, Text};
+use inquire::{Select, Text};
 use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -43,9 +43,28 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
 
     let contigs = get_fasta_contigs(&PathBuf::from(reference_path.clone()))?;
     let target = Select::new("Select target contig/chromosome:", contigs).prompt()?;
-    let start = Text::new("Start coordinate:").prompt()?.parse()?;
-    let end = Text::new("End coordinate:").prompt()?.parse()?;
-    let region = Region { target, start, end };
+
+    let region = match Select::new(
+        "Do you want to visualize around a certain position or a specific region?",
+        vec!["Around a position", "Region"],
+    )
+    .prompt()?
+    {
+        "Around a position" => {
+            let around = Around {
+                position: Text::new("Position:").prompt()?.parse()?,
+                target: target.clone(),
+            };
+            Region::from_around(&around)
+        }
+        "Region" => {
+            let start = Text::new("Start coordinate:").prompt()?.parse()?;
+            let end = Text::new("End coordinate:").prompt()?.parse()?;
+            Region { target, start, end }
+        }
+        _ => unreachable!(),
+    };
+
     let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: 1000-2000 or 1200, press Enter to skip)").prompt()?;
     let highlight = if highlight_input.is_empty() {
         None
@@ -68,9 +87,12 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         .with_default("500")
         .prompt()?;
 
-    let html_output = Confirm::new("Generate interactive HTML instead of Vega-Lite specs?")
-        .with_default(true)
-        .prompt()?;
+    let html_output = Select::new(
+        "Choose output type:",
+        vec!["Interactive HTML", "Vega-Lite Specs"],
+    )
+    .prompt()?
+        == "Interactive HTML";
 
     Ok(Alignoth {
         bam_path: Some(bam_path.into()),
