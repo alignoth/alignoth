@@ -261,11 +261,17 @@
             ],
             "encoding": {
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.5
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 1
+                        }
+                    ],
+                    "value": 0.8
                 },
                 "strokeWidth": {
                     "field": "type",
@@ -385,11 +391,17 @@
             },
             "encoding": {
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.5
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 0.5
+                        }
+                    ],
+                    "value": 0.5
                 },
                 "strokeWidth": {
                     "value": 1
@@ -524,11 +536,17 @@
                     }
                 ],
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.5
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 1
+                        }
+                    ],
+                    "value": 0.8
                 },
                 "strokeWidth": {
                     "field": "type",
@@ -718,11 +736,17 @@
                     }
                 ],
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.5
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 1
+                        }
+                    ],
+                    "value": 0.8
                 },
                 "strokeWidth": {
                     "field": "type",
@@ -908,11 +932,17 @@
                     }
                 ],
                 "opacity": {
-                    "condition": {
-                        "param": "rplc",
-                        "value": 1
-                    },
-                    "value": 0.2
+                    "condition": [
+                        {
+                            "test": "(datum.flags & 1024) > 0",
+                            "value": 0.5
+                        },
+                        {
+                            "param": "rplc",
+                            "value": 1
+                        }
+                    ],
+                    "value": 0.8
                 },
                 "strokeWidth": {
                     "field": "type",
