@@ -1,9 +1,11 @@
 mod cli;
 mod plot;
 mod utils;
+mod wizard;
 
 use crate::cli::{DataFormat, Interval, Preprocess};
 use crate::plot::create_plot_data;
+use crate::wizard::wizard_mode;
 use anyhow::Result;
 use csv::WriterBuilder;
 use log::LevelFilter;
@@ -18,7 +20,12 @@ use tera::{Context, Tera};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut opt = cli::Alignoth::from_args();
+    let wizard = std::env::args().len() == 1;
+    let mut opt = if wizard {
+        wizard_mode().await?
+    } else {
+        cli::Alignoth::from_args()
+    };
     let _ = TermLogger::init(
         LevelFilter::Warn,
         Config::default(),
@@ -133,6 +140,16 @@ async fn main() -> Result<()> {
         plot_specs["datasets"]["reference"] = json!(reference_data);
         plot_specs["datasets"]["reads"] = json!(read_data);
         plot_specs["datasets"]["highlight"] = json!(highlight);
+        let bam_name = opt
+            .bam_path
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .strip_suffix(".bam")
+            .unwrap()
+            .to_owned();
         if opt.html {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
@@ -160,7 +177,18 @@ async fn main() -> Result<()> {
                     .await?,
             );
             let html = templates.render("plot", &context)?;
-            stdout().write_all(html.as_bytes())?;
+            if wizard {
+                std::fs::write(format!("{}.html", bam_name), html.as_bytes())?;
+                println!("Plot saved to {}.html 🪄", bam_name);
+            } else {
+                stdout().write_all(html.as_bytes())?;
+            }
+        } else if wizard {
+            std::fs::write(
+                format!("{}.vl.json", bam_name),
+                plot_specs.to_string().as_bytes(),
+            )?;
+            println!("Plot saved to {}.vl.json 🪄", bam_name);
         } else {
             stdout().write_all(plot_specs.to_string().as_bytes())?;
         }
