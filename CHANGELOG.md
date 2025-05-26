@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/alignoth/alignoth/compare/v0.14.3...v0.15.0) (2025-05-26)
+
+
+### Features
+
+* Add new wizard mode for interactive plot generation ([#327](https://github.com/alignoth/alignoth/issues/327)) ([25d099e](https://github.com/alignoth/alignoth/commit/25d099edac84a85efc72540006ef96915d95e7e7))
+
 ## [0.14.3](https://github.com/alignoth/alignoth/compare/v0.14.2...v0.14.3) (2025-05-15)
 
 
