@@ -44,6 +44,17 @@ pub(crate) fn get_fasta_length(fasta_path: &PathBuf, target: &str) -> Result<usi
     Ok(seq.len())
 }
 
+// Get all contigs/chromosomes from fasta file
+pub(crate) fn get_fasta_contigs(fasta_path: &PathBuf) -> Result<Vec<String>> {
+    let fasta_reader = fasta::Reader::from_file(fasta_path)?;
+    let mut contigs = Vec::new();
+    for record in fasta_reader.records() {
+        let record = record?;
+        contigs.push(record.id().to_string());
+    }
+    Ok(contigs)
+}
+
 /// Takes any given aux and returns a string representation of it.
 pub(crate) fn aux_to_string(aux: rust_htslib::bam::record::Aux) -> String {
     match aux {
@@ -70,7 +81,7 @@ pub(crate) fn aux_to_string(aux: rust_htslib::bam::record::Aux) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{get_fasta_length, get_ref_and_bam_from_cwd};
+    use crate::utils::{get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd};
     use std::path::PathBuf;
     use std::str::FromStr;
 
@@ -88,5 +99,12 @@ mod tests {
     fn test_get_ref_and_bam_from_empty_cwd() {
         let result = get_ref_and_bam_from_cwd().unwrap();
         assert_eq!(result, None)
+    }
+
+    #[test]
+    fn test_get_fasta_contigs() {
+        let contigs =
+            get_fasta_contigs(&PathBuf::from_str("tests/sample_1/reference.fa").unwrap()).unwrap();
+        assert_eq!(contigs, vec!["chr1".to_string()])
     }
 }
