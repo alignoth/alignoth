@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
         ColorChoice::Auto,
     );
     opt.preprocess()?;
-    let (read_data, reference_data, total_reads, retained_reads) = create_plot_data(
+    let (read_data, reference_data, total_reads, coverage_data, retained_reads) = create_plot_data(
         &opt.bam_path.as_ref().unwrap(),
         &opt.reference.as_ref().unwrap(),
         opt.region.as_ref().unwrap(),
@@ -45,20 +45,24 @@ async fn main() -> Result<()> {
         end: h.end + 0.5,
     });
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
-    plot_specs["width"] = json!(min(
+    let width = json!(min(
         opt.max_width,
         5 * (opt.region.as_ref().unwrap().length())
     ));
-    plot_specs["encoding"]["x"]["scale"]["domain"] = json!(vec![
+    plot_specs["vconcat"][0]["width"] = width.clone();
+    plot_specs["vconcat"][1]["width"] = width;
+    let domain = json!(vec![
         opt.region.as_ref().unwrap().start as f32 - 0.5,
         opt.region.as_ref().unwrap().end as f32 - 0.5
     ]);
+    plot_specs["vconcat"][0]["encoding"]["x"]["scale"]["domain"] = domain.clone();
+    plot_specs["vconcat"][1]["encoding"]["x"]["scale"]["domain"] = domain;
     let subsampling_warning = if total_reads > retained_reads {
         format!("{retained_reads} of {total_reads} reads (subsampled)")
     } else {
         format!("{total_reads} reads")
     };
-    plot_specs["title"] = json!({
+    plot_specs["vconcat"][1]["title"] = json!({
             "text": &opt.region.unwrap().target,
             "subtitle": subsampling_warning,
     });
@@ -67,6 +71,14 @@ async fn main() -> Result<()> {
         DataFormat::Tsv => {
             let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
             writer.serialize(&reference_data)?;
+            writer.into_inner()?
+        }
+    };
+    let coverage = match opt.data_format {
+        DataFormat::Json => json!(coverage_data).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            writer.serialize(&coverage_data)?;
             writer.into_inner()?
         }
     };
@@ -110,6 +122,7 @@ async fn main() -> Result<()> {
             &reference,
             &reads,
             &highlights,
+            &coverage,
             &Path::join(out_path, format!("{bam_file_name}.vl.json")),
             &Path::join(
                 out_path,
@@ -120,26 +133,39 @@ async fn main() -> Result<()> {
                 format!("{}.reads.{}", bam_file_name, opt.data_format),
             ),
             highlight_path,
+            &Path::join(
+                out_path,
+                format!("{}.coverage.{}", bam_file_name, opt.data_format),
+            ),
         )?;
-    } else if let (Some(spec_output), Some(ref_data_output), Some(read_data_output)) = (
+    } else if let (
+        Some(spec_output),
+        Some(ref_data_output),
+        Some(read_data_output),
+        Some(coverage_output),
+    ) = (
         &opt.spec_output,
         &opt.ref_data_output,
         &opt.read_data_output,
+        &opt.coverage_output,
     ) {
         write_files(
             json!(plot_specs).to_string().as_bytes(),
             &reference,
             &reads,
             &highlights,
+            &coverage,
             spec_output,
             ref_data_output,
             read_data_output,
             opt.highlight_data_output,
+            coverage_output,
         )?;
     } else {
         plot_specs["datasets"]["reference"] = json!(reference_data);
         plot_specs["datasets"]["reads"] = json!(read_data);
         plot_specs["datasets"]["highlight"] = json!(highlight);
+        plot_specs["datasets"]["coverage"] = json!(coverage_data);
         let bam_name = opt
             .bam_path
             .unwrap()
@@ -202,10 +228,12 @@ fn write_files(
     ref_data: &[u8],
     read_data: &[u8],
     highlight_data: &[u8],
+    coverage_data: &[u8],
     spec_path: &Path,
     ref_path: &Path,
     read_path: &Path,
     highlight_path: Option<PathBuf>,
+    coverage_path: &Path,
 ) -> Result<()> {
     let mut specs = File::create(spec_path).unwrap();
     specs.write_all(spec_data)?;
@@ -213,6 +241,8 @@ fn write_files(
     read_file.write_all(read_data)?;
     let mut reference_file = File::create(ref_path).unwrap();
     reference_file.write_all(ref_data)?;
+    let mut coverage_file = File::create(coverage_path).unwrap();
+    coverage_file.write_all(coverage_data)?;
     if let Some(path) = highlight_path {
         let mut highlight_file = File::create(path).unwrap();
         highlight_file.write_all(highlight_data)?;
@@ -233,16 +263,19 @@ mod tests {
             "test ref".as_bytes(),
             "test read".as_bytes(),
             "test highlight".as_bytes(),
+            "test coverage".as_bytes(),
             Path::new("/tmp/test_spec.json"),
             Path::new("/tmp/test_ref.json"),
             Path::new("/tmp/test_read.json"),
             Some(PathBuf::from("/tmp/test_highlight.json")),
+            Path::new("/tmp/test_coverage.json"),
         )
         .unwrap();
         assert!(Path::new("/tmp/test_spec.json").exists());
         assert!(Path::new("/tmp/test_ref.json").exists());
         assert!(Path::new("/tmp/test_read.json").exists());
         assert!(Path::new("/tmp/test_highlight.json").exists());
+        assert!(Path::new("/tmp/test_coverage.json").exists());
         assert_eq!(
             fs::read_to_string("/tmp/test_spec.json").unwrap(),
             "test spec"

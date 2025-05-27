@@ -51,6 +51,7 @@ The following options are available when using alignoth:
 | read-data-output      |       | If present read data will be written to the given file path                                                                                                       |         |
 | ref-data-output       |       | If present reference data will be written to the given file path                                                                                                  |         |
 | highlight-data-output |       | If present highlight data will be written to the given file path                                                                                                  |         |
+| coverage-data-output  |       | If present coverage data will be written to the given file path                                                                                                  |         |
 | html                  |       | If present the generated plot will inserted into a plain html file containing the plot centered which is then written to stdout                                   |         |
 
 ## Installation
