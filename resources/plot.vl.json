@@ -1,7 +1,7 @@
 {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
     "height": {
-        "step": 12
+        "step": 4
     },
     "resolve": {
         "scale": {
@@ -45,6 +45,10 @@
             "axis": null,
             "field": "row",
             "type": "ordinal"
+        },
+        "yOffset": {
+          "field": "v_offset",
+          "type": "ordinal"
         }
     },
     "layer": [
@@ -243,6 +247,10 @@
                 {
                     "as": "end",
                     "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length - 0.4, datum.position + datum.offset + datum.length + 0.6)"
+                },
+                {
+                  "as": "v_offset",
+                  "calculate": "if(datum.position < datum.mpos, 0, 2)"
                 }
             ],
             "mark": {
@@ -377,6 +385,10 @@
                 {
                     "as": "end",
                     "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+                },
+                {
+                  "as": "v_offset",
+                  "calculate": "1"
                 }
             ],
             "mark": {
@@ -496,6 +508,10 @@
                 },
                 {
                     "filter": "datum.type != 'deletion' && datum.type != 'insertion'"
+                },
+                {
+                  "as": "v_offset",
+                  "calculate": "if(datum.position < datum.mpos, 0, 2)"
                 }
             ],
             "mark": {
@@ -687,6 +703,10 @@
                 },
                 {
                     "filter": "datum.type == 'insertion'"
+                },
+                {
+                  "as": "v_offset",
+                  "calculate": "if(datum.position < datum.mpos, 0, 2)"
                 }
             ],
             "mark": {
@@ -877,6 +897,10 @@
                 },
                 {
                     "filter": "datum.type == 'deletion'"
+                },
+                {
+                  "as": "v_offset",
+                  "calculate": "if(datum.position < datum.mpos, 0, 2)"
                 }
             ],
             "mark": {
