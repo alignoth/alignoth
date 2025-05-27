@@ -52,9 +52,7 @@
                 "x": {
                     "field": "p",
                     "type": "quantitative",
-                    "axis": {
-                        "title": null
-                    },
+                    "axis": {"orient": "top", "title": "position (1-based)"},
                     "scale": {
                         "domain": []
                     }
@@ -79,7 +77,7 @@
                     "type": "quantitative",
                     "axis": {
                         "orient": "top",
-                        "title": "position (1-based)"
+                        "title": null
                     },
                     "scale": {
                         "domain": []

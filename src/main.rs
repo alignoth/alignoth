@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
     } else {
         format!("{total_reads} reads")
     };
-    plot_specs["vconcat"][1]["title"] = json!({
+    plot_specs["vconcat"][0]["title"] = json!({
             "text": &opt.region.unwrap().target,
             "subtitle": subsampling_warning,
     });
