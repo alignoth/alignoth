@@ -266,6 +266,96 @@
                             "as": "raw_cigar"
                         },
                         {
+                            "filter": "datum.mpos >= 0"
+                        },
+                        {
+                            "as": "start",
+                            "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+                        },
+                        {
+                            "as": "end",
+                            "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+                        },
+                        {
+                            "as": "v_offset",
+                            "calculate": "1"
+                        }
+                    ],
+                    "mark": {
+                        "type": "rule",
+                        "clip": true
+                    },
+                    "encoding": {
+                        "opacity": {
+                            "condition": {
+                                "param": "rplc",
+                                "value": 1
+                            },
+                            "value": 0.2
+                        },
+                        "strokeWidth": {
+                            "value": 1
+                        },
+                        "color": {
+                            "value": "#BBBBBB"
+                        }
+                    }
+                },
+                {
+                    "data": {
+                        "name": "reads"
+                    },
+                    "transform": [
+                        {
+                            "calculate": "split(datum.values, '\u00a7')",
+                            "as": "reads"
+                        },
+                        {
+                            "flatten": [
+                                "reads"
+                            ]
+                        },
+                        {
+                            "calculate": "split(datum.reads, ' ')",
+                            "as": "fields"
+                        },
+                        {
+                            "calculate": "replace(datum.fields[0], '_', ' ')",
+                            "as": "aux"
+                        },
+                        {
+                            "calculate": "datum.fields[1]",
+                            "as": "cigar"
+                        },
+                        {
+                            "calculate": "toNumber(datum.fields[2])",
+                            "as": "flags"
+                        },
+                        {
+                            "calculate": "toNumber(datum.fields[3])",
+                            "as": "mapq"
+                        },
+                        {
+                            "calculate": "toNumber(datum.fields[4])",
+                            "as": "mpos"
+                        },
+                        {
+                            "calculate": "datum.fields[5]",
+                            "as": "name"
+                        },
+                        {
+                            "calculate": "toNumber(datum.fields[6])",
+                            "as": "position"
+                        },
+                        {
+                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+                            "as": "row"
+                        },
+                        {
+                            "calculate": "datum.fields[8]",
+                            "as": "raw_cigar"
+                        },
+                        {
                             "as": "cigars",
                             "calculate": "split(datum.cigar, '|')"
                         },
@@ -337,7 +427,6 @@
                         "strokeWidth": {
                             "field": "type",
                             "scale": {
-                                "type": "ordinal",
                                 "domain": [
                                     "A",
                                     "C",
@@ -379,96 +468,6 @@
                                     "#bbbbbb"
                                 ]
                             }
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reads"
-                    },
-                    "transform": [
-                        {
-                            "calculate": "split(datum.values, '\u00a7')",
-                            "as": "reads"
-                        },
-                        {
-                            "flatten": [
-                                "reads"
-                            ]
-                        },
-                        {
-                            "calculate": "split(datum.reads, ' ')",
-                            "as": "fields"
-                        },
-                        {
-                            "calculate": "replace(datum.fields[0], '_', ' ')",
-                            "as": "aux"
-                        },
-                        {
-                            "calculate": "datum.fields[1]",
-                            "as": "cigar"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[2])",
-                            "as": "flags"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[3])",
-                            "as": "mapq"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[4])",
-                            "as": "mpos"
-                        },
-                        {
-                            "calculate": "datum.fields[5]",
-                            "as": "name"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[6])",
-                            "as": "position"
-                        },
-                        {
-                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
-                            "as": "row"
-                        },
-                        {
-                            "calculate": "datum.fields[8]",
-                            "as": "raw_cigar"
-                        },
-                        {
-                            "filter": "datum.mpos >= 0"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
-                        },
-                        {
-                            "as": "v_offset",
-                            "calculate": "1"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "encoding": {
-                        "opacity": {
-                            "condition": {
-                                "param": "rplc",
-                                "value": 1
-                            },
-                            "value": 0.2
-                        },
-                        "strokeWidth": {
-                            "value": 1
-                        },
-                        "color": {
-                            "value": "#BBBBBB"
                         }
                     }
                 },
