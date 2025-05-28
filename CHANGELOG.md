@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/alignoth/alignoth/compare/v0.16.0...v0.16.1) (2025-05-28)
+
+
+### Bug Fixes
+
+* Resolve MAPQ border issue in VL specs ([a4a622e](https://github.com/alignoth/alignoth/commit/a4a622e5defa78223a4ab3af4059c151a4775f91))
+
 ## [0.16.0](https://github.com/alignoth/alignoth/compare/v0.15.0...v0.16.0) (2025-05-28)
 
 
