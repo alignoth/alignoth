@@ -27,7 +27,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     region: &Region,
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
-) -> Result<(Vec<EncodedRead>, Reference, usize, usize)> {
+) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
         .header()
@@ -50,6 +50,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
                 .unwrap()
         })
         .collect_vec();
+    let coverage = Coverage::from_reads(&data, region);
     let total_read_count = data.len();
     data.order(max_read_depth)?;
     let retained_reads = data.len();
@@ -61,6 +62,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         vec![EncodedRead::from_reads(data)],
         reference_data,
         total_read_count,
+        coverage,
         retained_reads,
     ))
 }
@@ -149,7 +151,7 @@ impl EncodedRead {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub struct AuxRecord(HashMap<String, String>);
 
 impl AuxRecord {
@@ -197,6 +199,32 @@ impl Serialize for AuxRecord {
 pub(crate) struct Reference {
     start: i64,
     reference: String,
+}
+
+/// A coverage with all relevant information base for being plotted over a read plot
+/// Each value in coverage represents the number of reads covering that position.
+#[derive(Serialize, Debug, Eq, PartialEq)]
+pub(crate) struct Coverage {
+    start: i64,
+    coverage: Vec<usize>,
+}
+
+impl Coverage {
+    pub fn from_reads(reads: &[Read], region: &Region) -> Self {
+        let mut coverage = vec![0; region.length() as usize];
+        for read in reads {
+            if !(read.end_position <= region.start || read.position >= region.end) {
+                for i in read.position.max(region.start)..read.end_position.min(region.end) {
+                    coverage[(i - region.start) as usize] += 1;
+                }
+            }
+        }
+
+        Self {
+            start: region.start,
+            coverage,
+        }
+    }
 }
 
 /// A more detailed version of a CigarString with all relevant information base for being plotted in a read plot.
@@ -481,6 +509,7 @@ mod tests {
     use crate::cli::Region;
     use crate::create_plot_data;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
+    use crate::plot::Coverage;
     use crate::plot::{
         match_bases, read_fasta, AuxRecord, CigarType, EncodedRead, InnerPlotCigar, PlotCigar,
         PlotOrder, Read, Reference,
@@ -642,7 +671,7 @@ mod tests {
             start: 300,
             end: 500,
         };
-        let (reads, _reference, _, _) = create_plot_data(
+        let (reads, _reference, _, _, _) = create_plot_data(
             "tests/sample_2/sample.bam",
             "tests/sample_2/ref.fa",
             &region,
@@ -774,7 +803,7 @@ mod tests {
             start: 0,
             end: 20,
         };
-        let (reads, reference, total_reads, subsampled_reads) = create_plot_data(
+        let (reads, reference, total_reads, coverage, subsampled_reads) = create_plot_data(
             "tests/sample_1/reads.bam",
             "tests/sample_1/reference.fa",
             &region,
@@ -800,7 +829,12 @@ mod tests {
         };
 
         let expected_reads = vec![EncodedRead::from_reads(vec![expected_read])];
+        let expected_coverage = Coverage {
+            start: 0,
+            coverage: vec![0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        };
         assert_eq!(reference, expected_reference);
+        assert_eq!(coverage, expected_coverage);
         assert_eq!(reads, expected_reads);
         assert_eq!(total_reads, 1);
         assert_eq!(subsampled_reads, 1);
@@ -882,5 +916,60 @@ mod tests {
         let aux_record_string = aux_record.to_string();
         let expected_aux_record_string = "XI: 1234".to_string();
         assert_eq!(aux_record_string, expected_aux_record_string);
+    }
+
+    #[test]
+    fn test_coverage_from_reads_basic_overlap() {
+        // Create two reads, with overlapping positions
+        let reads = vec![
+            Read {
+                name: "read1".to_string(),
+                cigar: "5=".parse().unwrap(), // 5 matches
+                position: 5,
+                end_position: 10,
+                flags: 0,
+                mapq: 60,
+                row: None,
+                mpos: -1,
+                aux: Default::default(),
+                raw_cigar: "5=".to_string(),
+            },
+            Read {
+                name: "read2".to_string(),
+                cigar: "5=".parse().unwrap(),
+                position: 7,
+                end_position: 12,
+                flags: 0,
+                mapq: 60,
+                row: None,
+                mpos: -1,
+                aux: Default::default(),
+                raw_cigar: "5=".to_string(),
+            },
+            Read {
+                name: "outside".to_string(),
+                cigar: "5=".parse().unwrap(),
+                position: 20,
+                end_position: 25,
+                flags: 0,
+                mapq: 60,
+                row: None,
+                mpos: -1,
+                aux: Default::default(),
+                raw_cigar: "5=".to_string(),
+            },
+        ];
+
+        let region = Region {
+            target: "chr1".to_owned(),
+            start: 5,
+            end: 15,
+        };
+
+        let coverage = Coverage::from_reads(&reads, &region);
+
+        let expected = vec![1, 1, 2, 2, 2, 1, 1, 0, 0, 0];
+        assert_eq!(coverage.coverage, expected);
+        assert_eq!(coverage.start, 5);
     }
 }
