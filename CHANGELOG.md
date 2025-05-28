@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.0](https://github.com/alignoth/alignoth/compare/v0.15.0...v0.16.0) (2025-05-28)
+
+
+### Features
+
+* Add coverage plot ([#332](https://github.com/alignoth/alignoth/issues/332)) ([0fb3f14](https://github.com/alignoth/alignoth/commit/0fb3f14ae6c484085364dc27f4e0dbc55712eda8))
+* Improved visualization for read pairs ([#330](https://github.com/alignoth/alignoth/issues/330)) ([02aaef3](https://github.com/alignoth/alignoth/commit/02aaef3ea4aaa80ef62139059d846d7071b94367))
+
 ## [0.15.0](https://github.com/alignoth/alignoth/compare/v0.14.3...v0.15.0) (2025-05-26)
 
 
