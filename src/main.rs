@@ -55,7 +55,6 @@ async fn main() -> Result<()> {
         opt.region.as_ref().unwrap().start as f32 - 0.5,
         opt.region.as_ref().unwrap().end as f32 - 0.5
     ]);
-    plot_specs["vconcat"][0]["encoding"]["x"]["scale"]["domain"] = domain.clone();
     plot_specs["vconcat"][1]["encoding"]["x"]["scale"]["domain"] = domain;
     let subsampling_warning = if total_reads > retained_reads {
         format!("{retained_reads} of {total_reads} reads (subsampled)")
