@@ -178,10 +178,10 @@ impl Display for AuxRecord {
         let formatted: String = self
             .0
             .iter()
-            .map(|(k, v)| format!("{}: {}", k, v))
+            .map(|(k, v)| format!("{k}: {v}"))
             .collect::<Vec<_>>()
             .join(", ");
-        write!(f, "{}", formatted)
+        write!(f, "{formatted}")
     }
 }
 
@@ -252,7 +252,7 @@ impl Serialize for PlotCigar {
 impl Display for PlotCigar {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let formatted: String = self.0.iter().join("|");
-        write!(f, "{}", formatted)
+        write!(f, "{formatted}")
     }
 }
 
