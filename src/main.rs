@@ -203,17 +203,17 @@ async fn main() -> Result<()> {
             );
             let html = templates.render("plot", &context)?;
             if wizard {
-                std::fs::write(format!("{}.html", bam_name), html.as_bytes())?;
-                println!("Plot saved to {}.html 🪄", bam_name);
+                std::fs::write(format!("{bam_name}.html"), html.as_bytes())?;
+                println!("Plot saved to {bam_name}.html 🪄");
             } else {
                 stdout().write_all(html.as_bytes())?;
             }
         } else if wizard {
             std::fs::write(
-                format!("{}.vl.json", bam_name),
+                format!("{bam_name}.vl.json"),
                 plot_specs.to_string().as_bytes(),
             )?;
-            println!("Plot saved to {}.vl.json 🪄", bam_name);
+            println!("Plot saved to {bam_name}.vl.json 🪄");
         } else {
             stdout().write_all(plot_specs.to_string().as_bytes())?;
         }
