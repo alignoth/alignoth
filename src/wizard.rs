@@ -13,7 +13,10 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     let bam_files: Vec<_> = fs::read_dir(&current_dir)?
         .filter_map(|entry| entry.ok())
         .map(|e| e.path())
-        .filter(|p| p.extension().is_some_and(|ext| ext == "bam" || ext == "sam" || ext == "cram"))
+        .filter(|p| {
+            p.extension()
+                .is_some_and(|ext| ext == "bam" || ext == "sam" || ext == "cram")
+        })
         .collect();
     let fasta_files: Vec<_> = fs::read_dir(&current_dir)?
         .filter_map(|entry| entry.ok())
