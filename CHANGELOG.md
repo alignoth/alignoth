@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2](https://github.com/alignoth/alignoth/compare/v0.16.1...v0.16.2) (2025-07-08)
+
+
+### Bug Fixes
+
+* Allow SAM and CRAM files for wizard usage ([#340](https://github.com/alignoth/alignoth/issues/340)) ([70a65e2](https://github.com/alignoth/alignoth/commit/70a65e2547501e222cde75a1bd67fcf7abfa3b39))
+
 ## [0.16.1](https://github.com/alignoth/alignoth/compare/v0.16.0...v0.16.1) (2025-05-28)
 
 
