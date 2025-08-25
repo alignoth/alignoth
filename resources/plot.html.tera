@@ -5,6 +5,7 @@
     <script>{{ vega | safe }}</script>
     <script>{{ vegalite | safe }}</script>
     <script>{{ vegaembed | safe }}</script>
+    <script>{{ lzstring | safe }}</script>
     <style>
         #controls {
             display: flex;
@@ -185,7 +186,8 @@
 </table>
 <div id="vis" style="display: flex; justify-content: center;"></div>
 <script>
-    const spec = {{ spec | safe }};
+    const compressed_spec = {{ spec | safe }};
+    const spec = JSON.parse(LZString.decompressFromUTF16(compressed_spec));
     let fullData = [];
     vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(({ view }) => {
         fullReads = view.data('reads');

@@ -9,6 +9,7 @@ use crate::wizard::wizard_mode;
 use anyhow::Result;
 use csv::WriterBuilder;
 use log::LevelFilter;
+use lz_str::compress_to_utf16;
 use serde_json::{json, Value};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::cmp::min;
@@ -179,7 +180,10 @@ async fn main() -> Result<()> {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
             let mut context = Context::new();
-            context.insert("spec", &plot_specs.to_string());
+            context.insert(
+                "spec",
+                &json!(compress_to_utf16(&plot_specs.to_string())).to_string(),
+            );
             context.insert(
                 "vega",
                 &reqwest::get("https://cdn.jsdelivr.net/npm/vega@5")
@@ -197,6 +201,13 @@ async fn main() -> Result<()> {
             context.insert(
                 "vegaembed",
                 &reqwest::get("https://cdn.jsdelivr.net/npm/vega-embed@6")
+                    .await?
+                    .text()
+                    .await?,
+            );
+            context.insert(
+                "lzstring",
+                &reqwest::get("https://cdn.jsdelivr.net/npm/lz-string@1")
                     .await?
                     .text()
                     .await?,
