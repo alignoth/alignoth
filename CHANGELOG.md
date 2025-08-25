@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.3](https://github.com/alignoth/alignoth/compare/v0.16.2...v0.16.3) (2025-08-25)
+
+
+### Performance Improvements
+
+* Compress specs using lz-string for HTML output ([#350](https://github.com/alignoth/alignoth/issues/350)) ([65fc73b](https://github.com/alignoth/alignoth/commit/65fc73bd99028f32be867f57560ef9e6b370ff28))
+
 ## [0.16.2](https://github.com/alignoth/alignoth/compare/v0.16.1...v0.16.2) (2025-07-08)
 
 
