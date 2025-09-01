@@ -75,17 +75,17 @@ jobs:
           override: true
 
       - name: Run cargo-tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-           version: 0.22.0
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --out Xml
 
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
           path: cobertura.xml
