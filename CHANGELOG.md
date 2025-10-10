@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.4](https://github.com/alignoth/alignoth/compare/v0.16.3...v0.16.4) (2025-10-10)
+
+
+### Bug Fixes
+
+* Handle CIGAR operations when calculating coverage ([#363](https://github.com/alignoth/alignoth/issues/363)) ([31d0775](https://github.com/alignoth/alignoth/commit/31d07751bb7d65de080c8e408927e65144062986))
+
 ## [0.16.3](https://github.com/alignoth/alignoth/compare/v0.16.2...v0.16.3) (2025-08-25)
 
 
