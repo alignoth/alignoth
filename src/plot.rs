@@ -214,8 +214,26 @@ impl Coverage {
         let mut coverage = vec![0; region.length() as usize];
         for read in reads {
             if !(read.end_position <= region.start || read.position >= region.end) {
-                for i in read.position.max(region.start)..read.end_position.min(region.end) {
-                    coverage[(i - region.start) as usize] += 1;
+                let mut ref_pos = read.position;
+                for cigar in &read.cigar {
+                    match cigar.cigar_type {
+                        CigarType::Match | CigarType::Sub => {
+                            if let Some(len) = cigar.length {
+                                let start = ref_pos.max(region.start);
+                                let end = (ref_pos + len as i64).min(region.end);
+                                for i in start..end {
+                                    coverage[(i - region.start) as usize] += 1;
+                                }
+                                ref_pos += len as i64;
+                            }
+                        }
+                        CigarType::Del => {
+                            if let Some(len) = cigar.length {
+                                ref_pos += len as i64;
+                            }
+                        }
+                        _ => {}
+                    }
                 }
             }
         }
@@ -253,6 +271,15 @@ impl Display for PlotCigar {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let formatted: String = self.0.iter().join("|");
         write!(f, "{formatted}")
+    }
+}
+
+impl<'a> IntoIterator for &'a PlotCigar {
+    type Item = &'a InnerPlotCigar;
+    type IntoIter = std::slice::Iter<'a, InnerPlotCigar>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }
 
