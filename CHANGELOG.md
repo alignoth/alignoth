@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.5](https://github.com/alignoth/alignoth/compare/v0.16.4...v0.16.5) (2025-10-13)
+
+
+### Bug Fixes
+
+* Package js libraries into alignoth ([#365](https://github.com/alignoth/alignoth/issues/365)) ([0a890a5](https://github.com/alignoth/alignoth/commit/0a890a5bc3b86a2201f23bf490e3eab97f4c8cb6))
+
 ## [0.16.4](https://github.com/alignoth/alignoth/compare/v0.16.3...v0.16.4) (2025-10-10)
 
 
