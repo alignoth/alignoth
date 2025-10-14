@@ -1,1069 +1,1031 @@
 {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "resolve": {
-        "scale": {
-            "strokeWidth": "independent"
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "resolve": {
+    "scale": {
+      "strokeWidth": "independent"
+    }
+  },
+  "datasets": {
+    "highlight": [],
+    "reference": [],
+    "reads": [],
+    "coverage": []
+  },
+  "config": {
+    "legend": {
+      "layout": {
+        "right": {
+          "anchor": "start",
+          "direction": "horizontal",
+          "center": false,
+          "margin": 10
         }
-    },
-    "datasets": {
-        "highlight": [],
-        "reference": [],
-        "reads": [],
-        "coverage": []
-    },
-    "config": {
-        "legend": {
-            "layout": {
-                "right": {
-                    "anchor": "start",
-                    "direction": "horizontal",
-                    "center": false,
-                    "margin": 10
-                }
-            }
-        }
-    },
-    "vconcat": [
+      }
+    }
+  },
+  "vconcat": [
+    {
+      "data": {
+        "name": "coverage"
+      },
+      "mark": {
+        "type": "area",
+        "interpolate": "monotone"
+      },
+      "transform": [
+        { "as": "coverage", "calculate": "split(datum.coverage, '§')" },
+        { "flatten": ["coverage"] },
+        { "as": "counts", "calculate": "split(datum.coverage, '|')" },
         {
-            "data": {
-                "name": "coverage"
-            },
-            "mark": "area",
-            "transform": [
-                {
-                    "as": "offset",
-                    "calculate": "sequence(datum.coverage.length)"
-                },
-                {
-                    "flatten": [
-                        "offset",
-                        "coverage"
-                    ]
-                },
-                {
-                    "as": "p",
-                    "calculate": "datum.start + datum.offset"
-                }
-            ],
-            "encoding": {
-                "color": {
-                    "value": "#BBB"
-                },
-                "x": {
-                    "field": "p",
-                    "type": "quantitative",
-                    "axis": {
-                        "orient": "top",
-                        "title": "position (1-based)"
-                    },
-                    "scale": {
-                        "domain": {
-                            "param": "grid"
-                        },
-                        "nice": false
-                    }
-                },
-                "y": {
-                    "field": "coverage",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "coverage"
-                    }
-                }
-            },
-            "height": 60
+          "window": [
+            {
+              "op": "row_number",
+              "as": "index"
+            }
+          ],
+          "frame": [null, 0]
         },
         {
-            "height": {
-                "step": 4
-            },
-            "encoding": {
-                "x": {
-                    "field": "start",
-                    "type": "quantitative",
-                    "axis": {
-                        "orient": "top",
-                        "labels": false,
-                        "ticks": false,
-                        "title": null
-                    },
-                    "scale": {
-                        "domain": []
-                    }
-                },
-                "x2": {
-                    "field": "end",
-                    "type": "quantitative"
-                },
-                "y": {
-                    "axis": null,
-                    "field": "row",
-                    "type": "ordinal"
-                },
-                "yOffset": {
-                    "field": "v_offset",
-                    "type": "ordinal"
-                }
-            },
-            "layer": [
-                {
-                    "data": {
-                        "name": "highlight"
-                    },
-                    "mark": "rect",
-                    "encoding": {
-                        "color": {
-                            "value": "red"
-                        },
-                        "opacity": {
-                            "value": 0.15
-                        },
-                        "y2": {
-                            "value": 10000000
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reference"
-                    },
-                    "params": [
-                        {
-                            "name": "grid",
-                            "select": "interval",
-                            "bind": "scales"
-                        }
-                    ],
-                    "transform": [
-                        {
-                            "as": "base",
-                            "calculate": "split(datum.reference, '')"
-                        },
-                        {
-                            "as": "offset",
-                            "calculate": "sequence(datum.reference.length)"
-                        },
-                        {
-                            "flatten": [
-                                "base",
-                                "offset"
-                            ]
-                        },
-                        {
-                            "as": "position",
-                            "calculate": "datum.start + datum.offset"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "datum.position + 0.5"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "datum.position + 1.5"
-                        },
-                        {
-                            "as": "position (1-based)",
-                            "calculate": "datum.position + 1"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "encoding": {
-                        "tooltip": [
-                            {
-                                "field": "base"
-                            },
-                            {
-                                "field": "position (1-based)"
-                            }
-                        ],
-                        "strokeWidth": {
-                            "value": 8
-                        },
-                        "color": {
-                            "field": "base",
-                            "legend": null,
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    "#CADB69",
-                                    "#F2B671",
-                                    "#F28CC2",
-                                    "#7284A8",
-                                    "#A23E11",
-                                    "#BBBBBB",
-                                    "#CC1414",
-                                    "#047C0A"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reads"
-                    },
-                    "transform": [
-                        {
-                            "calculate": "split(datum.values, '\u00a7')",
-                            "as": "reads"
-                        },
-                        {
-                            "flatten": [
-                                "reads"
-                            ]
-                        },
-                        {
-                            "calculate": "split(datum.reads, ' ')",
-                            "as": "fields"
-                        },
-                        {
-                            "calculate": "replace(datum.fields[0], '_', ' ')",
-                            "as": "aux"
-                        },
-                        {
-                            "calculate": "datum.fields[1]",
-                            "as": "cigar"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[2])",
-                            "as": "flags"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[3])",
-                            "as": "mapq"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[4])",
-                            "as": "mpos"
-                        },
-                        {
-                            "calculate": "datum.fields[5]",
-                            "as": "name"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[6])",
-                            "as": "position"
-                        },
-                        {
-                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
-                            "as": "row"
-                        },
-                        {
-                            "calculate": "datum.fields[8]",
-                            "as": "raw_cigar"
-                        },
-                        {
-                            "filter": "datum.mpos >= 0"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
-                        },
-                        {
-                            "as": "v_offset",
-                            "calculate": "1"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "encoding": {
-                        "opacity": {
-                            "condition": {
-                                "param": "rplc",
-                                "value": 1
-                            },
-                            "value": 0.2
-                        },
-                        "strokeWidth": {
-                            "value": 1
-                        },
-                        "color": {
-                            "value": "#BBBBBB"
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reads"
-                    },
-                    "transform": [
-                        {
-                            "calculate": "split(datum.values, '\u00a7')",
-                            "as": "reads"
-                        },
-                        {
-                            "flatten": [
-                                "reads"
-                            ]
-                        },
-                        {
-                            "calculate": "split(datum.reads, ' ')",
-                            "as": "fields"
-                        },
-                        {
-                            "calculate": "replace(datum.fields[0], '_', ' ')",
-                            "as": "aux"
-                        },
-                        {
-                            "calculate": "datum.fields[1]",
-                            "as": "cigar"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[2])",
-                            "as": "flags"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[3])",
-                            "as": "mapq"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[4])",
-                            "as": "mpos"
-                        },
-                        {
-                            "calculate": "datum.fields[5]",
-                            "as": "name"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[6])",
-                            "as": "position"
-                        },
-                        {
-                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
-                            "as": "row"
-                        },
-                        {
-                            "calculate": "datum.fields[8]",
-                            "as": "raw_cigar"
-                        },
-                        {
-                            "as": "cigars",
-                            "calculate": "split(datum.cigar, '|')"
-                        },
-                        {
-                            "as": "cigar_index",
-                            "calculate": "sequence(datum.cigars.length)"
-                        },
-                        {
-                            "flatten": [
-                                "cigars",
-                                "cigar_index"
-                            ]
-                        },
-                        {
-                            "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
-                            "as": "type"
-                        },
-                        {
-                            "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
-                            "as": "length"
-                        },
-                        {
-                            "stack": "length",
-                            "groupby": [
-                                "name",
-                                "cigar",
-                                "position"
-                            ],
-                            "as": "offset"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1.4, datum.position + datum.offset + 0.4)"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length - 0.4, datum.position + datum.offset + datum.length + 0.6)"
-                        },
-                        {
-                            "as": "v_offset",
-                            "calculate": "if(datum.position < datum.mpos, 0, 2)"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "params": [
-                        {
-                            "name": "rplc",
-                            "select": {
-                                "type": "point",
-                                "toggle": "event.shiftKey",
-                                "fields": [
-                                    "name",
-                                    "position"
-                                ]
-                            }
-                        }
-                    ],
-                    "encoding": {
-                        "opacity": {
-                            "condition": {
-                                "param": "rplc",
-                                "value": 1
-                            },
-                            "value": 0.2
-                        },
-                        "strokeWidth": {
-                            "field": "type",
-                            "scale": {
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    9,
-                                    9,
-                                    9,
-                                    9,
-                                    9,
-                                    9,
-                                    9,
-                                    12
-                                ]
-                            },
-                            "legend": null
-                        },
-                        "color": {
-                            "field": "mapq",
-                            "type": "quantitative",
-                            "scale": {
-                                "domain": [
-                                    0,
-                                    60
-                                ],
-                                "range": [
-                                    "#910000",
-                                    "#c70002",
-                                    "#ff0000",
-                                    "#ff7500",
-                                    "#ffb200",
-                                    "#ffe921",
-                                    "#bbbbbb"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reads"
-                    },
-                    "transform": [
-                        {
-                            "calculate": "split(datum.values, '\u00a7')",
-                            "as": "reads"
-                        },
-                        {
-                            "flatten": [
-                                "reads"
-                            ]
-                        },
-                        {
-                            "calculate": "split(datum.reads, ' ')",
-                            "as": "fields"
-                        },
-                        {
-                            "calculate": "replace(datum.fields[0], '_', ' ')",
-                            "as": "aux"
-                        },
-                        {
-                            "calculate": "datum.fields[1]",
-                            "as": "cigar"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[2])",
-                            "as": "flags"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[3])",
-                            "as": "mapq"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[4])",
-                            "as": "mpos"
-                        },
-                        {
-                            "calculate": "datum.fields[5]",
-                            "as": "name"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[6])",
-                            "as": "position"
-                        },
-                        {
-                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
-                            "as": "row"
-                        },
-                        {
-                            "calculate": "datum.fields[8]",
-                            "as": "raw_cigar"
-                        },
-                        {
-                            "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
-                            "as": "flags"
-                        },
-                        {
-                            "as": "cigars",
-                            "calculate": "split(datum.cigar, '|')"
-                        },
-                        {
-                            "as": "cigar_index",
-                            "calculate": "sequence(datum.cigars.length)"
-                        },
-                        {
-                            "flatten": [
-                                "cigars",
-                                "cigar_index"
-                            ]
-                        },
-                        {
-                            "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
-                            "as": "type"
-                        },
-                        {
-                            "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
-                            "as": "length"
-                        },
-                        {
-                            "stack": "length",
-                            "groupby": [
-                                "name",
-                                "cigar",
-                                "position"
-                            ],
-                            "as": "offset"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "datum.position + datum.offset + 0.5"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "datum.position + datum.offset + datum.length + 0.5"
-                        },
-                        {
-                            "filter": "datum.type != 'deletion' && datum.type != 'insertion'"
-                        },
-                        {
-                            "as": "v_offset",
-                            "calculate": "if(datum.position < datum.mpos, 0, 2)"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "encoding": {
-                        "tooltip": [
-                            {
-                                "field": "name"
-                            },
-                            {
-                                "field": "type"
-                            },
-                            {
-                                "field": "mapq"
-                            },
-                            {
-                                "field": "flags"
-                            },
-                            {
-                                "field": "aux"
-                            },
-                            {
-                                "field": "raw_cigar"
-                            }
-                        ],
-                        "opacity": {
-                            "condition": {
-                                "param": "rplc",
-                                "value": 1
-                            },
-                            "value": 0.2
-                        },
-                        "strokeWidth": {
-                            "field": "type",
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    9
-                                ]
-                            },
-                            "legend": null
-                        },
-                        "color": {
-                            "field": "type",
-                            "legend": null,
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    "#CADB69",
-                                    "#F2B671",
-                                    "#F28CC2",
-                                    "#7284A8",
-                                    "#A23E11",
-                                    "#BBBBBB",
-                                    "#CC1414",
-                                    "#047C0A"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reads"
-                    },
-                    "transform": [
-                        {
-                            "calculate": "split(datum.values, '\u00a7')",
-                            "as": "reads"
-                        },
-                        {
-                            "flatten": [
-                                "reads"
-                            ]
-                        },
-                        {
-                            "calculate": "split(datum.reads, ' ')",
-                            "as": "fields"
-                        },
-                        {
-                            "calculate": "replace(datum.fields[0], '_', ' ')",
-                            "as": "aux"
-                        },
-                        {
-                            "calculate": "datum.fields[1]",
-                            "as": "cigar"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[2])",
-                            "as": "flags"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[3])",
-                            "as": "mapq"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[4])",
-                            "as": "mpos"
-                        },
-                        {
-                            "calculate": "datum.fields[5]",
-                            "as": "name"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[6])",
-                            "as": "position"
-                        },
-                        {
-                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
-                            "as": "row"
-                        },
-                        {
-                            "calculate": "datum.fields[8]",
-                            "as": "raw_cigar"
-                        },
-                        {
-                            "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
-                            "as": "flags"
-                        },
-                        {
-                            "as": "cigars",
-                            "calculate": "split(datum.cigar, '|')"
-                        },
-                        {
-                            "as": "cigar_index",
-                            "calculate": "sequence(datum.cigars.length)"
-                        },
-                        {
-                            "flatten": [
-                                "cigars",
-                                "cigar_index"
-                            ]
-                        },
-                        {
-                            "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
-                            "as": "type"
-                        },
-                        {
-                            "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
-                            "as": "length"
-                        },
-                        {
-                            "stack": "length",
-                            "groupby": [
-                                "name",
-                                "cigar",
-                                "position"
-                            ],
-                            "as": "offset"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "datum.position + datum.offset + 0.5"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "datum.position + datum.offset + datum.length + 0.5"
-                        },
-                        {
-                            "as": "inserted bases",
-                            "calculate": "substring(datum.cigars, 1, length(datum.cigars))"
-                        },
-                        {
-                            "filter": "datum.type == 'insertion'"
-                        },
-                        {
-                            "as": "v_offset",
-                            "calculate": "if(datum.position < datum.mpos, 0, 2)"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "encoding": {
-                        "tooltip": [
-                            {
-                                "field": "name"
-                            },
-                            {
-                                "field": "type"
-                            },
-                            {
-                                "field": "mapq"
-                            },
-                            {
-                                "field": "flags"
-                            },
-                            {
-                                "field": "aux"
-                            },
-                            {
-                                "field": "inserted bases"
-                            },
-                            {
-                                "field": "raw_cigar"
-                            }
-                        ],
-                        "opacity": {
-                            "condition": {
-                                "param": "rplc",
-                                "value": 1
-                            },
-                            "value": 0.2
-                        },
-                        "strokeWidth": {
-                            "field": "type",
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    9
-                                ]
-                            },
-                            "legend": null
-                        },
-                        "color": {
-                            "field": "type",
-                            "legend": null,
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    "#CADB69",
-                                    "#F2B671",
-                                    "#F28CC2",
-                                    "#7284A8",
-                                    "#A23E11",
-                                    "#BBBBBB",
-                                    "#CC1414",
-                                    "#047C0A"
-                                ]
-                            }
-                        }
-                    }
-                },
-                {
-                    "data": {
-                        "name": "reads"
-                    },
-                    "transform": [
-                        {
-                            "calculate": "split(datum.values, '\u00a7')",
-                            "as": "reads"
-                        },
-                        {
-                            "flatten": [
-                                "reads"
-                            ]
-                        },
-                        {
-                            "calculate": "split(datum.reads, ' ')",
-                            "as": "fields"
-                        },
-                        {
-                            "calculate": "replace(datum.fields[0], '_', ' ')",
-                            "as": "aux"
-                        },
-                        {
-                            "calculate": "datum.fields[1]",
-                            "as": "cigar"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[2])",
-                            "as": "flags"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[3])",
-                            "as": "mapq"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[4])",
-                            "as": "mpos"
-                        },
-                        {
-                            "calculate": "datum.fields[5]",
-                            "as": "name"
-                        },
-                        {
-                            "calculate": "toNumber(datum.fields[6])",
-                            "as": "position"
-                        },
-                        {
-                            "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
-                            "as": "row"
-                        },
-                        {
-                            "calculate": "datum.fields[8]",
-                            "as": "raw_cigar"
-                        },
-                        {
-                            "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
-                            "as": "flags"
-                        },
-                        {
-                            "as": "cigars",
-                            "calculate": "split(datum.cigar, '|')"
-                        },
-                        {
-                            "as": "cigar_index",
-                            "calculate": "sequence(datum.cigars.length)"
-                        },
-                        {
-                            "flatten": [
-                                "cigars",
-                                "cigar_index"
-                            ]
-                        },
-                        {
-                            "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
-                            "as": "type"
-                        },
-                        {
-                            "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
-                            "as": "length"
-                        },
-                        {
-                            "stack": "length",
-                            "groupby": [
-                                "name",
-                                "cigar",
-                                "position"
-                            ],
-                            "as": "offset"
-                        },
-                        {
-                            "as": "start",
-                            "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1, datum.position + datum.offset + 0.5)"
-                        },
-                        {
-                            "as": "end",
-                            "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
-                        },
-                        {
-                            "filter": "datum.type == 'deletion'"
-                        },
-                        {
-                            "as": "v_offset",
-                            "calculate": "if(datum.position < datum.mpos, 0, 2)"
-                        }
-                    ],
-                    "mark": {
-                        "type": "rule",
-                        "clip": true
-                    },
-                    "encoding": {
-                        "tooltip": [
-                            {
-                                "field": "name"
-                            },
-                            {
-                                "field": "type"
-                            },
-                            {
-                                "field": "mapq"
-                            },
-                            {
-                                "field": "flags"
-                            },
-                            {
-                                "field": "length"
-                            },
-                            {
-                                "field": "aux"
-                            },
-                            {
-                                "field": "raw_cigar"
-                            }
-                        ],
-                        "opacity": {
-                            "condition": {
-                                "param": "rplc",
-                                "value": 1
-                            },
-                            "value": 0.2
-                        },
-                        "strokeWidth": {
-                            "field": "type",
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    6,
-                                    9
-                                ]
-                            },
-                            "legend": null
-                        },
-                        "color": {
-                            "field": "type",
-                            "legend": {
-                                "symbolSize": 75,
-                                "title": "symbol"
-                            },
-                            "scale": {
-                                "type": "ordinal",
-                                "domain": [
-                                    "A",
-                                    "C",
-                                    "G",
-                                    "T",
-                                    "N",
-                                    "match",
-                                    "deletion",
-                                    "insertion"
-                                ],
-                                "range": [
-                                    "#CADB69",
-                                    "#F2B671",
-                                    "#F28CC2",
-                                    "#7284A8",
-                                    "#A23E11",
-                                    "#BBBBBB",
-                                    "#CC1414",
-                                    "#047C0A"
-                                ]
-                            }
-                        }
-                    }
-                }
-            ]
+          "calculate": "datum.start + datum.index",
+          "as": "position"
+        },
+        {
+          "calculate": "datum.counts[0]",
+          "as": "a"
+        },
+        {
+          "calculate": "datum.counts[1]",
+          "as": "t"
+        },
+        {
+          "calculate": "datum.counts[2]",
+          "as": "g"
+        },
+        {
+          "calculate": "datum.counts[3]",
+          "as": "c"
+        },
+        {
+          "calculate": "datum.counts[4]",
+          "as": "m"
+        },
+        {
+          "fold": ["m", "a", "c", "g", "t"],
+          "as": ["base_type", "count"]
+        },
+        {
+          "calculate": "datum.base_type === 'm' ? 'm' : datum.base_type === 'a' ? 'A' : datum.base_type === 'c' ? 'C' : datum.base_type === 'g' ? 'G' : 'T'",
+          "as": "base_label"
         }
-    ]
+      ],
+      "encoding": {
+        "x": {
+          "field": "position",
+          "type": "quantitative",
+          "axis": {
+            "orient": "top",
+            "title": "Position (1-based)",
+            "labelAngle": 0
+          },
+          "scale": {
+            "domain": {
+              "param": "grid"
+            },
+            "nice": false
+          }
+        },
+        "y": {
+          "field": "count",
+          "type": "quantitative",
+          "stack": true,
+          "axis": {
+            "title": "Coverage"
+          }
+        },
+        "color": {
+          "field": "base_label",
+          "type": "nominal",
+          "scale": {
+            "domain": ["A", "T", "G", "C", "m"],
+            "range": ["#CADB69", "#7284A8", "#F28CC2", "#F2B671", "#BBBBBB"]
+          },
+          "legend": null
+        },
+        "order": {
+          "field": "base_type",
+          "sort": ["m", "A", "C", "G", "T"]
+        }
+      },
+      "height": 60
+    },
+    {
+      "height": {
+        "step": 4
+      },
+      "encoding": {
+        "x": {
+          "field": "start",
+          "type": "quantitative",
+          "axis": {
+            "orient": "top",
+            "labels": false,
+            "ticks": false,
+            "title": null
+          },
+          "scale": {
+            "domain": []
+          }
+        },
+        "x2": {
+          "field": "end",
+          "type": "quantitative"
+        },
+        "y": {
+          "axis": null,
+          "field": "row",
+          "type": "ordinal"
+        },
+        "yOffset": {
+          "field": "v_offset",
+          "type": "ordinal"
+        }
+      },
+      "layer": [
+        {
+          "data": {
+            "name": "highlight"
+          },
+          "mark": "rect",
+          "encoding": {
+            "color": {
+              "value": "red"
+            },
+            "opacity": {
+              "value": 0.15
+            },
+            "y2": {
+              "value": 10000000
+            }
+          }
+        },
+        {
+          "data": {
+            "name": "reference"
+          },
+          "params": [
+            {
+              "name": "grid",
+              "select": "interval",
+              "bind": "scales"
+            }
+          ],
+          "transform": [
+            {
+              "as": "base",
+              "calculate": "split(datum.reference, '')"
+            },
+            {
+              "as": "offset",
+              "calculate": "sequence(datum.reference.length)"
+            },
+            {
+              "flatten": ["base", "offset"]
+            },
+            {
+              "as": "position",
+              "calculate": "datum.start + datum.offset"
+            },
+            {
+              "as": "start",
+              "calculate": "datum.position + 0.5"
+            },
+            {
+              "as": "end",
+              "calculate": "datum.position + 1.5"
+            },
+            {
+              "as": "position (1-based)",
+              "calculate": "datum.position + 1"
+            }
+          ],
+          "mark": {
+            "type": "rule",
+            "clip": true
+          },
+          "encoding": {
+            "tooltip": [
+              {
+                "field": "base"
+              },
+              {
+                "field": "position (1-based)"
+              }
+            ],
+            "strokeWidth": {
+              "value": 8
+            },
+            "color": {
+              "field": "base",
+              "legend": null,
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [
+                  "#CADB69",
+                  "#F2B671",
+                  "#F28CC2",
+                  "#7284A8",
+                  "#A23E11",
+                  "#BBBBBB",
+                  "#CC1414",
+                  "#047C0A"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "data": {
+            "name": "reads"
+          },
+          "transform": [
+            {
+              "calculate": "split(datum.values, '\u00a7')",
+              "as": "reads"
+            },
+            {
+              "flatten": ["reads"]
+            },
+            {
+              "calculate": "split(datum.reads, ' ')",
+              "as": "fields"
+            },
+            {
+              "calculate": "replace(datum.fields[0], '_', ' ')",
+              "as": "aux"
+            },
+            {
+              "calculate": "datum.fields[1]",
+              "as": "cigar"
+            },
+            {
+              "calculate": "toNumber(datum.fields[2])",
+              "as": "flags"
+            },
+            {
+              "calculate": "toNumber(datum.fields[3])",
+              "as": "mapq"
+            },
+            {
+              "calculate": "toNumber(datum.fields[4])",
+              "as": "mpos"
+            },
+            {
+              "calculate": "datum.fields[5]",
+              "as": "name"
+            },
+            {
+              "calculate": "toNumber(datum.fields[6])",
+              "as": "position"
+            },
+            {
+              "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+              "as": "row"
+            },
+            {
+              "calculate": "datum.fields[8]",
+              "as": "raw_cigar"
+            },
+            {
+              "filter": "datum.mpos >= 0"
+            },
+            {
+              "as": "start",
+              "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+            },
+            {
+              "as": "end",
+              "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+            },
+            {
+              "as": "v_offset",
+              "calculate": "1"
+            }
+          ],
+          "mark": {
+            "type": "rule",
+            "clip": true
+          },
+          "encoding": {
+            "opacity": {
+              "condition": {
+                "param": "rplc",
+                "value": 1
+              },
+              "value": 0.2
+            },
+            "strokeWidth": {
+              "value": 1
+            },
+            "color": {
+              "value": "#BBBBBB"
+            }
+          }
+        },
+        {
+          "data": {
+            "name": "reads"
+          },
+          "transform": [
+            {
+              "calculate": "split(datum.values, '\u00a7')",
+              "as": "reads"
+            },
+            {
+              "flatten": ["reads"]
+            },
+            {
+              "calculate": "split(datum.reads, ' ')",
+              "as": "fields"
+            },
+            {
+              "calculate": "replace(datum.fields[0], '_', ' ')",
+              "as": "aux"
+            },
+            {
+              "calculate": "datum.fields[1]",
+              "as": "cigar"
+            },
+            {
+              "calculate": "toNumber(datum.fields[2])",
+              "as": "flags"
+            },
+            {
+              "calculate": "toNumber(datum.fields[3])",
+              "as": "mapq"
+            },
+            {
+              "calculate": "toNumber(datum.fields[4])",
+              "as": "mpos"
+            },
+            {
+              "calculate": "datum.fields[5]",
+              "as": "name"
+            },
+            {
+              "calculate": "toNumber(datum.fields[6])",
+              "as": "position"
+            },
+            {
+              "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+              "as": "row"
+            },
+            {
+              "calculate": "datum.fields[8]",
+              "as": "raw_cigar"
+            },
+            {
+              "as": "cigars",
+              "calculate": "split(datum.cigar, '|')"
+            },
+            {
+              "as": "cigar_index",
+              "calculate": "sequence(datum.cigars.length)"
+            },
+            {
+              "flatten": ["cigars", "cigar_index"]
+            },
+            {
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "as": "type"
+            },
+            {
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "as": "length"
+            },
+            {
+              "stack": "length",
+              "groupby": ["name", "cigar", "position"],
+              "as": "offset"
+            },
+            {
+              "as": "start",
+              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1.4, datum.position + datum.offset + 0.4)"
+            },
+            {
+              "as": "end",
+              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length - 0.4, datum.position + datum.offset + datum.length + 0.6)"
+            },
+            {
+              "as": "v_offset",
+              "calculate": "if(datum.position < datum.mpos, 0, 2)"
+            }
+          ],
+          "mark": {
+            "type": "rule",
+            "clip": true
+          },
+          "params": [
+            {
+              "name": "rplc",
+              "select": {
+                "type": "point",
+                "toggle": "event.shiftKey",
+                "fields": ["name", "position"]
+              }
+            }
+          ],
+          "encoding": {
+            "opacity": {
+              "condition": {
+                "param": "rplc",
+                "value": 1
+              },
+              "value": 0.2
+            },
+            "strokeWidth": {
+              "field": "type",
+              "scale": {
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [9, 9, 9, 9, 9, 9, 9, 12]
+              },
+              "legend": null
+            },
+            "color": {
+              "field": "mapq",
+              "type": "quantitative",
+              "scale": {
+                "domain": [0, 60],
+                "range": [
+                  "#910000",
+                  "#c70002",
+                  "#ff0000",
+                  "#ff7500",
+                  "#ffb200",
+                  "#ffe921",
+                  "#bbbbbb"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "data": {
+            "name": "reads"
+          },
+          "transform": [
+            {
+              "calculate": "split(datum.values, '\u00a7')",
+              "as": "reads"
+            },
+            {
+              "flatten": ["reads"]
+            },
+            {
+              "calculate": "split(datum.reads, ' ')",
+              "as": "fields"
+            },
+            {
+              "calculate": "replace(datum.fields[0], '_', ' ')",
+              "as": "aux"
+            },
+            {
+              "calculate": "datum.fields[1]",
+              "as": "cigar"
+            },
+            {
+              "calculate": "toNumber(datum.fields[2])",
+              "as": "flags"
+            },
+            {
+              "calculate": "toNumber(datum.fields[3])",
+              "as": "mapq"
+            },
+            {
+              "calculate": "toNumber(datum.fields[4])",
+              "as": "mpos"
+            },
+            {
+              "calculate": "datum.fields[5]",
+              "as": "name"
+            },
+            {
+              "calculate": "toNumber(datum.fields[6])",
+              "as": "position"
+            },
+            {
+              "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+              "as": "row"
+            },
+            {
+              "calculate": "datum.fields[8]",
+              "as": "raw_cigar"
+            },
+            {
+              "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
+              "as": "flags"
+            },
+            {
+              "as": "cigars",
+              "calculate": "split(datum.cigar, '|')"
+            },
+            {
+              "as": "cigar_index",
+              "calculate": "sequence(datum.cigars.length)"
+            },
+            {
+              "flatten": ["cigars", "cigar_index"]
+            },
+            {
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "as": "type"
+            },
+            {
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "as": "length"
+            },
+            {
+              "stack": "length",
+              "groupby": ["name", "cigar", "position"],
+              "as": "offset"
+            },
+            {
+              "as": "start",
+              "calculate": "datum.position + datum.offset + 0.5"
+            },
+            {
+              "as": "end",
+              "calculate": "datum.position + datum.offset + datum.length + 0.5"
+            },
+            {
+              "filter": "datum.type != 'deletion' && datum.type != 'insertion'"
+            },
+            {
+              "as": "v_offset",
+              "calculate": "if(datum.position < datum.mpos, 0, 2)"
+            }
+          ],
+          "mark": {
+            "type": "rule",
+            "clip": true
+          },
+          "encoding": {
+            "tooltip": [
+              {
+                "field": "name"
+              },
+              {
+                "field": "type"
+              },
+              {
+                "field": "mapq"
+              },
+              {
+                "field": "flags"
+              },
+              {
+                "field": "aux"
+              },
+              {
+                "field": "raw_cigar"
+              }
+            ],
+            "opacity": {
+              "condition": {
+                "param": "rplc",
+                "value": 1
+              },
+              "value": 0.2
+            },
+            "strokeWidth": {
+              "field": "type",
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [6, 6, 6, 6, 6, 6, 6, 9]
+              },
+              "legend": null
+            },
+            "color": {
+              "field": "type",
+              "legend": null,
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [
+                  "#CADB69",
+                  "#F2B671",
+                  "#F28CC2",
+                  "#7284A8",
+                  "#A23E11",
+                  "#BBBBBB",
+                  "#CC1414",
+                  "#047C0A"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "data": {
+            "name": "reads"
+          },
+          "transform": [
+            {
+              "calculate": "split(datum.values, '\u00a7')",
+              "as": "reads"
+            },
+            {
+              "flatten": ["reads"]
+            },
+            {
+              "calculate": "split(datum.reads, ' ')",
+              "as": "fields"
+            },
+            {
+              "calculate": "replace(datum.fields[0], '_', ' ')",
+              "as": "aux"
+            },
+            {
+              "calculate": "datum.fields[1]",
+              "as": "cigar"
+            },
+            {
+              "calculate": "toNumber(datum.fields[2])",
+              "as": "flags"
+            },
+            {
+              "calculate": "toNumber(datum.fields[3])",
+              "as": "mapq"
+            },
+            {
+              "calculate": "toNumber(datum.fields[4])",
+              "as": "mpos"
+            },
+            {
+              "calculate": "datum.fields[5]",
+              "as": "name"
+            },
+            {
+              "calculate": "toNumber(datum.fields[6])",
+              "as": "position"
+            },
+            {
+              "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+              "as": "row"
+            },
+            {
+              "calculate": "datum.fields[8]",
+              "as": "raw_cigar"
+            },
+            {
+              "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
+              "as": "flags"
+            },
+            {
+              "as": "cigars",
+              "calculate": "split(datum.cigar, '|')"
+            },
+            {
+              "as": "cigar_index",
+              "calculate": "sequence(datum.cigars.length)"
+            },
+            {
+              "flatten": ["cigars", "cigar_index"]
+            },
+            {
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "as": "type"
+            },
+            {
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "as": "length"
+            },
+            {
+              "stack": "length",
+              "groupby": ["name", "cigar", "position"],
+              "as": "offset"
+            },
+            {
+              "as": "start",
+              "calculate": "datum.position + datum.offset + 0.5"
+            },
+            {
+              "as": "end",
+              "calculate": "datum.position + datum.offset + datum.length + 0.5"
+            },
+            {
+              "as": "inserted bases",
+              "calculate": "substring(datum.cigars, 1, length(datum.cigars))"
+            },
+            {
+              "filter": "datum.type == 'insertion'"
+            },
+            {
+              "as": "v_offset",
+              "calculate": "if(datum.position < datum.mpos, 0, 2)"
+            }
+          ],
+          "mark": {
+            "type": "rule",
+            "clip": true
+          },
+          "encoding": {
+            "tooltip": [
+              {
+                "field": "name"
+              },
+              {
+                "field": "type"
+              },
+              {
+                "field": "mapq"
+              },
+              {
+                "field": "flags"
+              },
+              {
+                "field": "aux"
+              },
+              {
+                "field": "inserted bases"
+              },
+              {
+                "field": "raw_cigar"
+              }
+            ],
+            "opacity": {
+              "condition": {
+                "param": "rplc",
+                "value": 1
+              },
+              "value": 0.2
+            },
+            "strokeWidth": {
+              "field": "type",
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [6, 6, 6, 6, 6, 6, 6, 9]
+              },
+              "legend": null
+            },
+            "color": {
+              "field": "type",
+              "legend": null,
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [
+                  "#CADB69",
+                  "#F2B671",
+                  "#F28CC2",
+                  "#7284A8",
+                  "#A23E11",
+                  "#BBBBBB",
+                  "#CC1414",
+                  "#047C0A"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "data": {
+            "name": "reads"
+          },
+          "transform": [
+            {
+              "calculate": "split(datum.values, '\u00a7')",
+              "as": "reads"
+            },
+            {
+              "flatten": ["reads"]
+            },
+            {
+              "calculate": "split(datum.reads, ' ')",
+              "as": "fields"
+            },
+            {
+              "calculate": "replace(datum.fields[0], '_', ' ')",
+              "as": "aux"
+            },
+            {
+              "calculate": "datum.fields[1]",
+              "as": "cigar"
+            },
+            {
+              "calculate": "toNumber(datum.fields[2])",
+              "as": "flags"
+            },
+            {
+              "calculate": "toNumber(datum.fields[3])",
+              "as": "mapq"
+            },
+            {
+              "calculate": "toNumber(datum.fields[4])",
+              "as": "mpos"
+            },
+            {
+              "calculate": "datum.fields[5]",
+              "as": "name"
+            },
+            {
+              "calculate": "toNumber(datum.fields[6])",
+              "as": "position"
+            },
+            {
+              "calculate": "datum.fields[7] === '.' ? null : toNumber(datum.fields[7])",
+              "as": "row"
+            },
+            {
+              "calculate": "datum.fields[8]",
+              "as": "raw_cigar"
+            },
+            {
+              "calculate": "join([if ((datum.flags & 1) > 0, 'read paired, ', ''), if ((datum.flags & 2) > 0, 'read mapped in proper pair, ', ''),  if ((datum.flags & 4) > 0, 'read unmapped, ', ''), if ((datum.flags & 8) > 0, 'mate unmapped, ', ''), if ((datum.flags & 16) > 0, 'read reverse strand, ', ''), if ((datum.flags & 32) > 0, 'mate reverse strand, ', ''), if ((datum.flags & 64) > 0, 'first in pair, ', ''), if ((datum.flags & 128) > 0, 'second in pair, ', ''), if ((datum.flags & 256) > 0, 'not primary alignment, ', ''), if ((datum.flags & 512) > 0, 'read fails platform/vendor quality checks, ', ''), if ((datum.flags & 1024) > 0, 'read is PCR or optical duplicate, ', ''), if ((datum.flags & 2048) > 0, 'supplementary alignment, ', '')], '')",
+              "as": "flags"
+            },
+            {
+              "as": "cigars",
+              "calculate": "split(datum.cigar, '|')"
+            },
+            {
+              "as": "cigar_index",
+              "calculate": "sequence(datum.cigars.length)"
+            },
+            {
+              "flatten": ["cigars", "cigar_index"]
+            },
+            {
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "as": "type"
+            },
+            {
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "as": "length"
+            },
+            {
+              "stack": "length",
+              "groupby": ["name", "cigar", "position"],
+              "as": "offset"
+            },
+            {
+              "as": "start",
+              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1, datum.position + datum.offset + 0.5)"
+            },
+            {
+              "as": "end",
+              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
+            },
+            {
+              "filter": "datum.type == 'deletion'"
+            },
+            {
+              "as": "v_offset",
+              "calculate": "if(datum.position < datum.mpos, 0, 2)"
+            }
+          ],
+          "mark": {
+            "type": "rule",
+            "clip": true
+          },
+          "encoding": {
+            "tooltip": [
+              {
+                "field": "name"
+              },
+              {
+                "field": "type"
+              },
+              {
+                "field": "mapq"
+              },
+              {
+                "field": "flags"
+              },
+              {
+                "field": "length"
+              },
+              {
+                "field": "aux"
+              },
+              {
+                "field": "raw_cigar"
+              }
+            ],
+            "opacity": {
+              "condition": {
+                "param": "rplc",
+                "value": 1
+              },
+              "value": 0.2
+            },
+            "strokeWidth": {
+              "field": "type",
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [6, 6, 6, 6, 6, 6, 6, 9]
+              },
+              "legend": null
+            },
+            "color": {
+              "field": "type",
+              "legend": {
+                "symbolSize": 75,
+                "title": "symbol"
+              },
+              "scale": {
+                "type": "ordinal",
+                "domain": [
+                  "A",
+                  "C",
+                  "G",
+                  "T",
+                  "N",
+                  "match",
+                  "deletion",
+                  "insertion"
+                ],
+                "range": [
+                  "#CADB69",
+                  "#F2B671",
+                  "#F28CC2",
+                  "#7284A8",
+                  "#A23E11",
+                  "#BBBBBB",
+                  "#CC1414",
+                  "#047C0A"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

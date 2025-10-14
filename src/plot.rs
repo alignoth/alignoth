@@ -201,32 +201,77 @@ pub(crate) struct Reference {
     reference: String,
 }
 
+// A struct representing base coverage information, m represents a match to the reference
+#[derive(Serialize, Debug, Eq, PartialEq, Default, Clone)]
+pub(crate) struct BaseCoverage {
+    a: usize,
+    t: usize,
+    g: usize,
+    c: usize,
+    m: usize,
+}
+
+#[derive(Serialize, Debug, Eq, PartialEq, Default, Clone)]
+pub(crate) struct EncodedBaseCoverage(pub Vec<BaseCoverage>);
+
+impl fmt::Display for EncodedBaseCoverage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.0
+                .iter()
+                .map(|bc| format!("{}|{}|{}|{}|{}", bc.a, bc.t, bc.g, bc.c, bc.m))
+                .collect::<Vec<_>>()
+                .join("§")
+        )
+    }
+}
+
 /// A coverage with all relevant information base for being plotted over a read plot
 /// Each value in coverage represents the number of reads covering that position.
 #[derive(Serialize, Debug, Eq, PartialEq)]
 pub(crate) struct Coverage {
     start: i64,
-    coverage: Vec<usize>,
+    coverage: String,
 }
 
 impl Coverage {
     pub fn from_reads(reads: &[Read], region: &Region) -> Self {
-        let mut coverage = vec![0; region.length() as usize];
+        let mut coverage = vec![BaseCoverage::default(); region.length() as usize];
+
         for read in reads {
             if !(read.end_position <= region.start || read.position >= region.end) {
                 let mut ref_pos = read.position;
                 for cigar in &read.cigar {
+                    let start = ref_pos.max(region.start);
                     match cigar.cigar_type {
-                        CigarType::Match | CigarType::Sub => {
+                        CigarType::Match => {
                             if let Some(len) = cigar.length {
-                                let start = ref_pos.max(region.start);
                                 let end = (ref_pos + len as i64).min(region.end);
                                 for i in start..end {
-                                    coverage[(i - region.start) as usize] += 1;
+                                    coverage[(i - region.start) as usize].m += 1;
                                 }
                                 ref_pos += len as i64;
                             }
                         }
+                        CigarType::Sub => {
+                            if let (Some(len), Some(bases)) = (cigar.length, &cigar.bases) {
+                                let end = (ref_pos + len as i64).min(region.end);
+                                for pos in start..end {
+                                    let idx = (pos - region.start) as usize;
+                                    match bases[0] {
+                                        'A' => coverage[idx].a += 1,
+                                        'T' => coverage[idx].t += 1,
+                                        'G' => coverage[idx].g += 1,
+                                        'C' => coverage[idx].c += 1,
+                                        _ => coverage[idx].m += 1,
+                                    }
+                                }
+                                ref_pos += len as i64;
+                            }
+                        }
+
                         CigarType::Del => {
                             if let Some(len) = cigar.length {
                                 ref_pos += len as i64;
@@ -240,7 +285,7 @@ impl Coverage {
 
         Self {
             start: region.start,
-            coverage,
+            coverage: EncodedBaseCoverage(coverage).to_string(),
         }
     }
 }
@@ -858,7 +903,7 @@ mod tests {
         let expected_reads = vec![EncodedRead::from_reads(vec![expected_read])];
         let expected_coverage = Coverage {
             start: 0,
-            coverage: vec![0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            coverage: String::from("0|0|0|0|0§0|0|0|0|0§0|0|0|0|0§0|0|0|0|0§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1"),
         };
         assert_eq!(reference, expected_reference);
         assert_eq!(coverage, expected_coverage);
@@ -995,8 +1040,11 @@ mod tests {
 
         let coverage = Coverage::from_reads(&reads, &region);
 
-        let expected = vec![1, 1, 2, 2, 2, 1, 1, 0, 0, 0];
-        assert_eq!(coverage.coverage, expected);
+        let expected = Coverage {
+            coverage: String::from("0|0|0|0|1§0|0|0|0|1§0|0|0|0|2§0|0|0|0|2§0|0|0|0|2§0|0|0|0|1§0|0|0|0|1§0|0|0|0|0§0|0|0|0|0§0|0|0|0|0"),
+            start: 5,
+        };
+        assert_eq!(coverage.coverage, expected.coverage);
         assert_eq!(coverage.start, 5);
     }
 }
