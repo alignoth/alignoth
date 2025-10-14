@@ -759,7 +759,7 @@ mod tests {
             flags: 83,
             mapq: 60,
             row: Some(
-                87,
+                9,
             ),
             end_position: 887,
             mpos: 333,
