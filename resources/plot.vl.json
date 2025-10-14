@@ -30,7 +30,7 @@
       },
       "mark": {
         "type": "area",
-        "interpolate": "monotone"
+        "interpolate": "step"
       },
       "transform": [
         { "as": "coverage", "calculate": "split(datum.coverage, '§')" },
