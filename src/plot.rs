@@ -515,7 +515,7 @@ impl Read {
             flags: record.flags(),
             mapq: record.mapq(),
             row: None,
-            end_position: record.pos() + record.reference_end(),
+            end_position: record.reference_end(),
             mpos,
             aux: AuxRecord::new(&record, aux_tags),
             raw_cigar: record.cigar().to_string(),
@@ -759,7 +759,7 @@ mod tests {
             flags: 83,
             mapq: 60,
             row: Some(
-                87,
+                9,
             ),
             end_position: 887,
             mpos: 333,
