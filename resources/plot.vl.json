@@ -141,7 +141,15 @@
           "type": "quantitative"
         },
         "y": {
-          "axis": null,
+          "axis": {
+            "titleAnchor": "start",
+            "titleAlign": "right",
+            "titleFontWeight": 400,
+            "titlePadding": 28,
+            "labels": false,
+            "ticks": false,
+            "domain": false
+          },
           "field": "row",
           "type": "ordinal"
         },
