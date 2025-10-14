@@ -64,8 +64,8 @@ async fn main() -> Result<()> {
     };
     plot_specs["vconcat"][0]["title"] = json!({
             "text": &opt.region.unwrap().target,
-            "subtitle": subsampling_warning,
     });
+    plot_specs["vconcat"][1]["encoding"]["y"]["axis"]["title"] = json!(subsampling_warning);
     let reference = match opt.data_format {
         DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
