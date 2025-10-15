@@ -47,3 +47,20 @@ impl Highlight for VcfHighlight {
         Ok(intervals)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_intervals() {
+        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1:257A.vcf"));
+        let region = Region::from_str("1:200-300").unwrap();
+        let intervals = highlight.intervals(&region).unwrap();
+        assert_eq!(intervals.len(), 1);
+        assert_eq!(intervals[0].name, "1:257A>G");
+        assert_eq!(intervals[0].start, 257.0);
+        assert_eq!(intervals[0].end, 258.0);
+    }
+}
