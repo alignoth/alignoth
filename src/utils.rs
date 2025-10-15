@@ -79,9 +79,17 @@ pub(crate) fn aux_to_string(aux: rust_htslib::bam::record::Aux) -> String {
     }
 }
 
+pub(crate) fn ellipsis(s: &str, max_len: usize) -> String {
+    if s.len() > max_len {
+        format!("{}…", &s[..max_len])
+    } else {
+        s.to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::utils::{get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd};
+    use crate::utils::{ellipsis, get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd};
     use std::path::PathBuf;
     use std::str::FromStr;
 
@@ -106,5 +114,12 @@ mod tests {
         let contigs =
             get_fasta_contigs(&PathBuf::from_str("tests/sample_1/reference.fa").unwrap()).unwrap();
         assert_eq!(contigs, vec!["chr1".to_string()])
+    }
+
+    #[test]
+    fn test_ellipsis() {
+        assert_eq!(ellipsis("ABCDE", 5), "ABCDE");
+        assert_eq!(ellipsis("ABCDEFG", 5), "ABCDE…");
+        assert_eq!(ellipsis("", 5), "");
     }
 }

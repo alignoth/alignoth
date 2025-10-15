@@ -44,9 +44,6 @@ async fn main() -> Result<()> {
         opt.max_read_depth,
         opt.aux_tag,
     )?;
-    if let Some(v) = opt.highlight.as_mut() {
-        v.iter_mut().for_each(|h| h.preprocess());
-    }
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
         highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
@@ -54,6 +51,8 @@ async fn main() -> Result<()> {
     if let Some(bed_path) = opt.bed.as_ref() {
         highlight.extend(BedHighlight::new(bed_path.clone()).intervals(region)?);
     }
+
+    highlight.iter_mut().for_each(|h| h.preprocess());
 
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
     let width = json!(min(

@@ -1,5 +1,6 @@
 use crate::cli::Interval;
 use crate::cli::Region;
+use crate::utils::ellipsis;
 use anyhow::Result;
 use bio::io::bed;
 use rust_htslib::bcf::{Read, Reader};
@@ -29,20 +30,17 @@ impl Highlight for VcfHighlight {
             let record = record?;
             let target =
                 String::from_utf8(header.rid2name(record.rid().unwrap()).unwrap().to_vec())?;
-            if region.contains(record.pos(), &target) {
-                let start = record.pos();
+            let position = record.pos() + 1; // Adjust for 1-based indexing
+            if region.contains(position, &target) {
                 let alleles = record.alleles();
-                let end = start + alleles[0].len() as i64;
-                let id = {
-                    if record.id() != b"." {
-                        String::from_utf8(record.id().to_vec())?
-                    } else {
-                        let ref_allele = std::str::from_utf8(alleles[0]).unwrap_or("?");
-                        let alt_allele = std::str::from_utf8(alleles[1]).unwrap_or("?");
-                        format!("{}:{}{}>{}", target, start, ref_allele, alt_allele)
-                    }
-                };
-                intervals.push(Interval::new(id, start as f64, end as f64));
+                let end = position + alleles[0].len() as i64 - 1;
+                let ref_allele = ellipsis(std::str::from_utf8(alleles[0]).unwrap_or("?"), 5);
+                let alt_allele = ellipsis(std::str::from_utf8(alleles[1]).unwrap_or("?"), 5);
+                let mut id = format!("{}:{}>{}", position, ref_allele, alt_allele);
+                if record.id() != b"." {
+                    id += &format!(":{}", std::str::from_utf8(&record.id())?);
+                }
+                intervals.push(Interval::new(id, position as f64, end as f64));
             }
         }
         Ok(intervals)
@@ -93,9 +91,9 @@ mod tests {
         let region = Region::from_str("1:200-300").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
         assert_eq!(intervals.len(), 1);
-        assert_eq!(intervals[0].name, "1:257A>G");
+        assert_eq!(intervals[0].name, "257:A>G");
         assert_eq!(intervals[0].start, 257.0);
-        assert_eq!(intervals[0].end, 258.0);
+        assert_eq!(intervals[0].end, 257.0);
     }
 
     #[test]
