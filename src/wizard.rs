@@ -26,6 +26,14 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
                 .is_some_and(|ext| ext == "fa" || ext == "fasta")
         })
         .collect();
+    let vcf_files: Vec<_> = fs::read_dir(&current_dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|e| e.path())
+        .filter(|p| {
+            p.extension()
+                .is_some_and(|ext| ext == "vcf" || ext == "bcf")
+        })
+        .collect();
 
     let bam_path = if bam_files.is_empty() {
         Text::new("Path to BAM file:").prompt()?
@@ -72,7 +80,25 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     let highlight = if highlight_input.is_empty() {
         None
     } else {
-        Some(Interval::from_str(&highlight_input)?)
+        Some(vec![Interval::from_str(&highlight_input)?])
+    };
+    let vcf_choices: Vec<_> = vcf_files.iter().map(|p| p.display().to_string()).collect();
+    let vcf_input: Option<PathBuf> = if vcf_choices.is_empty() {
+        let input = Text::new("Do you want to provide a VCF file to highlight variant positions? (Example: path/to/file.vcf, press Enter to skip)").prompt()?;
+        if input.is_empty() {
+            None
+        } else {
+            Some(PathBuf::from(input))
+        }
+    } else {
+        let mut choices = vcf_choices.clone();
+        choices.push("Skip".to_string());
+        let selection = Select::new("Choose a VCF file:", choices).prompt()?;
+        if selection == "Skip" {
+            None
+        } else {
+            Some(PathBuf::from(selection))
+        }
     };
     let aux_tag_input =
         Text::new("Optional auxiliary tags (whitespace-separated, press Enter to skip):")
@@ -110,6 +136,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         around: None,
         plot_all: false,
         highlight,
+        vcf: vcf_input,
         highlight_data_output: None,
         spec_output: None,
         ref_data_output: None,

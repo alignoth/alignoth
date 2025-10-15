@@ -39,7 +39,11 @@ pub struct Alignoth {
 
     /// Interval or single base position that will be highlighted in the visualization. Example: 132440-132450 or 132440
     #[structopt(long, short = "h")]
-    pub(crate) highlight: Option<Interval>,
+    pub(crate) highlight: Option<Vec<Interval>>,
+
+    /// Path to a VCF file that will be used to highlight all variant position located within the given region.
+    #[structopt(long, short = "v", parse(from_os_str))]
+    pub(crate) vcf: Option<PathBuf>,
 
     /// Set the maximum rows of reads that will be shown in the alignment plots.
     #[structopt(long, short = "d", default_value = "500")]
@@ -230,6 +234,12 @@ impl FromBam for Region {
     }
 }
 
+impl Region {
+    pub(crate) fn contains(&self, pos: i64, target: &str) -> bool {
+        pos >= self.start && pos <= self.end && target == self.target
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Around {
     pub(crate) target: String,
@@ -286,8 +296,9 @@ impl Region {
     }
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Copy)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Interval {
+    pub(crate) name: String,
     pub(crate) start: f64,
     pub(crate) end: f64,
 }
@@ -296,22 +307,45 @@ impl FromStr for Interval {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some((start, end)) = s.split_once('-') {
-            Ok(Interval {
-                start: start.parse::<f64>().context(format!(
-                    "Could not parse float from given interval start {start}"
-                ))?,
-                end: end.parse::<f64>().context(format!(
-                    "Could not parse float from given interval end {end}"
-                ))?,
-            })
-        } else if let Ok(p) = s.parse::<f64>() {
-            Ok(Interval { start: p, end: p })
+        if let Some((name, interval)) = s.split_once(':') {
+            if let Some((start, end)) = interval.split_once('-') {
+                Ok(Interval {
+                    name: name.to_string(),
+                    start: start.parse::<f64>().context(format!(
+                        "Could not parse float from given interval start {start}"
+                    ))?,
+                    end: end.parse::<f64>().context(format!(
+                        "Could not parse float from given interval end {end}"
+                    ))?,
+                })
+            } else if let Ok(p) = interval.parse::<f64>() {
+                Ok(Interval {
+                    name: name.to_string(),
+                    start: p,
+                    end: p,
+                })
+            } else {
+                Err(anyhow!(
+                    "No '-' in interval string nor a single position to highlight."
+                ))
+            }
         } else {
             Err(anyhow!(
-                "No '-' in interval string nor a single position to highlight."
+                "No ':' in interval string nor a single position to highlight."
             ))
         }
+    }
+}
+
+impl Interval {
+    pub fn new(name: String, start: f64, end: f64) -> Self {
+        Self { name, start, end }
+    }
+
+    // Adjusts interval to match coordinate system of final vega-lite plot
+    pub(crate) fn preprocess(&mut self) {
+        self.start -= 0.5;
+        self.end += 0.5;
     }
 }
 
@@ -333,8 +367,9 @@ mod tests {
 
     #[test]
     fn test_interval_deserialization() {
-        let interval = Interval::from_str("2000-3000").unwrap();
+        let interval = Interval::from_str("test:2000-3000").unwrap();
         let expeceted_interval = Interval {
+            name: "test".to_string(),
             start: 2000.0,
             end: 3000.0,
         };
