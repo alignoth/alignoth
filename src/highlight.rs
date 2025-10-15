@@ -63,4 +63,12 @@ mod tests {
         assert_eq!(intervals[0].start, 257.0);
         assert_eq!(intervals[0].end, 258.0);
     }
+
+    #[test]
+    fn test_interval_out_of_bounds() {
+        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1:257A.vcf"));
+        let region = Region::from_str("1:200-220").unwrap();
+        let intervals = highlight.intervals(&region).unwrap();
+        assert_eq!(intervals.len(), 0);
+    }
 }
