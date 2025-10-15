@@ -1,6 +1,7 @@
 use crate::cli::Interval;
 use crate::cli::Region;
 use anyhow::Result;
+use bio::io::bed;
 use rust_htslib::bcf::{Read, Reader};
 use std::path::PathBuf;
 
@@ -48,13 +49,46 @@ impl Highlight for VcfHighlight {
     }
 }
 
+pub(crate) struct BedHighlight {
+    pub path: PathBuf,
+}
+
+impl BedHighlight {
+    pub fn new(path: PathBuf) -> Self {
+        BedHighlight { path }
+    }
+}
+
+impl Highlight for BedHighlight {
+    fn intervals(&self, region: &Region) -> Result<Vec<Interval>> {
+        let mut intervals = Vec::new();
+        let mut reader = bed::Reader::from_file(&self.path)?;
+        for record in reader.records() {
+            let record = record?;
+            if region.overlaps(record.start() as i64, record.end() as i64, record.chrom()) {
+                let id = if let Some(name) = record.name() {
+                    name.to_string()
+                } else {
+                    format!("{}:{}-{}", record.chrom(), record.start(), record.end())
+                };
+                intervals.push(Interval::new(
+                    id,
+                    record.start() as f64,
+                    record.end() as f64,
+                ));
+            }
+        }
+        Ok(intervals)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::str::FromStr;
 
     #[test]
-    fn test_intervals() {
+    fn test_vcf_intervals() {
         let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1:257A.vcf"));
         let region = Region::from_str("1:200-300").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
@@ -65,10 +99,21 @@ mod tests {
     }
 
     #[test]
-    fn test_interval_out_of_bounds() {
+    fn test_vcf_interval_out_of_bounds() {
         let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1:257A.vcf"));
         let region = Region::from_str("1:200-220").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
         assert_eq!(intervals.len(), 0);
+    }
+
+    #[test]
+    fn test_bed_intervals() {
+        let highlight = BedHighlight::new(PathBuf::from("tests/sample_3/test.bed"));
+        let region = Region::from_str("1:200-300").unwrap();
+        let intervals = highlight.intervals(&region).unwrap();
+        assert_eq!(intervals.len(), 1);
+        assert_eq!(intervals[0].name, "MVSTP1");
+        assert_eq!(intervals[0].start, 260.0);
+        assert_eq!(intervals[0].end, 300.0);
     }
 }

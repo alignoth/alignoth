@@ -45,6 +45,10 @@ pub struct Alignoth {
     #[structopt(long, short = "v", parse(from_os_str))]
     pub(crate) vcf: Option<PathBuf>,
 
+    /// Path to a BED file that will be used to highlight all BED records overlapping the given region.
+    #[structopt(long, parse(from_os_str))]
+    pub(crate) bed: Option<PathBuf>,
+
     /// Set the maximum rows of reads that will be shown in the alignment plots.
     #[structopt(long, short = "d", default_value = "500")]
     pub(crate) max_read_depth: usize,
@@ -234,12 +238,6 @@ impl FromBam for Region {
     }
 }
 
-impl Region {
-    pub(crate) fn contains(&self, pos: i64, target: &str) -> bool {
-        pos >= self.start && pos <= self.end && target == self.target
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Around {
     pub(crate) target: String,
@@ -293,6 +291,14 @@ impl Region {
     /// Returns the length of the Region
     pub(crate) fn length(&self) -> i64 {
         self.end - self.start
+    }
+
+    pub(crate) fn contains(&self, pos: i64, target: &str) -> bool {
+        pos >= self.start && pos <= self.end && target == self.target
+    }
+
+    pub(crate) fn overlaps(&self, start: i64, end: i64, target: &str) -> bool {
+        target == self.target && start <= self.end && end >= self.start
     }
 }
 

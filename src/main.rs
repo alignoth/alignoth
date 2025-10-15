@@ -5,7 +5,7 @@ mod utils;
 mod wizard;
 
 use crate::cli::{DataFormat, Preprocess};
-use crate::highlight::{Highlight, VcfHighlight};
+use crate::highlight::{BedHighlight, Highlight, VcfHighlight};
 use crate::plot::create_plot_data;
 use crate::wizard::wizard_mode;
 use anyhow::Result;
@@ -50,6 +50,9 @@ async fn main() -> Result<()> {
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
         highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
+    }
+    if let Some(bed_path) = opt.bed.as_ref() {
+        highlight.extend(BedHighlight::new(bed_path.clone()).intervals(region)?);
     }
 
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;

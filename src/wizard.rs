@@ -34,6 +34,11 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
                 .is_some_and(|ext| ext == "vcf" || ext == "bcf")
         })
         .collect();
+    let bed_files: Vec<_> = fs::read_dir(&current_dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|e| e.path())
+        .filter(|p| p.extension().is_some_and(|ext| ext == "bed"))
+        .collect();
 
     let bam_path = if bam_files.is_empty() {
         Text::new("Path to BAM file:").prompt()?
@@ -100,6 +105,24 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
             Some(PathBuf::from(selection))
         }
     };
+    let bed_choices: Vec<_> = bed_files.iter().map(|p| p.display().to_string()).collect();
+    let bed_input: Option<PathBuf> = if bed_choices.is_empty() {
+        let input = Text::new("Do you want to provide a BED file to highlight certain regions? (Example: path/to/file.bed, press Enter to skip)").prompt()?;
+        if input.is_empty() {
+            None
+        } else {
+            Some(PathBuf::from(input))
+        }
+    } else {
+        let mut choices = bed_choices.clone();
+        choices.push("Skip".to_string());
+        let selection = Select::new("Choose a BED file:", choices).prompt()?;
+        if selection == "Skip" {
+            None
+        } else {
+            Some(PathBuf::from(selection))
+        }
+    };
     let aux_tag_input =
         Text::new("Optional auxiliary tags (whitespace-separated, press Enter to skip):")
             .prompt_skippable()?;
@@ -137,6 +160,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         plot_all: false,
         highlight,
         vcf: vcf_input,
+        bed: bed_input,
         highlight_data_output: None,
         spec_output: None,
         ref_data_output: None,
