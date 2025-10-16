@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0](https://github.com/alignoth/alignoth/compare/v0.16.5...v1.0.0) (2025-10-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update highlight mechanism with multiple highlighting region and VCF and BED options ([#372](https://github.com/alignoth/alignoth/issues/372))
+
+### Features
+
+* Add per-base coverage breakdown to Coverage struct and plot ([#368](https://github.com/alignoth/alignoth/issues/368)) ([5373868](https://github.com/alignoth/alignoth/commit/5373868b177be0586db13ac2ce386af45ba22e38))
+* Update highlight mechanism with multiple highlighting region and VCF and BED options ([#372](https://github.com/alignoth/alignoth/issues/372)) ([9adbf16](https://github.com/alignoth/alignoth/commit/9adbf16693438f4dafa35d5faa04d5fde226e216))
+
+
+### Bug Fixes
+
+* Change area chart interpolation from monotone to step ([cabc396](https://github.com/alignoth/alignoth/commit/cabc396eb859186e011f3685402f68fc69772809))
+* Improve read placement by fixing read end-position calculation ([#371](https://github.com/alignoth/alignoth/issues/371)) ([5e0b8ca](https://github.com/alignoth/alignoth/commit/5e0b8ca19451a517e5b8297e6cecdc437e13ddf6))
+* Move subtitle to y axis title ([#370](https://github.com/alignoth/alignoth/issues/370)) ([eb029df](https://github.com/alignoth/alignoth/commit/eb029dfab009a6e6ce823af8a751bbeefdadd11f))
+
 ## [0.16.5](https://github.com/alignoth/alignoth/compare/v0.16.4...v0.16.5) (2025-10-13)
 
 
