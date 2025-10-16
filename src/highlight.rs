@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn test_vcf_intervals() {
-        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1:257A.vcf"));
+        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1257A.vcf"));
         let region = Region::from_str("1:200-300").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
         assert_eq!(intervals.len(), 1);
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn test_vcf_interval_out_of_bounds() {
-        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1:257A.vcf"));
+        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1257A.vcf"));
         let region = Region::from_str("1:200-220").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
         assert_eq!(intervals.len(), 0);
