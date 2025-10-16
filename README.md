@@ -40,7 +40,9 @@ The following options are available when using alignoth:
 | reference             | -r    | The path to the reference fasta file                                                                                                                              |         |
 | region                | -g    | Chromosome and region for the visualization. Example: 2:132424-132924                                                                                             |         |
 | around                | -a    | A chromosome and a base position that will define the region that will be plotted starting 500bp before and end 500bp behind the given position. Example: 2:17348 |         |
-| highlight             | -h    | Interval or single base position that will be highlighted in the visualization. Example: 132400-132500 or 132440                                                  |         |
+| highlight             | -h    | Named intervals or single base positions that will be highlighted in the visualization. Example: myinterval:132400-132500 or myvariant:132440                     |         |
+| vcf                   | -v    | Path to a VCF file. Variants from the VCF file will be highlighted in the resulting plot similar to the highlight option.                                         |         |
+| bed                   | -b    | Path to a BED file. Regions from the BED file will be highlighted in the resulting plot similar to the highlight option.                                          |         |
 | plot-all              | -p    | Plot all reads in the given region. We advise to only use this command for small bam files with a single target.                                                  | false   |
 | max-read-depth        | -d    | Set the maximum rows of reads that will be shown in the alignment plots                                                                                           | 500     |
 | max-width             | -w    | Set the maximum width of the resulting alignment plot                                                                                                             | 1024    |
@@ -51,19 +53,27 @@ The following options are available when using alignoth:
 | read-data-output      |       | If present read data will be written to the given file path                                                                                                       |         |
 | ref-data-output       |       | If present reference data will be written to the given file path                                                                                                  |         |
 | highlight-data-output |       | If present highlight data will be written to the given file path                                                                                                  |         |
-| coverage-data-output  |       | If present coverage data will be written to the given file path                                                                                                  |         |
+| coverage-data-output  |       | If present coverage data will be written to the given file path                                                                                                   |         |
 | html                  |       | If present the generated plot will inserted into a plain html file containing the plot centered which is then written to stdout                                   |         |
 
 ## Installation
 
 There a multiple ways to install alignoth:
 
+#### Pixi
+
+Alignoth can be easily installed globally using [pixi](https://pixi.sh/):
+
+    pixi global install alignoth
+
 #### Bioconda
 
 Rust-Bio-Tools is available via [Bioconda](https://bioconda.github.io).
 With Bioconda set up, installation is as easy as
 
-    conda install alignoth
+    conda install alignoth -c conda-forge -c bioconda -c nodefaults
+
+Pay attention to the correct channel ordering for the installation.
 
 #### Cargo
 
