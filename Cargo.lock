@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "alignoth"
-version = "0.16.5"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "bio",
