@@ -165,11 +165,9 @@
           },
           "mark": "rect",
           "encoding": {
-            "color": {
-              "value": "red"
-            },
+            "color": {"field": "name", "title": "site"},
             "opacity": {
-              "value": 0.15
+              "value": 0.20
             },
             "y2": {
               "value": 10000000

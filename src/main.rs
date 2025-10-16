@@ -1,9 +1,11 @@
 mod cli;
+mod highlight;
 mod plot;
 mod utils;
 mod wizard;
 
-use crate::cli::{DataFormat, Interval, Preprocess};
+use crate::cli::{DataFormat, Preprocess};
+use crate::highlight::{BedHighlight, Highlight, VcfHighlight};
 use crate::plot::create_plot_data;
 use crate::wizard::wizard_mode;
 use anyhow::Result;
@@ -34,17 +36,24 @@ async fn main() -> Result<()> {
         ColorChoice::Auto,
     );
     opt.preprocess()?;
+    let region = opt.region.as_ref().unwrap();
     let (read_data, reference_data, total_reads, coverage_data, retained_reads) = create_plot_data(
         &opt.bam_path.as_ref().unwrap(),
         &opt.reference.as_ref().unwrap(),
-        opt.region.as_ref().unwrap(),
+        region,
         opt.max_read_depth,
         opt.aux_tag,
     )?;
-    let highlight = opt.highlight.map(|h| Interval {
-        start: h.start - 0.5,
-        end: h.end + 0.5,
-    });
+    let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
+    if let Some(vcf_path) = opt.vcf.as_ref() {
+        highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
+    }
+    if let Some(bed_path) = opt.bed.as_ref() {
+        highlight.extend(BedHighlight::new(bed_path.clone()).intervals(region)?);
+    }
+
+    highlight.iter_mut().for_each(|h| h.preprocess());
+
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
     let width = json!(min(
         opt.max_width,
@@ -96,7 +105,7 @@ async fn main() -> Result<()> {
         DataFormat::Json => json!(highlight).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
             let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            writer.serialize(highlight)?;
+            writer.serialize(&highlight)?;
             writer.into_inner()?
         }
     };
