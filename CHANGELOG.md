@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/alignoth/alignoth/compare/v1.0.0...v1.0.1) (2025-10-16)
+
+
+### Bug Fixes
+
+* Rename test file due to special character preventing crate release ([1998228](https://github.com/alignoth/alignoth/commit/19982284943ca8d2c556bbf3e8a3b45b10bd2e9b))
+
 ## [1.0.0](https://github.com/alignoth/alignoth/compare/v0.16.5...v1.0.0) (2025-10-16)
 
 
