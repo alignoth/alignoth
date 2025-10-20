@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/alignoth/alignoth/compare/v1.0.1...v1.0.2) (2025-10-20)
+
+
+### Performance Improvements
+
+* Refactor coverage encoding for sparse base tracks and diffs ([#379](https://github.com/alignoth/alignoth/issues/379)) ([3a42840](https://github.com/alignoth/alignoth/commit/3a428404bf8d8ab45a6d5dc331d76c6f684d992b))
+
 ## [1.0.1](https://github.com/alignoth/alignoth/compare/v1.0.0...v1.0.1) (2025-10-16)
 
 
