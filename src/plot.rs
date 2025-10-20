@@ -214,17 +214,55 @@ pub(crate) struct BaseCoverage {
 #[derive(Serialize, Debug, Eq, PartialEq, Default, Clone)]
 pub(crate) struct EncodedBaseCoverage(pub Vec<BaseCoverage>);
 
-impl fmt::Display for EncodedBaseCoverage {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.0
-                .iter()
-                .map(|bc| format!("{}|{}|{}|{}|{}", bc.a, bc.t, bc.g, bc.c, bc.m))
-                .collect::<Vec<_>>()
-                .join("§")
-        )
+impl EncodedBaseCoverage {
+    /// Encode the match coverage as differences (Δ to previous position)
+    pub fn matches(&self) -> String {
+        let mut last = 0;
+        self.0
+            .iter()
+            .map(|bc| {
+                let diff = bc.m as isize - last;
+                last = bc.m as isize;
+                diff.to_string()
+            })
+            .collect::<Vec<_>>()
+            .join("|")
+    }
+
+    /// Helper for sparse encoding of a base track (A, T, G, C)
+    fn encode_sparse<F>(&self, f: F) -> String
+    where
+        F: Fn(&BaseCoverage) -> usize,
+    {
+        self.0
+            .iter()
+            .enumerate()
+            .filter_map(|(i, bc)| {
+                let cov = f(bc);
+                if cov > 0 {
+                    Some(format!("{}|{}", i + 1, cov))
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("$")
+    }
+
+    pub fn a(&self) -> String {
+        self.encode_sparse(|bc| bc.a)
+    }
+
+    pub fn t(&self) -> String {
+        self.encode_sparse(|bc| bc.t)
+    }
+
+    pub fn g(&self) -> String {
+        self.encode_sparse(|bc| bc.g)
+    }
+
+    pub fn c(&self) -> String {
+        self.encode_sparse(|bc| bc.c)
     }
 }
 
@@ -233,7 +271,12 @@ impl fmt::Display for EncodedBaseCoverage {
 #[derive(Serialize, Debug, Eq, PartialEq)]
 pub(crate) struct Coverage {
     start: i64,
-    coverage: String,
+    #[serde(rename = "m")]
+    matches: String,
+    a: String,
+    t: String,
+    g: String,
+    c: String,
 }
 
 impl Coverage {
@@ -283,9 +326,15 @@ impl Coverage {
             }
         }
 
+        let coverage = EncodedBaseCoverage(coverage);
+
         Self {
             start: region.start,
-            coverage: EncodedBaseCoverage(coverage).to_string(),
+            matches: coverage.matches(),
+            a: coverage.a(),
+            t: coverage.t(),
+            g: coverage.g(),
+            c: coverage.c(),
         }
     }
 }
@@ -903,7 +952,11 @@ mod tests {
         let expected_reads = vec![EncodedRead::from_reads(vec![expected_read])];
         let expected_coverage = Coverage {
             start: 0,
-            coverage: String::from("0|0|0|0|0§0|0|0|0|0§0|0|0|0|0§0|0|0|0|0§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1§0|0|0|0|1"),
+            matches: "0|0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0".to_string(),
+            a: "".to_string(),
+            t: "".to_string(),
+            c: "".to_string(),
+            g: "".to_string(),
         };
         assert_eq!(reference, expected_reference);
         assert_eq!(coverage, expected_coverage);
@@ -1041,10 +1094,13 @@ mod tests {
         let coverage = Coverage::from_reads(&reads, &region);
 
         let expected = Coverage {
-            coverage: String::from("0|0|0|0|1§0|0|0|0|1§0|0|0|0|2§0|0|0|0|2§0|0|0|0|2§0|0|0|0|1§0|0|0|0|1§0|0|0|0|0§0|0|0|0|0§0|0|0|0|0"),
+            a: "".to_string(),
+            t: "".to_string(),
+            c: "".to_string(),
+            g: "".to_string(),
+            matches: "1|0|1|0|0|-1|0|-1|0|0".to_string(),
             start: 5,
         };
-        assert_eq!(coverage.coverage, expected.coverage);
-        assert_eq!(coverage.start, 5);
+        assert_eq!(coverage, expected);
     }
 }
