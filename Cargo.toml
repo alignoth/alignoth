@@ -10,7 +10,7 @@ edition = "2021"
 
 [dependencies]
 structopt = "0.3.26"
-rust-htslib = "0.50.0"
+rust-htslib = "0.51.0"
 bio = "2.3.0"
 log = "0.4.28"
 simplelog = "0.12.2"
