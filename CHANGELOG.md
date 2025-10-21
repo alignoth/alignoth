@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0](https://github.com/alignoth/alignoth/compare/v1.0.2...v1.1.0) (2025-10-21)
+
+
+### Features
+
+* Add option to disable embedded JS in generated HTML ([#382](https://github.com/alignoth/alignoth/issues/382)) ([36ba851](https://github.com/alignoth/alignoth/commit/36ba851f0f13afc74e8755b2d595ce16c707f9dc))
+
+
+### Performance Improvements
+
+* Use indexed reader for VCF highlighting parameters ([#381](https://github.com/alignoth/alignoth/issues/381)) ([4a6bf64](https://github.com/alignoth/alignoth/commit/4a6bf645fded28faf7e497acfbb146516674411c))
+
 ## [1.0.2](https://github.com/alignoth/alignoth/compare/v1.0.1...v1.0.2) (2025-10-20)
 
 
