@@ -166,5 +166,6 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         ref_data_output: None,
         read_data_output: None,
         coverage_output: None,
+        no_embed_js: false,
     })
 }

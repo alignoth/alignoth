@@ -97,6 +97,10 @@ pub struct Alignoth {
     /// Displays the given content of the aux tags in the tooltip of the plot. Multiple usage for more than one tag is possible.
     #[structopt(long, short = "x")]
     pub(crate) aux_tag: Option<Vec<String>>,
+
+    /// If present, the generated html will not embed javscript dependencies and therefore be considerably smaller but require internet access to load the dependencies.
+    #[structopt(long, conflicts_with("output"))]
+    pub(crate) no_embed_js: bool,
 }
 
 pub(crate) trait Preprocess {

@@ -202,10 +202,57 @@ async fn main() -> Result<()> {
                 "spec",
                 &json!(compress_to_utf16(&plot_specs.to_string())).to_string(),
             );
-            context.insert("vega", include_str!("../resources/vega.min.js"));
-            context.insert("vegalite", include_str!("../resources/vega-lite.min.js"));
-            context.insert("vegaembed", include_str!("../resources/vega-embed.min.js"));
-            context.insert("lzstring", include_str!("../resources/lz-string.min.js"));
+            if opt.no_embed_js {
+                context.insert(
+                    "vega",
+                    r#"<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>"#,
+                );
+                context.insert(
+                    "vegalite",
+                    r#"<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>"#,
+                );
+                context.insert(
+                    "vegaembed",
+                    r#"<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>"#,
+                );
+                context.insert(
+                    "lzstring",
+                    r#"<script src="https://cdn.jsdelivr.net/npm/lz-string@1"></script>"#,
+                );
+            } else {
+                context.insert(
+                    "vega",
+                    concat!(
+                        "<script>",
+                        include_str!("../resources/vega.min.js"),
+                        "</script>"
+                    ),
+                );
+                context.insert(
+                    "vegalite",
+                    concat!(
+                        "<script>",
+                        include_str!("../resources/vega-lite.min.js"),
+                        "</script>"
+                    ),
+                );
+                context.insert(
+                    "vegaembed",
+                    concat!(
+                        "<script>",
+                        include_str!("../resources/vega-embed.min.js"),
+                        "</script>"
+                    ),
+                );
+                context.insert(
+                    "lzstring",
+                    concat!(
+                        "<script>",
+                        include_str!("../resources/lz-string.min.js"),
+                        "</script>"
+                    ),
+                );
+            }
             let html = templates.render("plot", &context)?;
             if wizard {
                 std::fs::write(format!("{bam_name}.html"), html.as_bytes())?;

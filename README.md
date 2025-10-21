@@ -55,6 +55,8 @@ The following options are available when using alignoth:
 | highlight-data-output |       | If present highlight data will be written to the given file path                                                                                                  |         |
 | coverage-data-output  |       | If present coverage data will be written to the given file path                                                                                                   |         |
 | html                  |       | If present the generated plot will inserted into a plain html file containing the plot centered which is then written to stdout                                   |         |
+| no-embed-js           |       | If present, the generated html will not embed javscript dependencies and therefore be considerably smaller but require internet access to load the dependencies.  | false   |
+
 
 ## Installation
 

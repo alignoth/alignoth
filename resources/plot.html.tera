@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <script>{{ vega | safe }}</script>
-    <script>{{ vegalite | safe }}</script>
-    <script>{{ vegaembed | safe }}</script>
-    <script>{{ lzstring | safe }}</script>
+    {{ vega | safe }}
+    {{ vegalite | safe }}
+    {{ vegaembed | safe }}
+    {{ lzstring | safe }}
     <style>
         #controls {
             display: flex;
