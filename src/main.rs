@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
             highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
         } else {
             bail!(
-                "VCF index not found: {}. Please create an index using `bcftools index {}`",
+                "VCF/BCF index not found: {}. Please create an index using `bcftools index {}`",
                 index.display(),
                 vcf_path.display()
             );
