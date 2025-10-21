@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/alignoth/alignoth/compare/v1.1.0...v1.1.1) (2025-10-21)
+
+
+### Bug Fixes
+
+* Fixate stack order in coverage plot ([#384](https://github.com/alignoth/alignoth/issues/384)) ([ff45355](https://github.com/alignoth/alignoth/commit/ff45355b6d33cbf23bc051c00159c3d4936aa976))
+
 ## [1.1.0](https://github.com/alignoth/alignoth/compare/v1.0.2...v1.1.0) (2025-10-21)
 
 
