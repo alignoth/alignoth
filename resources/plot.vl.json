@@ -60,7 +60,8 @@
         {"calculate": "(toNumber(split(datum.c_raw, '|')[0]) + datum.start) == datum.position ? toNumber(split(datum.c_raw, '|')[1]) : 0", "as": "c"},
         {"aggregate": [{"op": "sum", "field": "c", "as": "c"}, {"op": "max", "field": "g", "as": "g"}, {"op": "max", "field": "t", "as": "t"}, {"op": "max", "field": "a", "as": "a"}, {"op": "max", "field": "m", "as": "m"}], "groupby": ["position"]},
         {"fold": ["m", "a", "c", "g", "t"], "as": ["base_type", "count"]},
-        {"calculate": "{'m': 'm', 'a': 'A', 'c': 'C', 'g': 'G', 't': 'T'}[datum.base_type]", "as": "base_label"}
+        {"calculate": "{'m': 'm', 'a': 'A', 'c': 'C', 'g': 'G', 't': 'T'}[datum.base_type]", "as": "base_label"},
+        {"calculate": "datum.base_label === 'm' ? 1 : 0", "as": "base_order"}
       ],
       "encoding": {
         "x": {
@@ -95,10 +96,7 @@
           },
           "legend": null
         },
-        "order": {
-          "field": "base_type",
-          "sort": ["m", "A", "C", "G", "T"]
-        }
+        "order": {"field": "base_order"}
       },
       "height": 60
     },
