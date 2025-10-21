@@ -297,7 +297,7 @@ impl Region {
         self.end - self.start
     }
 
-    pub(crate) fn contains(&self, pos: i64, target: &str) -> bool {
+    pub(crate) fn _contains(&self, pos: i64, target: &str) -> bool {
         pos >= self.start && pos <= self.end && target == self.target
     }
 

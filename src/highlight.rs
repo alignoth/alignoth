@@ -3,7 +3,7 @@ use crate::cli::Region;
 use crate::utils::ellipsis;
 use anyhow::Result;
 use bio::io::bed;
-use rust_htslib::bcf::{Read, Reader};
+use rust_htslib::bcf::{IndexedReader, Read};
 use std::path::PathBuf;
 
 pub(crate) trait Highlight {
@@ -23,25 +23,23 @@ impl VcfHighlight {
 
 impl Highlight for VcfHighlight {
     fn intervals(&self, region: &Region) -> Result<Vec<Interval>> {
-        let mut reader = Reader::from_path(&self.path)?;
+        let mut reader = IndexedReader::from_path(&self.path)?;
         let header = reader.header().clone();
+        let rid = header.name2rid(region.target.as_bytes())?;
+        reader.fetch(rid, region.start as u64, Some(region.end as u64))?;
         let mut intervals = Vec::new();
         for record in reader.records() {
             let record = record?;
-            let target =
-                String::from_utf8(header.rid2name(record.rid().unwrap()).unwrap().to_vec())?;
             let position = record.pos() + 1; // Adjust for 1-based indexing
-            if region.contains(position, &target) {
-                let alleles = record.alleles();
-                let end = position + alleles[0].len() as i64 - 1;
-                let ref_allele = ellipsis(std::str::from_utf8(alleles[0]).unwrap_or("?"), 5);
-                let alt_allele = ellipsis(std::str::from_utf8(alleles[1]).unwrap_or("?"), 5);
-                let mut id = format!("{}:{}>{}", position, ref_allele, alt_allele);
-                if record.id() != b"." {
-                    id += &format!(":{}", std::str::from_utf8(&record.id())?);
-                }
-                intervals.push(Interval::new(id, position as f64, end as f64));
+            let alleles = record.alleles();
+            let end = position + alleles[0].len() as i64 - 1;
+            let ref_allele = ellipsis(std::str::from_utf8(alleles[0]).unwrap_or("?"), 5);
+            let alt_allele = ellipsis(std::str::from_utf8(alleles[1]).unwrap_or("?"), 5);
+            let mut id = format!("{}:{}>{}", position, ref_allele, alt_allele);
+            if record.id() != b"." {
+                id += &format!(":{}", std::str::from_utf8(&record.id())?);
             }
+            intervals.push(Interval::new(id, position as f64, end as f64));
         }
         Ok(intervals)
     }
@@ -87,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_vcf_intervals() {
-        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1257A.vcf"));
+        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1257A.vcf.gz"));
         let region = Region::from_str("1:200-300").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
         assert_eq!(intervals.len(), 1);
@@ -98,7 +96,7 @@ mod tests {
 
     #[test]
     fn test_vcf_interval_out_of_bounds() {
-        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1257A.vcf"));
+        let highlight = VcfHighlight::new(PathBuf::from("tests/sample_3/1257A.vcf.gz"));
         let region = Region::from_str("1:200-220").unwrap();
         let intervals = highlight.intervals(&region).unwrap();
         assert_eq!(intervals.len(), 0);
