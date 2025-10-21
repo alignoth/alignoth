@@ -8,7 +8,7 @@ use crate::cli::{DataFormat, Preprocess};
 use crate::highlight::{BedHighlight, Highlight, VcfHighlight};
 use crate::plot::create_plot_data;
 use crate::wizard::wizard_mode;
-use anyhow::Result;
+use anyhow::{bail, Result};
 use csv::WriterBuilder;
 use log::LevelFilter;
 use lz_str::compress_to_utf16;
@@ -46,7 +46,16 @@ async fn main() -> Result<()> {
     )?;
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
-        highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
+        let index = PathBuf::from(&format!("{}.csi", vcf_path.display()));
+        if index.exists() {
+            highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
+        } else {
+            bail!(
+                "VCF/BCF index not found: {}. Please create an index using `bcftools index {}`",
+                index.display(),
+                vcf_path.display()
+            );
+        }
     }
     if let Some(bed_path) = opt.bed.as_ref() {
         highlight.extend(BedHighlight::new(bed_path.clone()).intervals(region)?);
