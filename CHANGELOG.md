@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/alignoth/alignoth/compare/v1.1.1...v1.1.2) (2025-10-24)
+
+
+### Bug Fixes
+
+* Ensure correct typing of start field ([#386](https://github.com/alignoth/alignoth/issues/386)) ([bb05b6a](https://github.com/alignoth/alignoth/commit/bb05b6a0605636bc9db77b63bf4ac61f8fbb61cf))
+
 ## [1.1.1](https://github.com/alignoth/alignoth/compare/v1.1.0...v1.1.1) (2025-10-21)
 
 
