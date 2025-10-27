@@ -119,6 +119,9 @@ async fn main() -> Result<()> {
         }
     };
     if let Some(out_path) = &opt.output {
+        if !out_path.exists() {
+            std::fs::create_dir_all(out_path)?;
+        }
         let bam_path = opt.bam_path.unwrap();
         let bam_file_name = bam_path
             .file_name()
