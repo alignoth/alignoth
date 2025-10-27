@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/alignoth/alignoth/compare/v1.1.2...v1.1.3) (2025-10-27)
+
+
+### Bug Fixes
+
+* Create output directory if it does not exist ([#389](https://github.com/alignoth/alignoth/issues/389)) ([43a3c12](https://github.com/alignoth/alignoth/commit/43a3c12583ff4e821de9348427ef33c7f7b9c914))
+
 ## [1.1.2](https://github.com/alignoth/alignoth/compare/v1.1.1...v1.1.2) (2025-10-24)
 
 
