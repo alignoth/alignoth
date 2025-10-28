@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/alignoth/alignoth/compare/v1.1.4...v1.1.5) (2025-10-28)
+
+
+### Bug Fixes
+
+* Write highlight output if VCF or BED is provided ([#393](https://github.com/alignoth/alignoth/issues/393)) ([0ee280f](https://github.com/alignoth/alignoth/commit/0ee280f2b9ff83588a6b62d81af2b203a5e4b450))
+
 ## [1.1.4](https://github.com/alignoth/alignoth/compare/v1.1.3...v1.1.4) (2025-10-28)
 
 
