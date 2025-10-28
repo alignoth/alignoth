@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/alignoth/alignoth/compare/v1.1.3...v1.1.4) (2025-10-28)
+
+
+### Bug Fixes
+
+* Make sure reference start is always interpreted as integer ([#391](https://github.com/alignoth/alignoth/issues/391)) ([291dbb9](https://github.com/alignoth/alignoth/commit/291dbb984006568ed1a8290ad8c1b60540f88ae3))
+
 ## [1.1.3](https://github.com/alignoth/alignoth/compare/v1.1.2...v1.1.3) (2025-10-27)
 
 
