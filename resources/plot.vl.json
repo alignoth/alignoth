@@ -181,7 +181,7 @@
             },
             {
               "as": "position",
-              "calculate": "datum.start + datum.offset"
+              "calculate": "toNumber(datum.start) + datum.offset"
             },
             {
               "as": "start",
