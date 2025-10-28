@@ -130,7 +130,7 @@ async fn main() -> Result<()> {
             .unwrap()
             .strip_suffix(".bam")
             .unwrap();
-        let highlight_path = if opt.highlight.is_some() {
+        let highlight_path = if opt.highlight.is_some() || opt.vcf.is_some() || opt.bed.is_some() {
             Some(Path::join(
                 out_path,
                 format!("{}.highlight.{}", bam_file_name, opt.data_format),
