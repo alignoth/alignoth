@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.6](https://github.com/alignoth/alignoth/compare/v1.1.5...v1.1.6) (2025-10-29)
+
+
+### Bug Fixes
+
+* Check for both .csi and .tbi VCF index files ([#395](https://github.com/alignoth/alignoth/issues/395)) ([dd5059f](https://github.com/alignoth/alignoth/commit/dd5059f89f5963ea9bd30c25d64d1ce67cd1689f))
+
 ## [1.1.5](https://github.com/alignoth/alignoth/compare/v1.1.4...v1.1.5) (2025-10-28)
 
 

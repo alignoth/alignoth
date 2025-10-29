@@ -2,7 +2,7 @@
 name = "alignoth"
 description = "A tool for creating alignment plots from bam files"
 license = "MIT"
-version = "1.1.5"
+version = "1.1.6"
 authors = ["Felix Wiegand <felix.wiegand@tu-dortmund.de>", "Johannes Köster <johannes.koester@tu-dortmund.de>"]
 edition = "2021"
 
