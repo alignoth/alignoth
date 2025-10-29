@@ -46,13 +46,15 @@ async fn main() -> Result<()> {
     )?;
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
-        let index = PathBuf::from(&format!("{}.csi", vcf_path.display()));
-        if index.exists() {
+        let csi_index = PathBuf::from(&format!("{}.csi", vcf_path.display()));
+        let tbi_index = PathBuf::from(&format!("{}.tbi", vcf_path.display()));
+        if csi_index.exists() || tbi_index.exists() {
             highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
         } else {
             bail!(
-                "VCF/BCF index not found: {}. Please create an index using `bcftools index {}`",
-                index.display(),
+                "VCF/BCF index not found: {} or {}. Please create an index using `bcftools index {}`",
+                csi_index.display(),
+                tbi_index.display(),
                 vcf_path.display()
             );
         }
