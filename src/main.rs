@@ -52,9 +52,10 @@ async fn main() -> Result<()> {
             highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
         } else {
             bail!(
-                "VCF/BCF index not found: {} or {}. Please create an index using `bcftools index {}`",
+                "VCF/BCF index not found: {} or {}. Please create an index using `bcftools index {}` or `tabix {}`.",
                 csi_index.display(),
                 tbi_index.display(),
+                vcf_path.display(),
                 vcf_path.display()
             );
         }
