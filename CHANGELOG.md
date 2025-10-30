@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/alignoth/alignoth/compare/v1.2.1...v1.3.0) (2025-10-30)
+
+
+### Features
+
+* Add --around-vcf-record option to plot region around VCF record by ([e82e8c3](https://github.com/alignoth/alignoth/commit/e82e8c3a07162271f2767694d46a7fd050b75412))
+* Add --around-vcf-record option to plot region around VCF record by index ([#401](https://github.com/alignoth/alignoth/issues/401)) ([e82e8c3](https://github.com/alignoth/alignoth/commit/e82e8c3a07162271f2767694d46a7fd050b75412))
+
 ## [1.2.1](https://github.com/alignoth/alignoth/compare/v1.2.0...v1.2.1) (2025-10-30)
 
 
