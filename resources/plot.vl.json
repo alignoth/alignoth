@@ -147,6 +147,7 @@
           },
           "mark": "rect",
           "encoding": {
+            "tooltip": {"field": "name"},
             "color": {"field": "name", "title": "site"},
             "opacity": {
               "value": 0.20
