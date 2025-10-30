@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/alignoth/alignoth/compare/v1.2.0...v1.2.1) (2025-10-30)
+
+
+### Bug Fixes
+
+* Remove potential coverage plot offset at inital plot rendering ([#399](https://github.com/alignoth/alignoth/issues/399)) ([10e6dad](https://github.com/alignoth/alignoth/commit/10e6dad238b06c971bb4c0c3ae43075a179af251))
+
 ## [1.2.0](https://github.com/alignoth/alignoth/compare/v1.1.6...v1.2.0) (2025-10-30)
 
 
