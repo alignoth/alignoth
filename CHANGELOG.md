@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/alignoth/alignoth/compare/v1.1.6...v1.2.0) (2025-10-30)
+
+
+### Features
+
+* Add tooltip to highlight mark showing name field ([#398](https://github.com/alignoth/alignoth/issues/398)) ([c3242c3](https://github.com/alignoth/alignoth/commit/c3242c3ea7b526e8f46691fdeed9d03788816e2f))
+
+
+### Bug Fixes
+
+* Clarify highlight input prompt with interval and position examples ([7a6d5fd](https://github.com/alignoth/alignoth/commit/7a6d5fd69bcbc00c4941e3f0a4c05db4ffeaa050))
+
 ## [1.1.6](https://github.com/alignoth/alignoth/compare/v1.1.5...v1.1.6) (2025-10-29)
 
 
