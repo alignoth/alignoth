@@ -157,6 +157,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         data_format: Default::default(),
         html: html_output,
         around: None,
+        around_vcf_record: None,
         plot_all: false,
         highlight,
         vcf: vcf_input,
