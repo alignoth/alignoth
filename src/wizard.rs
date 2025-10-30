@@ -81,7 +81,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         _ => unreachable!(),
     };
 
-    let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: 1000-2000 or 1200, press Enter to skip)").prompt()?;
+    let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)").prompt()?;
     let highlight = if highlight_input.is_empty() {
         None
     } else {
