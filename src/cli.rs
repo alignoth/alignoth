@@ -3,6 +3,7 @@ use anyhow::{anyhow, Context, Result};
 use log::warn;
 use rust_htslib::bam;
 use rust_htslib::bam::{FetchDefinition, Read};
+use rust_htslib::bcf::{Read as BCFRead, Reader};
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp;
@@ -32,6 +33,10 @@ pub struct Alignoth {
     /// Chromosome and single base for the visualization. The plotted region will start 500bp before and end 500bp after the given base. Example: 2:20000
     #[structopt(long, short = "a")]
     pub(crate) around: Option<Around>,
+
+    /// Plots a region around a specified VCF record taken via its index from the VCF file given via the --vcf option.
+    #[structopt(long, conflicts_with_all = &["around", "region", "plot_all"], requires("vcf"))]
+    pub(crate) around_vcf_record: Option<u64>,
 
     /// A short command to plot the whole bam file. We advise to only use this command for small bam files.
     #[structopt(long)]
@@ -114,9 +119,13 @@ impl Preprocess for Alignoth {
                 "You can only specify either a region or a base to plot around."
             ));
         }
-        if self.region.is_none() && self.around.is_none() && !self.plot_all {
+        if self.region.is_none()
+            && self.around.is_none()
+            && !self.plot_all
+            && self.around_vcf_record.is_none()
+        {
             return Err(anyhow!(
-                "You have to specify either a region or a base to plot around or use the --plot-all option."
+                "You have to specify either a region or a base to plot around or use the --plot-all or --around-vcf-record option."
             ));
         }
         if self.bam_path.is_none() && self.reference.is_none() {
@@ -145,6 +154,16 @@ impl Preprocess for Alignoth {
         }
         if let Some(around) = &self.around {
             self.region = Some(Region::from_around(around));
+            let target = self.region.as_ref().unwrap().target.clone();
+            let target_length =
+                get_fasta_length(self.reference.as_ref().unwrap(), &target).unwrap() as i64;
+            let region = self.region.as_mut().unwrap();
+            self.region = Some(region.clamp(0, target_length - 1));
+        } else if let Some(vcf_record_index) = &self.around_vcf_record {
+            self.region = Some(Region::from_vcf_record(
+                *vcf_record_index,
+                self.vcf.as_ref().unwrap(),
+            )?);
             let target = self.region.as_ref().unwrap().target.clone();
             let target_length =
                 get_fasta_length(self.reference.as_ref().unwrap(), &target).unwrap() as i64;
@@ -303,6 +322,26 @@ impl Region {
 
     pub(crate) fn overlaps(&self, start: i64, end: i64, target: &str) -> bool {
         target == self.target && start <= self.end && end >= self.start
+    }
+
+    pub(crate) fn from_vcf_record(vcf_record_index: u64, vcf: &PathBuf) -> Result<Self> {
+        let mut reader = Reader::from_path(vcf)?;
+        let header = reader.header().clone();
+        let record = reader
+            .records()
+            .nth(vcf_record_index as usize)
+            .context(format!(
+                "Given vcf record index {vcf_record_index} not found in {}",
+                vcf.display()
+            ))??;
+        let start = &record.pos();
+        let end = &record.end();
+        let target = String::from_utf8(header.rid2name(record.rid().unwrap())?.to_vec())?;
+        Ok(Region {
+            target,
+            start: *start - 500,
+            end: *end + 500,
+        })
     }
 }
 
