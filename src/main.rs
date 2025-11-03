@@ -189,15 +189,18 @@ async fn main() -> Result<()> {
         plot_specs["datasets"]["reads"] = json!(read_data);
         plot_specs["datasets"]["highlight"] = json!(highlight);
         plot_specs["datasets"]["coverage"] = json!(coverage_data);
-        let bam_name = opt
+        let filename = opt
             .bam_path
+            .as_ref()
             .unwrap()
             .file_name()
             .unwrap()
             .to_str()
-            .unwrap()
-            .strip_suffix(".bam")
-            .unwrap()
+            .unwrap();
+        let bam_name = filename
+            .trim_end_matches(".bam")
+            .trim_end_matches(".sam")
+            .trim_end_matches(".cram")
             .to_owned();
         if opt.html {
             let mut templates = Tera::default();
