@@ -822,7 +822,7 @@ mod tests {
             &region,
             500,
             None,
-            0.0
+            0.0,
         )
         .unwrap();
 
@@ -955,7 +955,7 @@ mod tests {
             &region,
             100,
             None,
-            0.0
+            0.0,
         )
         .unwrap();
         let expected_reference = Reference {
@@ -1005,7 +1005,7 @@ mod tests {
             &region,
             500,
             None,
-            0.0
+            0.0,
         );
         assert!(result.is_ok());
     }
@@ -1133,8 +1133,23 @@ mod tests {
 
     #[test]
     fn test_filter_mismatches() {
-        let mut cov = crate::plot::BaseCoverage { a: 3, t: 0, g: 1, c: 1, m: 95 };
+        let mut cov = crate::plot::BaseCoverage {
+            a: 3,
+            t: 0,
+            g: 1,
+            c: 1,
+            m: 95,
+        };
         cov.filter_mismatches(2.0);
-        assert_eq!(cov, crate::plot::BaseCoverage { a: 3, t: 0, g: 0, c: 0, m: 97 });
+        assert_eq!(
+            cov,
+            crate::plot::BaseCoverage {
+                a: 3,
+                t: 0,
+                g: 0,
+                c: 0,
+                m: 97
+            }
+        );
     }
 }
