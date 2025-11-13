@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/alignoth/alignoth/compare/v1.3.0...v1.4.0) (2025-11-13)
+
+
+### Features
+
+* Add mismatch display threshold option ([#405](https://github.com/alignoth/alignoth/issues/405)) ([0c77b11](https://github.com/alignoth/alignoth/commit/0c77b110218a026192591fd11b9fee825750af28))
+
+
+### Bug Fixes
+
+* Strip multiple file extensions from BAM name ([cab3062](https://github.com/alignoth/alignoth/commit/cab3062066115ab4700aa2260118cc0dccd26252))
+* Update plot color palettes for color blindness and increase opacity ([#406](https://github.com/alignoth/alignoth/issues/406)) ([ce1bac7](https://github.com/alignoth/alignoth/commit/ce1bac744195088964321513d145ade0358dbedf))
+
 ## [1.3.0](https://github.com/alignoth/alignoth/compare/v1.2.1...v1.3.0) (2025-10-30)
 
 
