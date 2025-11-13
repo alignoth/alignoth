@@ -27,6 +27,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     region: &Region,
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
+    mismatch_display_min_percent: f64,
 ) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
@@ -50,7 +51,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
                 .unwrap()
         })
         .collect_vec();
-    let coverage = Coverage::from_reads(&data, region);
+    let coverage = Coverage::from_reads(&data, region, mismatch_display_min_percent);
     let total_read_count = data.len();
     data.order(max_read_depth)?;
     let retained_reads = data.len();
@@ -202,13 +203,32 @@ pub(crate) struct Reference {
 }
 
 // A struct representing base coverage information, m represents a match to the reference
-#[derive(Serialize, Debug, Eq, PartialEq, Default, Clone)]
+#[derive(Serialize, Debug, Eq, PartialEq, Default, Clone, Copy)]
 pub(crate) struct BaseCoverage {
     a: usize,
     t: usize,
     g: usize,
     c: usize,
     m: usize,
+}
+
+impl BaseCoverage {
+    /// Filters out low-frequency mismatches and merges them into the match count m.
+    pub fn filter_mismatches(&mut self, threshold: f64) {
+        let total = self.a + self.t + self.g + self.c + self.m;
+        if total == 0 {
+            return;
+        }
+
+        let mut removed = 0;
+        for b in [&mut self.a, &mut self.t, &mut self.g, &mut self.c] {
+            if (*b as f64 / total as f64 * 100.0) < threshold {
+                removed += *b;
+                *b = 0;
+            }
+        }
+        self.m += removed;
+    }
 }
 
 #[derive(Serialize, Debug, Eq, PartialEq, Default, Clone)]
@@ -280,7 +300,7 @@ pub(crate) struct Coverage {
 }
 
 impl Coverage {
-    pub fn from_reads(reads: &[Read], region: &Region) -> Self {
+    pub fn from_reads(reads: &[Read], region: &Region, mismatch_display_min_percent: f64) -> Self {
         let mut coverage = vec![BaseCoverage::default(); region.length() as usize];
 
         for read in reads {
@@ -324,6 +344,10 @@ impl Coverage {
                     }
                 }
             }
+        }
+
+        for cov in &mut coverage {
+            cov.filter_mismatches(mismatch_display_min_percent);
         }
 
         let coverage = EncodedBaseCoverage(coverage);
@@ -798,6 +822,7 @@ mod tests {
             &region,
             500,
             None,
+            0.0
         )
         .unwrap();
 
@@ -930,6 +955,7 @@ mod tests {
             &region,
             100,
             None,
+            0.0
         )
         .unwrap();
         let expected_reference = Reference {
@@ -979,6 +1005,7 @@ mod tests {
             &region,
             500,
             None,
+            0.0
         );
         assert!(result.is_ok());
     }
@@ -1091,7 +1118,7 @@ mod tests {
             end: 15,
         };
 
-        let coverage = Coverage::from_reads(&reads, &region);
+        let coverage = Coverage::from_reads(&reads, &region, 0.0);
 
         let expected = Coverage {
             a: "".to_string(),
@@ -1102,5 +1129,12 @@ mod tests {
             start: 5,
         };
         assert_eq!(coverage, expected);
+    }
+
+    #[test]
+    fn test_filter_mismatches() {
+        let mut cov = crate::plot::BaseCoverage { a: 3, t: 0, g: 1, c: 1, m: 95 };
+        cov.filter_mismatches(2.0);
+        assert_eq!(cov, crate::plot::BaseCoverage { a: 3, t: 0, g: 0, c: 0, m: 97 });
     }
 }
