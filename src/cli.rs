@@ -106,6 +106,10 @@ pub struct Alignoth {
     /// If present, the generated html will not embed javscript dependencies and therefore be considerably smaller but require internet access to load the dependencies.
     #[structopt(long, conflicts_with("output"))]
     pub(crate) no_embed_js: bool,
+
+    /// If present, the generated coverage plot will only display mismatches with a minimum percentage of the total read depth.
+    #[structopt(long, default_value = "1.0")]
+    pub(crate) mismatch_display_min_percent: f64,
 }
 
 pub(crate) trait Preprocess {

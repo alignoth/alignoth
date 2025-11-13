@@ -43,6 +43,7 @@ async fn main() -> Result<()> {
         region,
         opt.max_read_depth,
         opt.aux_tag,
+        opt.mismatch_display_min_percent,
     )?;
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
