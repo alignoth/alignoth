@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/alignoth/alignoth/compare/v1.4.0...v1.4.1) (2025-11-14)
+
+
+### Performance Improvements
+
+* Simplify Vega transforms for coverage base counts ([#407](https://github.com/alignoth/alignoth/issues/407)) ([7d094d5](https://github.com/alignoth/alignoth/commit/7d094d5bfea9317e7c29a493c78175d3096652ce))
+
 ## [1.4.0](https://github.com/alignoth/alignoth/compare/v1.3.0...v1.4.0) (2025-11-13)
 
 
