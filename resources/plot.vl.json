@@ -35,10 +35,6 @@
       },
       "transform": [
         {"calculate": "split(datum.m, '|')", "as": "m"},
-        {"calculate": "split(datum.a, '$')", "as": "a_raw"},
-        {"calculate": "split(datum.t, '$')", "as": "t_raw"},
-        {"calculate": "split(datum.g, '$')", "as": "g_raw"},
-        {"calculate": "split(datum.c, '$')", "as": "c_raw"},
         {"flatten": ["m"]},
         {
           "window": [
@@ -48,18 +44,15 @@
           "frame": [null, 0]
         },
         {"calculate": "toNumber(datum.start) + datum.index", "as": "position"},
-        {"flatten": ["a_raw"]},
-        {"calculate": "(toNumber(split(datum.a_raw, '|')[0]) + toNumber(datum.start)) == datum.position ? toNumber(split(datum.a_raw, '|')[1]) : 0", "as": "a"},
-        {"aggregate": [{"op": "sum", "field": "a", "as": "a"}, {"op": "max", "field": "m", "as": "m"}], "groupby": ["position", "t_raw", "g_raw", "c_raw", "start"]},
-        {"flatten": ["t_raw"]},
-        {"calculate": "(toNumber(split(datum.t_raw, '|')[0]) + toNumber(datum.start)) == datum.position ? toNumber(split(datum.t_raw, '|')[1]) : 0", "as": "t"},
-        {"aggregate": [{"op": "sum", "field": "t", "as": "t"}, {"op": "max", "field": "a", "as": "a"}, {"op": "max", "field": "m", "as": "m"}], "groupby": ["position", "g_raw", "c_raw", "start"]},
-        {"flatten": ["g_raw"]},
-        {"calculate": "(toNumber(split(datum.g_raw, '|')[0]) + toNumber(datum.start)) == datum.position ? toNumber(split(datum.g_raw, '|')[1]) : 0", "as": "g"},
-        {"aggregate": [{"op": "sum", "field": "g", "as": "g"}, {"op": "max", "field": "t", "as": "t"}, {"op": "max", "field": "a", "as": "a"}, {"op": "max", "field": "m", "as": "m"}], "groupby": ["position", "c_raw", "start"]},
-        {"flatten": ["c_raw"]},
-        {"calculate": "(toNumber(split(datum.c_raw, '|')[0]) + toNumber(datum.start)) == datum.position ? toNumber(split(datum.c_raw, '|')[1]) : 0", "as": "c"},
-        {"aggregate": [{"op": "sum", "field": "c", "as": "c"}, {"op": "max", "field": "g", "as": "g"}, {"op": "max", "field": "t", "as": "t"}, {"op": "max", "field": "a", "as": "a"}, {"op": "max", "field": "m", "as": "m"}], "groupby": ["position"]},
+        {"calculate": "toString(datum.position - toNumber(datum.start)) + '|'", "as": "search_key"},
+        {"calculate": "indexof(datum.a, datum.search_key)", "as": "a_idx"},
+        {"calculate": "datum.a_idx >= 0 ? toNumber(split(split(slice(datum.a, datum.a_idx), '$')[0], '|')[1]) : 0", "as": "a"},
+        {"calculate": "indexof(datum.t, datum.search_key)", "as": "t_idx"},
+        {"calculate": "datum.t_idx >= 0 ? toNumber(split(split(slice(datum.t, datum.t_idx), '$')[0], '|')[1]) : 0", "as": "t"},
+        {"calculate": "indexof(datum.g, datum.search_key)", "as": "g_idx"},
+        {"calculate": "datum.g_idx >= 0 ? toNumber(split(split(slice(datum.g, datum.g_idx), '$')[0], '|')[1]) : 0", "as": "g"},
+        {"calculate": "indexof(datum.c, datum.search_key)", "as": "c_idx"},
+        {"calculate": "datum.c_idx >= 0 ? toNumber(split(split(slice(datum.c, datum.c_idx), '$')[0], '|')[1]) : 0", "as": "c"},
         {"fold": ["m", "a", "c", "g", "t"], "as": ["base_type", "count"]},
         {"calculate": "{'m': 'm', 'a': 'A', 'c': 'C', 'g': 'G', 't': 'T'}[datum.base_type]", "as": "base_label"},
         {"calculate": "datum.base_label === 'm' ? 1 : 0", "as": "base_order"}
