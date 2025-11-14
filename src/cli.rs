@@ -107,7 +107,7 @@ pub struct Alignoth {
     #[structopt(long, conflicts_with("output"))]
     pub(crate) no_embed_js: bool,
 
-    /// If present, the generated coverage plot will only display mismatches with a minimum percentage of the total read depth.
+    /// The minimum percentage of mismatches compared to total read depth at that point to display in the coverage plot.
     #[structopt(long, default_value = "1.0")]
     pub(crate) mismatch_display_min_percent: f64,
 }
