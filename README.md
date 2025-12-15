@@ -4,6 +4,7 @@
 [![Bioconda version](https://img.shields.io/conda/vn/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
 [![Licence](https://img.shields.io/conda/l/bioconda/alignoth.svg?style=flat)](http://bioconda.github.io/recipes/alignoth/README.html)
+[![DOI](https://img.shields.io/badge/DOI-10.1093%2Fbioinformatics/btaf663-blue.svg)](https://doi.org/10.1093/bioinformatics/btaf663)
 [![DOI](https://zenodo.org/badge/478152744.svg)](https://doi.org/10.5281/zenodo.15837719)
 
 # alignoth
