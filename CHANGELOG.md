@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.2](https://github.com/alignoth/alignoth/compare/v1.4.1...v1.4.2) (2026-01-14)
+
+
+### Bug Fixes
+
+* Allow .vcf files in wizard mode ([#414](https://github.com/alignoth/alignoth/issues/414)) ([e0ea1fb](https://github.com/alignoth/alignoth/commit/e0ea1fbd94d41e87dec8400237b89cc400c2cccb))
+* Clamp region to reference bounds generated via around in wizard ([eb3e064](https://github.com/alignoth/alignoth/commit/eb3e064ec03915c0ffb818dc506ed79154c27069))
+* Clamp region to reference bounds generated via around in wizard mode ([#415](https://github.com/alignoth/alignoth/issues/415)) ([eb3e064](https://github.com/alignoth/alignoth/commit/eb3e064ec03915c0ffb818dc506ed79154c27069))
+
 ## [1.4.1](https://github.com/alignoth/alignoth/compare/v1.4.0...v1.4.1) (2025-11-14)
 
 
