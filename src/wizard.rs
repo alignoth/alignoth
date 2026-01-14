@@ -1,5 +1,5 @@
-use crate::cli::{Alignoth, Around, FromAround, Interval, Region};
-use crate::utils::get_fasta_contigs;
+use crate::cli::{Alignoth, Around, Clamp, FromAround, Interval, Region};
+use crate::utils::{get_fasta_contigs, get_fasta_length};
 use anyhow::Result;
 use inquire::{Select, Text};
 use std::fs;
@@ -60,7 +60,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     let contigs = get_fasta_contigs(&PathBuf::from(reference_path.clone()))?;
     let target = Select::new("Select target contig/chromosome:", contigs).prompt()?;
 
-    let region = match Select::new(
+    let mut region = match Select::new(
         "Do you want to visualize around a certain position or a specific region?",
         vec!["Around a position", "Region"],
     )
@@ -76,10 +76,17 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         "Region" => {
             let start = Text::new("Start coordinate:").prompt()?.parse()?;
             let end = Text::new("End coordinate:").prompt()?.parse()?;
-            Region { target, start, end }
+            Region {
+                target: target.clone(),
+                start,
+                end,
+            }
         }
         _ => unreachable!(),
     };
+
+    let target_length = get_fasta_length(&PathBuf::from(reference_path.clone()), &target)? as i64;
+    region.clamp(0, target_length - 1);
 
     let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)").prompt()?;
     let highlight = if highlight_input.is_empty() {
