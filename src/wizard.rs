@@ -31,7 +31,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         .map(|e| e.path())
         .filter(|p| {
             p.extension()
-                .is_some_and(|ext| ext == "vcf.gz" || ext == "bcf")
+                .is_some_and(|ext| ext == "vcf.gz" || ext == "bcf" || ext == "vcf")
         })
         .collect();
     let bed_files: Vec<_> = fs::read_dir(&current_dir)?
