@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/alignoth/alignoth/compare/v1.4.2...v1.4.3) (2026-01-19)
+
+
+### Bug Fixes
+
+* Prefix search keys with $ delimiter to avoid false matches ([#417](https://github.com/alignoth/alignoth/issues/417)) ([b5106fa](https://github.com/alignoth/alignoth/commit/b5106fa93b926e267f551f8ccfd5318c2a10b2b1))
+
 ## [1.4.2](https://github.com/alignoth/alignoth/compare/v1.4.1...v1.4.2) (2026-01-14)
 
 
