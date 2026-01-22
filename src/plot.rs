@@ -495,7 +495,10 @@ impl PlotCigar {
     ) -> Result<PlotCigar> {
         let mut inner_plot_cigars = Vec::new();
         let (mut read_index, mut ref_index) = (0, 0);
-        for c in &cigar {
+        let cigar_vec: Vec<_> = cigar.iter().collect();
+        let start = if matches!(cigar_vec.first(), Some(Cigar::SoftClip(_))) { 1 } else { 0 };
+        let end = if matches!(cigar_vec.last(), Some(Cigar::SoftClip(_))) { cigar_vec.len() - 1 } else { cigar_vec.len() };
+        for c in &cigar_vec[start..end] {
             match c {
                 Cigar::Match(length) | Cigar::SoftClip(length) => {
                     inner_plot_cigars.extend(match_bases(
@@ -566,8 +569,8 @@ impl Read {
     ) -> Result<Read> {
         let region = cli::Region {
             target: target.to_string(),
-            start: record.pos() - record.cigar().leading_softclips(),
-            end: record.reference_end() + record.cigar().trailing_softclips(),
+            start: record.pos(),
+            end: record.reference_end(),
         };
         let ref_seq = read_fasta(ref_path, &region)?;
         let read_seq = record
@@ -584,7 +587,7 @@ impl Read {
         Ok(Read {
             name: String::from_utf8(record.qname().to_vec())?,
             cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
-            position: record.pos() - record.cigar().leading_softclips(),
+            position: record.pos(),
             flags: record.flags(),
             mapq: record.mapq(),
             row: None,
