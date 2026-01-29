@@ -1,6 +1,6 @@
 use crate::cli;
 use crate::cli::Region;
-use crate::utils::aux_to_string;
+use crate::utils::{aux_to_string, get_fasta_length};
 use anyhow::{Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
@@ -9,7 +9,7 @@ use rand::rngs::StdRng;
 use rand::SeedableRng;
 use rust_htslib::bam;
 use rust_htslib::bam::ext::BamRecordExtensions;
-use rust_htslib::bam::record::{Cigar, CigarStringView};
+use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
 use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::Read as HtslibRead;
 use serde::{Serialize, Serializer};
@@ -556,6 +556,57 @@ fn match_bases(read_seq: &[char], ref_seq: &[char]) -> Vec<InnerPlotCigar> {
     inner_plot_cigars
 }
 
+fn clip_read(
+    mut record: rust_htslib::bam::record::Record,
+    upper_bound: usize,
+) -> Result<rust_htslib::bam::record::Record> {
+    let read_start = record.pos() - record.cigar().leading_softclips();
+    let read_end = record.reference_end() + record.cigar().trailing_softclips();
+
+    let bases_to_trim_start = read_start.min(0).unsigned_abs() as usize;
+    let bases_to_trim_end = (read_end - upper_bound as i64).max(0) as usize;
+
+    let cigar = record.cigar();
+    let cigar_len = cigar.len();
+    let new_cigar: Vec<_> = cigar
+        .iter()
+        .enumerate()
+        .filter_map(|(i, c)| match c {
+            Cigar::SoftClip(len) => {
+                let mut new_len = *len as usize;
+                if i == 0 {
+                    new_len = new_len.saturating_sub(bases_to_trim_start);
+                }
+                if i == cigar_len - 1 {
+                    new_len = new_len.saturating_sub(bases_to_trim_end);
+                }
+                (new_len > 0).then_some(Cigar::SoftClip(new_len as u32))
+            }
+            _ => Some(*c),
+        })
+        .collect();
+
+    let seq = record.seq().as_bytes();
+    let qual = record.qual().to_vec();
+    let seq_len = seq.len();
+
+    let trim_start = bases_to_trim_start.min(seq_len);
+    let trim_end = seq_len - bases_to_trim_end.min(seq_len.saturating_sub(trim_start));
+
+    let new_seq = seq[trim_start..trim_end].to_vec();
+    let new_qual = qual[trim_start..trim_end].to_vec();
+
+    let new_cigar_string = CigarString::from(new_cigar);
+    record.set(
+        &record.qname().to_vec(),
+        Some(&new_cigar_string),
+        &new_seq,
+        &new_qual,
+    );
+
+    Ok(record)
+}
+
 impl Read {
     /// Creates a Read from a given rust_htslib bam record
     fn from_record<P: AsRef<Path> + std::fmt::Debug>(
@@ -564,6 +615,15 @@ impl Read {
         target: &str,
         aux_tags: &Option<Vec<String>>,
     ) -> Result<Read> {
+        let ref_length = get_fasta_length(&ref_path.as_ref().to_path_buf(), target)?;
+        let read_start = record.pos() - record.cigar().leading_softclips();
+        let read_end = record.reference_end() + record.cigar().trailing_softclips();
+
+        let record = if read_start < 0 || read_end > ref_length as i64 {
+            clip_read(record, ref_length)?
+        } else {
+            record
+        };
         let region = cli::Region {
             target: target.to_string(),
             start: record.pos() - record.cigar().leading_softclips(),
@@ -654,10 +714,9 @@ mod tests {
     use crate::cli::Region;
     use crate::create_plot_data;
     use crate::plot::CigarType::{Del, Ins, Match, Sub};
-    use crate::plot::Coverage;
     use crate::plot::{
-        match_bases, read_fasta, AuxRecord, CigarType, EncodedRead, InnerPlotCigar, PlotCigar,
-        PlotOrder, Read, Reference,
+        match_bases, read_fasta, AuxRecord, CigarType, Coverage, EncodedRead, InnerPlotCigar,
+        PlotCigar, PlotOrder, Read, Reference,
     };
     use crate::utils::get_fasta_length;
     use itertools::Itertools;
@@ -1001,6 +1060,24 @@ mod tests {
         };
         let result = create_plot_data(
             "tests/sample_3/NA12878.bam",
+            "tests/sample_3/ref.fa",
+            &region,
+            500,
+            None,
+            0.0,
+        );
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_create_plot_data_with_clipped_read() {
+        let region = Region {
+            target: "1".to_string(),
+            start: 1,
+            end: 200,
+        };
+        let result = create_plot_data(
+            "tests/sample_3/NA12878_with_clipping_read.bam",
             "tests/sample_3/ref.fa",
             &region,
             500,
