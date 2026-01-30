@@ -30,8 +30,9 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         .filter_map(|entry| entry.ok())
         .map(|e| e.path())
         .filter(|p| {
-            p.extension()
-                .is_some_and(|ext| ext == "vcf.gz" || ext == "bcf" || ext == "vcf")
+            p.file_name().and_then(|n| n.to_str()).is_some_and(|name| {
+                name.ends_with(".vcf.gz") || name.ends_with(".bcf") || name.ends_with(".vcf")
+            })
         })
         .collect();
     let bed_files: Vec<_> = fs::read_dir(&current_dir)?
