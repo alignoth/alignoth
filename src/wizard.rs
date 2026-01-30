@@ -86,8 +86,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     };
 
     let target_length = get_fasta_length(&PathBuf::from(reference_path.clone()), &target)? as i64;
-    region.clamp(0, target_length - 1);
-
+    region = region.clamp(0, target_length - 1);
     let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)").prompt()?;
     let highlight = if highlight_input.is_empty() {
         None

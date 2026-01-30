@@ -186,11 +186,11 @@ pub struct Region {
 }
 
 pub(crate) trait Clamp {
-    fn clamp(&mut self, min: i64, max: i64) -> Self;
+    fn clamp(&self, min: i64, max: i64) -> Self;
 }
 
 impl Clamp for Region {
-    fn clamp(&mut self, min: i64, max: i64) -> Self {
+    fn clamp(&self, min: i64, max: i64) -> Self {
         Region {
             target: self.target.clone(),
             start: cmp::max(self.start, min),
