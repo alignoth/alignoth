@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.4](https://github.com/alignoth/alignoth/compare/v1.4.3...v1.4.4) (2026-01-30)
+
+
+### Bug Fixes
+
+* Clip reads extending beyond reference bounds ([#422](https://github.com/alignoth/alignoth/issues/422)) ([9e4d955](https://github.com/alignoth/alignoth/commit/9e4d955b8e1df121accc3e9ab61d5efcf8cda7f0))
+* Fix region clamping in wizard mode ([5e94b5f](https://github.com/alignoth/alignoth/commit/5e94b5fcc2094f5fc611a8a0e7ac7d4328d99be1))
+* Fix VCF file detection for .vcf.gz extensions ([325f9a7](https://github.com/alignoth/alignoth/commit/325f9a75214288969c1d122365c4b93c82270746))
+
 ## [1.4.3](https://github.com/alignoth/alignoth/compare/v1.4.2...v1.4.3) (2026-01-19)
 
 
