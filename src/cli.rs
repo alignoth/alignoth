@@ -26,7 +26,7 @@ pub struct Alignoth {
     #[structopt(long, short = "r", parse(from_os_str))]
     pub(crate) reference: Option<PathBuf>,
 
-    /// Chromosome and region for the visualization. Example: 2:132424-132924
+    /// Chromosome and region (1-based) for the visualization. Example: 2:132424-132924
     #[structopt(long, short = "g")]
     pub(crate) region: Option<Region>,
 
