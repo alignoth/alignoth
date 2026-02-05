@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.6](https://github.com/alignoth/alignoth/compare/v1.4.5...v1.4.6) (2026-02-05)
+
+
+### Bug Fixes
+
+* Preserve full alleles and set legend label limit instead ([#432](https://github.com/alignoth/alignoth/issues/432)) ([051b28b](https://github.com/alignoth/alignoth/commit/051b28b1881f6779b33040be63cc2df22f2d09c0))
+
 ## [1.4.5](https://github.com/alignoth/alignoth/compare/v1.4.4...v1.4.5) (2026-02-05)
 
 
