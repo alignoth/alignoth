@@ -26,7 +26,7 @@ pub struct Alignoth {
     #[structopt(long, short = "r", parse(from_os_str))]
     pub(crate) reference: Option<PathBuf>,
 
-    /// Chromosome and region (1-based) for the visualization. Example: 2:132424-132924
+    /// Chromosome and region (1-based, fully inclusive) for the visualization. Example: 2:132424-132924
     #[structopt(long, short = "g")]
     pub(crate) region: Option<Region>,
 
@@ -210,7 +210,7 @@ impl FromStr for Region {
         ))? - 1; // Compensate 1-based region specification
         let end = end.parse::<i64>().context(format!(
             "Could not parse integer from given region end {end}"
-        ))? - 1; // Compensate 1-based region specification
+        ))?; // No compensation so the region is fully inclusive
         Ok(Region {
             target: target.into(),
             start,

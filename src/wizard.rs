@@ -75,11 +75,11 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
             Region::from_around(&around)
         }
         "Region" => {
-            let start = Text::new("Start coordinate:").prompt()?.parse()?;
+            let start: i64 = Text::new("Start coordinate:").prompt()?.parse()?;
             let end = Text::new("End coordinate:").prompt()?.parse()?;
             Region {
                 target: target.clone(),
-                start,
+                start: start - 1, // Adjust for 1-based
                 end,
             }
         }
