@@ -413,7 +413,7 @@ mod tests {
         let expeceted_region = Region {
             target: "X".to_string(),
             start: 1999,
-            end: 2999,
+            end: 3000,
         };
         assert_eq!(region, expeceted_region);
     }
@@ -432,7 +432,7 @@ mod tests {
     #[test]
     fn test_region_length() {
         let region = Region::from_str("X:2000-3000").unwrap();
-        assert_eq!(region.length(), 1000);
+        assert_eq!(region.length(), 1001);
     }
 
     #[test]
