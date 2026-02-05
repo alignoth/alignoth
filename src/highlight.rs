@@ -1,6 +1,5 @@
 use crate::cli::Interval;
 use crate::cli::Region;
-use crate::utils::ellipsis;
 use anyhow::Result;
 use bio::io::bed;
 use rust_htslib::bcf::{IndexedReader, Read};
@@ -33,8 +32,8 @@ impl Highlight for VcfHighlight {
             let position = record.pos() + 1; // Adjust for 1-based indexing
             let alleles = record.alleles();
             let end = position + alleles[0].len() as i64 - 1;
-            let ref_allele = ellipsis(std::str::from_utf8(alleles[0]).unwrap_or("?"), 5);
-            let alt_allele = ellipsis(std::str::from_utf8(alleles[1]).unwrap_or("?"), 5);
+            let ref_allele = std::str::from_utf8(alleles[0]).unwrap_or("?");
+            let alt_allele = std::str::from_utf8(alleles[1]).unwrap_or("?");
             let mut id = format!("{}:{}>{}", position, ref_allele, alt_allele);
             if record.id() != b"." {
                 id += &format!(":{}", std::str::from_utf8(&record.id())?);

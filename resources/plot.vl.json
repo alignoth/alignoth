@@ -144,6 +144,9 @@
             "tooltip": {"field": "name"},
             "color": {
               "field": "name",
+              "legend": {
+                "labelLimit": 75
+              },
               "title": "site",
               "scale": {
                 "type": "ordinal",

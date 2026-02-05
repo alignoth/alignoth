@@ -79,6 +79,7 @@ pub(crate) fn aux_to_string(aux: rust_htslib::bam::record::Aux) -> String {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) fn ellipsis(s: &str, max_len: usize) -> String {
     if s.len() > max_len {
         format!("{}…", &s[..max_len])
