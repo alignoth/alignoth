@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.5](https://github.com/alignoth/alignoth/compare/v1.4.4...v1.4.5) (2026-02-05)
+
+
+### Bug Fixes
+
+* Adjust region to be inclusive ([#429](https://github.com/alignoth/alignoth/issues/429)) ([7688911](https://github.com/alignoth/alignoth/commit/768891175ca32d788885ccd57e4ed2bac6f3f084))
+
 ## [1.4.4](https://github.com/alignoth/alignoth/compare/v1.4.3...v1.4.4) (2026-01-30)
 
 
