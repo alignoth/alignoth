@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/alignoth/alignoth/compare/v1.4.6...v1.5.0) (2026-02-25)
+
+
+### Features
+
+* Show coverage breakdown tooltip with position and base counts ([#440](https://github.com/alignoth/alignoth/issues/440)) ([f4b1ef9](https://github.com/alignoth/alignoth/commit/f4b1ef9085970d887f1aec527c4e99aef4c0f5d4))
+
 ## [1.4.6](https://github.com/alignoth/alignoth/compare/v1.4.5...v1.4.6) (2026-02-05)
 
 
