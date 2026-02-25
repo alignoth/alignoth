@@ -90,7 +90,15 @@
           },
           "legend": null
         },
-        "order": {"field": "base_order"}
+        "order": {"field": "base_order"},
+        "tooltip": [
+            {"field": "position", "title": "Position (1-based)"},
+            {"field": "m", "title": "Matches"},
+            {"field": "a", "title": "A"},
+            {"field": "t", "title": "T"},
+            {"field": "g", "title": "G"},
+            {"field": "c", "title": "C"}
+          ]
       },
       "height": 60
     },
