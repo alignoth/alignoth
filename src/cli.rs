@@ -34,7 +34,7 @@ pub struct Alignoth {
     #[structopt(long, short = "a")]
     pub(crate) around: Option<Around>,
 
-    /// Plots a region around a specified VCF record taken via its index from the VCF file given via the --vcf option.
+    /// Plots a region around a specified VCF record taken via its index (starting at 0) from the VCF file given via the --vcf option.
     #[structopt(long, conflicts_with_all = &["around", "region", "plot_all"], requires("vcf"))]
     pub(crate) around_vcf_record: Option<u64>,
 

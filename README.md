@@ -58,7 +58,7 @@ The following options are available when using alignoth:
 | coverage-data-output  |       | If present coverage data will be written to the given file path                                                                                                   |         |
 | html                  |       | If present the generated plot will inserted into a plain html file containing the plot centered which is then written to stdout                                   |         |
 | no-embed-js           |       | If present, the generated html will not embed javscript dependencies and therefore be considerably smaller but require internet access to load the dependencies.  | false   |
-| around-vcf-record     | -a    | Plots a region around a specified VCF record taken via its index from the VCF file given via the --vcf option.                                                    |         |
+| around-vcf-record     | -a    | Plots a region around a specified VCF record taken via its index (starting at 0) from the VCF file given via the --vcf option.                                                    |         |
 | mismatch-display-min-percent |     | The minimum percentage of mismatches to display in the coverage plot.                                                                                        | 1       |
 
 
