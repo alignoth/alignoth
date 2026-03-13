@@ -4,6 +4,7 @@ use crate::utils::{aux_to_string, get_fasta_length};
 use anyhow::{Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
+use log::warn;
 use rand::prelude::IteratorRandom;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
@@ -42,7 +43,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     let mut data = bam
         .records()
         .filter_map(|r| r.ok())
-        .map(|r| {
+        .filter_map(|r| {
             Read::from_record(r, &ref_path, &region.target, &aux_tags)
                 .context(format!(
                     "bam file does not contain given region target {}",
@@ -614,7 +615,21 @@ impl Read {
         ref_path: P,
         target: &str,
         aux_tags: &Option<Vec<String>>,
-    ) -> Result<Read> {
+    ) -> Result<Option<Read>> {
+        let read_seq = record
+            .seq()
+            .as_bytes()
+            .iter()
+            .map(|u| char::from(*u))
+            .collect_vec();
+        if read_seq.is_empty() && record.cigar().iter().next().is_some() {
+            warn!(
+                "Skipping read '{}': empty sequence but non-empty CIGAR string ('{}').",
+                String::from_utf8_lossy(record.qname()),
+                record.cigar(),
+            );
+            return Ok(None);
+        }
         let ref_length = get_fasta_length(&ref_path.as_ref().to_path_buf(), target)?;
         let read_start = record.pos() - record.cigar().leading_softclips();
         let read_end = record.reference_end() + record.cigar().trailing_softclips();
@@ -630,18 +645,12 @@ impl Read {
             end: record.reference_end() + record.cigar().trailing_softclips(),
         };
         let ref_seq = read_fasta(ref_path, &region)?;
-        let read_seq = record
-            .seq()
-            .as_bytes()
-            .iter()
-            .map(|u| char::from(*u))
-            .collect_vec();
         let mpos = if record.is_paired() {
             record.mpos()
         } else {
             -1
         };
-        Ok(Read {
+        Ok(Some(Read {
             name: String::from_utf8(record.qname().to_vec())?,
             cigar: PlotCigar::from_cigar(record.cigar(), read_seq, ref_seq)?,
             position: record.pos() - record.cigar().leading_softclips(),
@@ -652,7 +661,7 @@ impl Read {
             mpos,
             aux: AuxRecord::new(&record, aux_tags),
             raw_cigar: record.cigar().to_string(),
-        })
+        }))
     }
 
     /// Sets the row of the Read
