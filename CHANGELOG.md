@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/alignoth/alignoth/compare/v1.5.0...v1.5.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* Skip reads with empty sequence and non-empty CIGAR ([#447](https://github.com/alignoth/alignoth/issues/447)) ([8c42a8f](https://github.com/alignoth/alignoth/commit/8c42a8f76c24a881bbb46ebd7491483e4830c0ed))
+
 ## [1.5.0](https://github.com/alignoth/alignoth/compare/v1.4.6...v1.5.0) (2026-02-25)
 
 
