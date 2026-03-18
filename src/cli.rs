@@ -110,6 +110,10 @@ pub struct Alignoth {
     /// The minimum percentage of mismatches compared to total read depth at that point to display in the coverage plot.
     #[structopt(long, default_value = "1.0")]
     pub(crate) mismatch_display_min_percent: f64,
+
+    /// If set, reads are clamped to the boundaries of the specified region before processing.
+    #[structopt(long)]
+    pub(crate) clamp_reads: bool,
 }
 
 pub(crate) trait Preprocess {

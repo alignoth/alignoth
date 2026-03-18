@@ -29,6 +29,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
     mismatch_display_min_percent: f64,
+    clamp_reads: bool,
 ) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
@@ -44,6 +45,17 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .records()
         .filter_map(|r| r.ok())
         .filter_map(|r| {
+            let r = if clamp_reads {
+                match clip_read(r, region.start, region.end) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        warn!("Skipping read during region clamping: {e}");
+                        return None;
+                    }
+                }
+            } else {
+                r
+            };
             Read::from_record(r, &ref_path, &region.target, &aux_tags)
                 .context(format!(
                     "bam file does not contain given region target {}",
@@ -559,13 +571,14 @@ fn match_bases(read_seq: &[char], ref_seq: &[char]) -> Vec<InnerPlotCigar> {
 
 fn clip_read(
     mut record: rust_htslib::bam::record::Record,
-    upper_bound: usize,
+    lower_bound: i64,
+    upper_bound: i64,
 ) -> Result<rust_htslib::bam::record::Record> {
     let read_start = record.pos() - record.cigar().leading_softclips();
     let read_end = record.reference_end() + record.cigar().trailing_softclips();
 
-    let bases_to_trim_start = read_start.min(0).unsigned_abs() as usize;
-    let bases_to_trim_end = (read_end - upper_bound as i64).max(0) as usize;
+    let bases_to_trim_start = (lower_bound - read_start).max(0) as usize;
+    let bases_to_trim_end = (read_end - upper_bound).max(0) as usize;
 
     let cigar = record.cigar();
     let cigar_len = cigar.len();
@@ -635,7 +648,7 @@ impl Read {
         let read_end = record.reference_end() + record.cigar().trailing_softclips();
 
         let record = if read_start < 0 || read_end > ref_length as i64 {
-            clip_read(record, ref_length)?
+            clip_read(record, 0, ref_length as i64)?
         } else {
             record
         };
@@ -891,6 +904,7 @@ mod tests {
             500,
             None,
             0.0,
+            false,
         )
         .unwrap();
 
@@ -1024,6 +1038,7 @@ mod tests {
             100,
             None,
             0.0,
+            false,
         )
         .unwrap();
         let expected_reference = Reference {
@@ -1074,6 +1089,7 @@ mod tests {
             500,
             None,
             0.0,
+            false,
         );
         assert!(result.is_ok());
     }
@@ -1092,6 +1108,7 @@ mod tests {
             500,
             None,
             0.0,
+            false,
         );
         assert!(result.is_ok());
     }
