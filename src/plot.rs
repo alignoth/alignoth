@@ -45,18 +45,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .records()
         .filter_map(|r| r.ok())
         .filter_map(|r| {
-            let r = if clamp_reads {
-                match clip_read(r, region.start, region.end) {
-                    Ok(r) => r,
-                    Err(e) => {
-                        warn!("Skipping read during region clamping: {e}");
-                        return None;
-                    }
-                }
-            } else {
-                r
-            };
-            Read::from_record(r, &ref_path, &region.target, &aux_tags)
+            Read::from_record(r, &ref_path, &aux_tags, region, clamp_reads)
                 .context(format!(
                     "bam file does not contain given region target {}",
                     &region.target
@@ -684,8 +673,9 @@ impl Read {
     fn from_record<P: AsRef<Path> + std::fmt::Debug>(
         record: rust_htslib::bam::record::Record,
         ref_path: P,
-        target: &str,
         aux_tags: &Option<Vec<String>>,
+        region: &Region,
+        clamp: bool,
     ) -> Result<Option<Read>> {
         let read_seq = record
             .seq()
@@ -701,17 +691,20 @@ impl Read {
             );
             return Ok(None);
         }
-        let ref_length = get_fasta_length(&ref_path.as_ref().to_path_buf(), target)?;
+        let ref_length = get_fasta_length(&ref_path.as_ref().to_path_buf(), &region.target)?;
         let read_start = record.pos() - record.cigar().leading_softclips();
         let read_end = record.reference_end() + record.cigar().trailing_softclips();
 
-        let record = if read_start < 0 || read_end > ref_length as i64 {
-            clip_read(record, 0, ref_length as i64)?
+        let lower_bound = if clamp { region.start } else { 0 };
+        let upper_bound = if clamp { region.end } else { ref_length as i64 };
+
+        let record = if read_start < lower_bound || read_end > upper_bound {
+            clip_read(record, lower_bound, upper_bound)?
         } else {
             record
         };
         let region = cli::Region {
-            target: target.to_string(),
+            target: region.target.clone(),
             start: record.pos() - record.cigar().leading_softclips(),
             end: record.reference_end() + record.cigar().trailing_softclips(),
         };
