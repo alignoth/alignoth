@@ -574,49 +574,107 @@ fn clip_read(
     lower_bound: i64,
     upper_bound: i64,
 ) -> Result<rust_htslib::bam::record::Record> {
-    let read_start = record.pos() - record.cigar().leading_softclips();
-    let read_end = record.reference_end() + record.cigar().trailing_softclips();
-
-    let bases_to_trim_start = (lower_bound - read_start).max(0) as usize;
-    let bases_to_trim_end = (read_end - upper_bound).max(0) as usize;
-
     let cigar = record.cigar();
-    let cigar_len = cigar.len();
-    let new_cigar: Vec<_> = cigar
-        .iter()
-        .enumerate()
-        .filter_map(|(i, c)| match c {
-            Cigar::SoftClip(len) => {
-                let mut new_len = *len as usize;
-                if i == 0 {
-                    new_len = new_len.saturating_sub(bases_to_trim_start);
-                }
-                if i == cigar_len - 1 {
-                    new_len = new_len.saturating_sub(bases_to_trim_end);
-                }
-                (new_len > 0).then_some(Cigar::SoftClip(new_len as u32))
-            }
-            _ => Some(*c),
-        })
-        .collect();
-
     let seq = record.seq().as_bytes();
     let qual = record.qual().to_vec();
-    let seq_len = seq.len();
+    let qname = record.qname().to_vec();
 
-    let trim_start = bases_to_trim_start.min(seq_len);
-    let trim_end = seq_len - bases_to_trim_end.min(seq_len.saturating_sub(trim_start));
+    let mut new_cigar = Vec::with_capacity(cigar.len());
+    let mut new_seq = Vec::with_capacity(seq.len());
+    let mut new_qual = Vec::with_capacity(qual.len());
 
-    let new_seq = seq[trim_start..trim_end].to_vec();
-    let new_qual = qual[trim_start..trim_end].to_vec();
+    let mut ref_pos = record.pos() - cigar.leading_softclips();
+    let mut seq_pos = 0;
+    let mut new_read_start = None;
 
-    let new_cigar_string = CigarString::from(new_cigar);
+    let mut extend_query_data = |start: usize, end: usize| {
+        if !seq.is_empty() {
+            new_seq.extend_from_slice(&seq[start..end]);
+        }
+        if !qual.is_empty() {
+            new_qual.extend_from_slice(&qual[start..end]);
+        }
+    };
+
+    for &c in cigar.iter() {
+        let op_len = c.len() as usize;
+
+        let (consumes_ref, consumes_query) = match c {
+            Cigar::Match(_) | Cigar::Equal(_) | Cigar::Diff(_) | Cigar::SoftClip(_) => (true, true),
+            Cigar::Del(_) | Cigar::RefSkip(_) => (true, false),
+            Cigar::Ins(_) => (false, true),
+            Cigar::HardClip(_) | Cigar::Pad(_) => (false, false),
+        };
+
+        let next_ref_pos = ref_pos + if consumes_ref { op_len as i64 } else { 0 };
+        let next_seq_pos = seq_pos + if consumes_query { op_len } else { 0 };
+
+        if !consumes_ref {
+            if ref_pos >= lower_bound && ref_pos < upper_bound {
+                new_read_start.get_or_insert(ref_pos);
+                new_cigar.push(c);
+                if consumes_query {
+                    extend_query_data(seq_pos, next_seq_pos);
+                }
+            }
+        } else {
+            let overlap_start = ref_pos.max(lower_bound);
+            let overlap_end = next_ref_pos.min(upper_bound);
+
+            if overlap_start < overlap_end {
+                new_read_start.get_or_insert(overlap_start);
+
+                let left_trim = (overlap_start - ref_pos) as usize;
+                let right_trim = (next_ref_pos - overlap_end) as usize;
+                let new_op_len = op_len - left_trim - right_trim;
+
+                if new_op_len > 0 {
+                    let new_op = match c {
+                        Cigar::Match(_) => Cigar::Match(new_op_len as u32),
+                        Cigar::Del(_) => Cigar::Del(new_op_len as u32),
+                        Cigar::RefSkip(_) => Cigar::RefSkip(new_op_len as u32),
+                        Cigar::SoftClip(_) => Cigar::SoftClip(new_op_len as u32),
+                        Cigar::Equal(_) => Cigar::Equal(new_op_len as u32),
+                        Cigar::Diff(_) => Cigar::Diff(new_op_len as u32),
+                        _ => unreachable!(),
+                    };
+                    new_cigar.push(new_op);
+
+                    if consumes_query {
+                        extend_query_data(seq_pos + left_trim, next_seq_pos - right_trim);
+                    }
+                }
+            }
+        }
+
+        ref_pos = next_ref_pos;
+        seq_pos = next_seq_pos;
+    }
+
     record.set(
-        &record.qname().to_vec(),
-        Some(&new_cigar_string),
+        &qname,
+        Some(&CigarString::from(new_cigar.clone())),
         &new_seq,
         &new_qual,
     );
+
+    if let Some(start) = new_read_start {
+        let new_leading_softclips: i64 = new_cigar
+            .iter()
+            .take_while(|c| matches!(c, Cigar::SoftClip(_) | Cigar::HardClip(_)))
+            .filter_map(|c| {
+                if let Cigar::SoftClip(l) = c {
+                    Some(*l as i64)
+                } else {
+                    None
+                }
+            })
+            .sum();
+
+        record.set_pos(start + new_leading_softclips);
+    } else {
+        record.set_pos(lower_bound);
+    }
 
     Ok(record)
 }
