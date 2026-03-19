@@ -20,7 +20,7 @@ use structopt::StructOpt;
 pub struct Alignoth {
     /// BAM file to be visualized.
     #[structopt(long, short = "b", parse(from_os_str))]
-    pub(crate) bam_path: Option<PathBuf>,
+    pub(crate) bam_path: Vec<PathBuf>,
 
     /// Path to the reference fasta file.
     #[structopt(long, short = "r", parse(from_os_str))]
@@ -132,17 +132,17 @@ impl Preprocess for Alignoth {
                 "You have to specify either a region or a base to plot around or use the --plot-all or --around-vcf-record option."
             ));
         }
-        if self.bam_path.is_none() && self.reference.is_none() {
-            if let Some(files) = get_ref_and_bam_from_cwd()? {
-                self.reference = Some(files.0);
-                self.bam_path = Some(files.1);
+        if self.bam_path.is_empty() && self.reference.is_none() {
+            if let Some((reference, bams)) = get_ref_and_bam_from_cwd()? {
+                self.reference = Some(reference);
+                self.bam_path = bams;
             } else {
-                return Err(anyhow!(
-                    "Could not find single reference and single bam file in current working directory. Please use the -r and -b flags to specify the reference and bam file."
+                return Err(anyhow::anyhow!(
+                    "Could not unambiguously find a single reference and at least one bam file in the current working directory. Please use the -r and -b flags to specify the reference and bam files."
                 ));
             }
         }
-        if self.bam_path.is_none() {
+        if self.bam_path.is_empty() {
             return Err(anyhow!(
                 "Missing bam file. Please use the -b flag to specify the bam file."
             ));
@@ -154,7 +154,24 @@ impl Preprocess for Alignoth {
         }
         if self.plot_all {
             warn!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
-            self.region = Some(Region::from_bam(self.bam_path.as_ref().unwrap())?);
+            let mut min_start = i64::MAX;
+            let mut max_end = i64::MIN;
+            let mut target = String::new();
+            for bam in &self.bam_path {
+                let r = Region::from_bam(bam)?;
+                if target.is_empty() {
+                    target = r.target.clone();
+                } else if target != r.target {
+                    return Err(anyhow::anyhow!("Cannot use --plot-all with multiple BAM files that have different targets."));
+                }
+                min_start = std::cmp::min(min_start, r.start);
+                max_end = std::cmp::max(max_end, r.end);
+            }
+            self.region = Some(Region {
+                target,
+                start: min_start,
+                end: max_end,
+            });
         }
         if let Some(around) = &self.around {
             self.region = Some(Region::from_around(around));
