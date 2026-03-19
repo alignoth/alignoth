@@ -86,6 +86,11 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         _ => unreachable!(),
     };
 
+    let clamp_reads: bool = Text::new("Clamp reads to the specified region?")
+        .with_default("false")
+        .prompt()?
+        .parse()?;
+
     let target_length = get_fasta_length(&PathBuf::from(reference_path.clone()), &target)? as i64;
     region = region.clamp(0, target_length - 1);
     let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)").prompt()?;
@@ -176,5 +181,6 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         coverage_output: None,
         no_embed_js: false,
         mismatch_display_min_percent: 1.0,
+        clamp_reads,
     })
 }
