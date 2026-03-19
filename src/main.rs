@@ -297,6 +297,7 @@ async fn main() -> Result<()> {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
             let mut context = Context::new();
+            context.insert("num_bams", &opt.bam_path.len());
             context.insert(
                 "spec",
                 &json!(compress_to_utf16(&plot_specs.to_string())).to_string(),

@@ -178,10 +178,15 @@
 </div>
 <table id="read-info" border="1">
   <thead>
-    <tr><th>Name</th><th>Position</th><th>Flags</th></tr>
+    <tr>
+      {% if num_bams > 1 %}<th>Sample</th>{% endif %}
+      <th>Name</th>
+      <th>Position</th>
+      <th>Flags</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td colspan="3">Click a read</td></tr>
+    <tr><td colspan="{% if num_bams > 1 %}4{% else %}3{% endif %}">Click a read</td></tr>
   </tbody>
 </table>
 <div id="vis" style="display: flex; justify-content: center;"></div>
@@ -213,29 +218,39 @@
         vega_embed_link.textContent = "vega-embed";
         el.querySelector('.vega-actions').appendChild(vega_embed_link);
 
-        view.addSignalListener("rplc", (name, value) => {
+        let allSelections = {};
+        const handleSignal = (name, value) => {
             const tableBody = document.querySelector("#read-info tbody");
+            const bamIndex = parseInt(name.split('_')[1]);
 
             if (!value?.vlPoint?.or?.length) {
-                tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
+                delete allSelections[bamIndex];
+            } else {
+                const selected = value.vlPoint.or;
+                var reads = view.data("reads");
+
+                if (!isNaN(bamIndex) && reads[bamIndex] && reads[bamIndex]["values"]) {
+                    const parsedReads = parseReadObjects(reads[bamIndex]["values"]);
+                    const sampleName = reads[bamIndex]["sample"];
+
+                    const selectedReads = parsedReads.filter(r =>
+                        selected.some(s => s.name === r.name && s.position === r.position)
+                    ).map(r => ({ ...r, sample: sampleName }));
+
+                    allSelections[bamIndex] = selectedReads;
+                }
+            }
+
+            const allSelectedReads = Object.values(allSelections).flat();
+
+            if (allSelectedReads.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="{% if num_bams > 1 %}4{% else %}3{% endif %}">Click a read</td></tr>`;
                 return;
             }
 
-            const selected = value.vlPoint.or;
-
-            var reads = view.data("reads");
-            reads = parseReadObjects(reads[0]["values"]);
-            const selectedReads = reads.filter(r =>
-                selected.some(s => s.name === r.name && s.position === r.position)
-            );
-
-            if (selectedReads.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3">Click a read</td></tr>`;
-                return;
-            }
-
-            tableBody.innerHTML = selectedReads.map(r => `
+            tableBody.innerHTML = allSelectedReads.map(r => `
                 <tr>
+                    {% if num_bams > 1 %}<td>${r.sample}</td>{% endif %}
                     <td>${r.name}</td>
                     <td>${r.position}</td>
                     <td>${
@@ -248,18 +263,38 @@
                     }</td>
                 </tr>
             `).join("");
-        });
+        };
+
+        {% for i in range(end=num_bams) %}
+        view.addSignalListener("rplc_{{ i }}", handleSignal);
+        {% endfor %}
 
         const input = document.getElementById("read-filter");
         input.addEventListener("input", () => {
             const query = input.value.toLowerCase();
-            const filtered = fullReads[0]["values"].split("§").filter(d => d.toLowerCase().split(" ")[5].includes(query)).join("§");
+
+            const new_reads = [];
+            for (let i = 0; i < fullReads.length; i++) {
+                if (!fullReads[i] || !fullReads[i]["values"]) continue;
+                const filtered = fullReads[i]["values"].split("§").filter(d => {
+                    const parts = d.toLowerCase().split(" ");
+                    if (parts.length > 5) {
+                        return parts[5].includes(query);
+                    }
+                    return false;
+                }).join("§");
+                new_reads.push({
+                    "sample": fullReads[i]["sample"],
+                    "values": filtered
+                });
+            }
+
             view.change(
                 'reads',
                 vega
                     .changeset()
-                    .remove(() => true) // Remove all current reads
-                    .insert([{"values": filtered}]) // Insert only filtered reads
+                    .remove(() => true)
+                    .insert(new_reads)
             ).run();
         });
     }).catch(console.warn);
