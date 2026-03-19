@@ -37,14 +37,144 @@ async fn main() -> Result<()> {
     );
     opt.preprocess()?;
     let region = opt.region.as_ref().unwrap();
-    let (read_data, reference_data, total_reads, coverage_data, retained_reads) = create_plot_data(
-        &opt.bam_path.as_ref().unwrap(),
-        &opt.reference.as_ref().unwrap(),
-        region,
-        opt.max_read_depth,
-        opt.aux_tag,
-        opt.mismatch_display_min_percent,
-    )?;
+
+    let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
+    let width = json!(min(opt.max_width, 5 * region.length()));
+    let domain = json!(vec![region.start as f32 - 0.5, region.end as f32 - 0.5]);
+
+    let template_coverage = plot_specs["vconcat"][0].clone();
+    let template_reads = plot_specs["vconcat"][1].clone();
+    let mut new_vconcat = Vec::new();
+
+    let mut all_read_data = Vec::new();
+    let mut all_coverage_data = Vec::new();
+    let mut reference_data = None;
+
+    for (i, bam) in opt.bam_path.iter().enumerate() {
+        let bam_name = bam
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .trim_end_matches(".bam")
+            .trim_end_matches(".sam")
+            .trim_end_matches(".cram")
+            .to_string();
+
+        let (mut read_data, ref_data, total_reads, coverage_data, retained_reads) =
+            create_plot_data(
+                bam,
+                &opt.reference.as_ref().unwrap(),
+                region,
+                opt.max_read_depth,
+                opt.aux_tag.clone(),
+                opt.mismatch_display_min_percent,
+                bam_name.clone(),
+            )?;
+
+        if reference_data.is_none() {
+            reference_data = Some(ref_data);
+        }
+        all_read_data.append(&mut read_data);
+        all_coverage_data.push(coverage_data);
+
+        let subsampling_warning = if total_reads > retained_reads {
+            format!("{} ({} of {} reads)", bam_name, retained_reads, total_reads)
+        } else {
+            format!("{} ({} reads)", bam_name, total_reads)
+        };
+
+        let mut cov = template_coverage.clone();
+        cov["width"] = width.clone();
+        if i == 0 {
+            cov["title"] = json!({
+                "text": &region.target,
+            });
+        } else if let Some(obj) = cov.as_object_mut() {
+            obj.remove("title");
+        }
+        if let Some(arr) = cov["transform"].as_array_mut() {
+            arr.insert(
+                0,
+                json!({ "filter": format!("datum.sample == '{}'", bam_name) }),
+            );
+        }
+        cov["encoding"]["y"]["axis"]["title"] = json!(format!("{} cov", bam_name));
+
+        let mut rds = template_reads.clone();
+        rds["width"] = width.clone();
+        rds["encoding"]["x"]["scale"]["domain"] = domain.clone();
+        rds["encoding"]["y"]["axis"]["title"] = json!(subsampling_warning);
+
+        if let Some(layers) = rds["layer"].as_array_mut() {
+            for layer in layers {
+                if layer["data"]["name"] == "reads" {
+                    if let Some(arr) = layer["transform"].as_array_mut() {
+                        arr.insert(
+                            0,
+                            json!({ "filter": format!("datum.sample == '{}'", bam_name) }),
+                        );
+                    }
+                }
+
+                if i > 0 && layer["data"]["name"] == "reference" {
+                    if let Some(obj) = layer.as_object_mut() {
+                        obj.remove("params");
+                    }
+                }
+
+                if let Some(params) = layer.get_mut("params").and_then(|p| p.as_array_mut()) {
+                    for param in params {
+                        if param["name"] == "rplc" {
+                            param["name"] = json!(format!("rplc_{}", i));
+                        }
+                    }
+                }
+
+                if let Some(encoding) = layer.get_mut("encoding") {
+                    if let Some(opacity) = encoding.get_mut("opacity") {
+                        if let Some(condition) = opacity.get_mut("condition") {
+                            if condition["param"] == "rplc" {
+                                condition["param"] = json!(format!("rplc_{}", i));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        new_vconcat.push(cov);
+        new_vconcat.push(rds);
+    }
+    plot_specs["vconcat"] = json!(new_vconcat);
+    let reference_data = reference_data.unwrap();
+    let reference = match opt.data_format {
+        DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            writer.serialize(&reference_data)?;
+            writer.into_inner()?
+        }
+    };
+    let coverage = match opt.data_format {
+        DataFormat::Json => json!(all_coverage_data).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            for item in &all_coverage_data {
+                writer.serialize(item)?;
+            }
+            writer.into_inner()?
+        }
+    };
+    let reads = match opt.data_format {
+        DataFormat::Json => json!(all_read_data).to_string().as_bytes().to_vec(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            for record in &all_read_data {
+                writer.serialize(record)?;
+            }
+            writer.into_inner()?
+        }
+    };
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
         let csi_index = PathBuf::from(&format!("{}.csi", vcf_path.display()));
@@ -65,54 +195,6 @@ async fn main() -> Result<()> {
     }
 
     highlight.iter_mut().for_each(|h| h.preprocess());
-
-    let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
-    let width = json!(min(
-        opt.max_width,
-        5 * (opt.region.as_ref().unwrap().length())
-    ));
-    plot_specs["vconcat"][0]["width"] = width.clone();
-    plot_specs["vconcat"][1]["width"] = width;
-    let domain = json!(vec![
-        opt.region.as_ref().unwrap().start as f32 - 0.5,
-        opt.region.as_ref().unwrap().end as f32 - 0.5
-    ]);
-    plot_specs["vconcat"][1]["encoding"]["x"]["scale"]["domain"] = domain;
-    let subsampling_warning = if total_reads > retained_reads {
-        format!("{retained_reads} of {total_reads} reads (subsampled)")
-    } else {
-        format!("{total_reads} reads")
-    };
-    plot_specs["vconcat"][0]["title"] = json!({
-            "text": &opt.region.unwrap().target,
-    });
-    plot_specs["vconcat"][1]["encoding"]["y"]["axis"]["title"] = json!(subsampling_warning);
-    let reference = match opt.data_format {
-        DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            writer.serialize(&reference_data)?;
-            writer.into_inner()?
-        }
-    };
-    let coverage = match opt.data_format {
-        DataFormat::Json => json!(coverage_data).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            writer.serialize(&coverage_data)?;
-            writer.into_inner()?
-        }
-    };
-    let reads = match opt.data_format {
-        DataFormat::Json => json!(read_data).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            for record in &read_data {
-                writer.serialize(record)?;
-            }
-            writer.into_inner()?
-        }
-    };
     let highlights = match opt.data_format {
         DataFormat::Json => json!(highlight).to_string().as_bytes().to_vec(),
         DataFormat::Tsv => {
@@ -121,18 +203,25 @@ async fn main() -> Result<()> {
             writer.into_inner()?
         }
     };
+
     if let Some(out_path) = &opt.output {
         if !out_path.exists() {
             std::fs::create_dir_all(out_path)?;
         }
-        let bam_path = opt.bam_path.unwrap();
-        let bam_file_name = bam_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .strip_suffix(".bam")
-            .unwrap();
+        let bam_file_name = opt
+            .bam_path
+            .iter()
+            .map(|p| {
+                p.file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .trim_end_matches(".bam")
+                    .trim_end_matches(".sam")
+                    .trim_end_matches(".cram")
+            })
+            .collect::<Vec<_>>()
+            .join("_");
         let highlight_path = if opt.highlight.is_some() || opt.vcf.is_some() || opt.bed.is_some() {
             Some(Path::join(
                 out_path,
@@ -187,22 +276,23 @@ async fn main() -> Result<()> {
         )?;
     } else {
         plot_specs["datasets"]["reference"] = json!(reference_data);
-        plot_specs["datasets"]["reads"] = json!(read_data);
+        plot_specs["datasets"]["reads"] = json!(all_read_data);
         plot_specs["datasets"]["highlight"] = json!(highlight);
-        plot_specs["datasets"]["coverage"] = json!(coverage_data);
-        let filename = opt
+        plot_specs["datasets"]["coverage"] = json!(all_coverage_data);
+        let bam_name = opt
             .bam_path
-            .as_ref()
-            .unwrap()
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap();
-        let bam_name = filename
-            .trim_end_matches(".bam")
-            .trim_end_matches(".sam")
-            .trim_end_matches(".cram")
-            .to_owned();
+            .iter()
+            .map(|p| {
+                p.file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .trim_end_matches(".bam")
+                    .trim_end_matches(".sam")
+                    .trim_end_matches(".cram")
+            })
+            .collect::<Vec<_>>()
+            .join("_");
         if opt.html {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
