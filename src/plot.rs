@@ -29,6 +29,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     max_read_depth: usize,
     aux_tags: Option<Vec<String>>,
     mismatch_display_min_percent: f64,
+    sample: String,
 ) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
@@ -52,7 +53,8 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
                 .unwrap()
         })
         .collect_vec();
-    let coverage = Coverage::from_reads(&data, region, mismatch_display_min_percent);
+    let coverage =
+        Coverage::from_reads(&data, region, mismatch_display_min_percent, sample.clone());
     let total_read_count = data.len();
     data.order(max_read_depth)?;
     let retained_reads = data.len();
@@ -61,7 +63,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         reference: read_fasta(ref_path, region)?.iter().collect(),
     };
     Ok((
-        vec![EncodedRead::from_reads(data)],
+        vec![EncodedRead::from_reads(data, sample)],
         reference_data,
         total_read_count,
         coverage,
@@ -133,6 +135,7 @@ impl Read {
 /// making it suitable for inline data embedding in visualization specs.
 #[derive(Serialize, Debug, PartialEq, Eq)]
 pub struct EncodedRead {
+    sample: String,
     values: String,
 }
 
@@ -146,8 +149,9 @@ impl EncodedRead {
     /// let encoded = EncodedRead::from_reads(vec![read1, read2]);
     /// println!("{}", serde_json::to_string(&encoded).unwrap());
     /// ```
-    fn from_reads(reads: Vec<Read>) -> Self {
+    fn from_reads(reads: Vec<Read>, sample: String) -> Self {
         EncodedRead {
+            sample,
             values: reads.iter().map(|r| r.encode()).join("§"),
         }
     }
@@ -291,6 +295,7 @@ impl EncodedBaseCoverage {
 /// Each value in coverage represents the number of reads covering that position.
 #[derive(Serialize, Debug, Eq, PartialEq)]
 pub(crate) struct Coverage {
+    sample: String,
     start: i64,
     #[serde(rename = "m")]
     matches: String,
@@ -301,7 +306,12 @@ pub(crate) struct Coverage {
 }
 
 impl Coverage {
-    pub fn from_reads(reads: &[Read], region: &Region, mismatch_display_min_percent: f64) -> Self {
+    pub fn from_reads(
+        reads: &[Read],
+        region: &Region,
+        mismatch_display_min_percent: f64,
+        sample: String,
+    ) -> Self {
         let mut coverage = vec![BaseCoverage::default(); region.length() as usize];
 
         for read in reads {
@@ -354,6 +364,7 @@ impl Coverage {
         let coverage = EncodedBaseCoverage(coverage);
 
         Self {
+            sample,
             start: region.start,
             matches: coverage.matches(),
             a: coverage.a(),
@@ -891,6 +902,7 @@ mod tests {
             500,
             None,
             0.0,
+            "sample_2".to_string(),
         )
         .unwrap();
 
@@ -1024,6 +1036,7 @@ mod tests {
             100,
             None,
             0.0,
+            "sample_1".to_string(),
         )
         .unwrap();
         let expected_reference = Reference {
@@ -1043,8 +1056,12 @@ mod tests {
             raw_cigar: "16M2I82M".to_string(),
         };
 
-        let expected_reads = vec![EncodedRead::from_reads(vec![expected_read])];
+        let expected_reads = vec![EncodedRead::from_reads(
+            vec![expected_read],
+            "sample_1".to_string(),
+        )];
         let expected_coverage = Coverage {
+            sample: "sample_1".to_string(),
             start: 0,
             matches: "0|0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0".to_string(),
             a: "".to_string(),
@@ -1074,6 +1091,7 @@ mod tests {
             500,
             None,
             0.0,
+            "NA12878".to_string(),
         );
         assert!(result.is_ok());
     }
@@ -1092,6 +1110,7 @@ mod tests {
             500,
             None,
             0.0,
+            "NA12878_with_clipping_read".to_string(),
         );
         assert!(result.is_ok());
     }
@@ -1204,9 +1223,10 @@ mod tests {
             end: 15,
         };
 
-        let coverage = Coverage::from_reads(&reads, &region, 0.0);
+        let coverage = Coverage::from_reads(&reads, &region, 0.0, "test".to_string());
 
         let expected = Coverage {
+            sample: "test".to_string(),
             a: "".to_string(),
             t: "".to_string(),
             c: "".to_string(),

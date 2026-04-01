@@ -4,10 +4,10 @@ use itertools::Itertools;
 use std::fs;
 use std::path::PathBuf;
 
-// Check if the cwd contains only one fasta (.fa, .fasta, .fasta.gz, .fa.gz) and only one single bam (.bam, .bam.gz) file and if it does returns both paths.
-pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, PathBuf)>> {
+// Check if the cwd contains only one fasta (.fa, .fasta, .fasta.gz, .fa.gz) file and at least one bam (.bam, .bam.gz) file. Returns the fasta path and a vector of all bam paths.
+pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, Vec<PathBuf>)>> {
     let mut fasta_path: Option<PathBuf> = None;
-    let mut bam_path: Option<PathBuf> = None;
+    let mut bam_paths: Vec<PathBuf> = Vec::new();
     for entry in fs::read_dir(".")? {
         let entry = entry?;
         let path = entry.path();
@@ -20,19 +20,16 @@ pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, PathBuf)>> {
                 }
                 fasta_path = Some(path);
             } else if ext == "bam" || ext == "bam.gz" {
-                if bam_path.is_some() {
-                    // There is already a bam file in the cwd
-                    return Ok(None);
-                }
-                bam_path = Some(path);
+                bam_paths.push(path);
             }
         }
     }
-    if let (Some(fasta), Some(bam)) = (fasta_path, bam_path) {
-        Ok(Some((fasta, bam)))
-    } else {
-        Ok(None)
+    if let Some(fasta) = fasta_path {
+        if !bam_paths.is_empty() {
+            return Ok(Some((fasta, bam_paths)));
+        }
     }
+    Ok(None)
 }
 
 // Get length of fasta file and given target
