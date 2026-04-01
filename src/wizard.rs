@@ -154,7 +154,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         == "Interactive HTML";
 
     Ok(Alignoth {
-        bam_path: Some(bam_path.into()),
+        bam_path: vec![bam_path.into()],
         reference: Some(reference_path.into()),
         region: Some(region),
         aux_tag: aux_tags,
