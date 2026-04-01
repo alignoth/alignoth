@@ -18,7 +18,7 @@ use structopt::StructOpt;
     name = "alignoth"
 )]
 pub struct Alignoth {
-    /// BAM file to be visualized.
+    /// BAM files to be visualized.
     #[structopt(long, short = "b", parse(from_os_str))]
     pub(crate) bam_path: Vec<PathBuf>,
 
