@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/alignoth/alignoth/compare/v1.5.1...v1.6.0) (2026-06-15)
+
+
+### Features
+
+* allow specifying multiple bams (will get vstacked) ([#450](https://github.com/alignoth/alignoth/issues/450)) ([d592235](https://github.com/alignoth/alignoth/commit/d592235c01833fbf9d7f680d83579d05fc22a10a))
+
 ## [1.5.1](https://github.com/alignoth/alignoth/compare/v1.5.0...v1.5.1) (2026-03-13)
 
 
