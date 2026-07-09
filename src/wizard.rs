@@ -2,6 +2,7 @@ use crate::cli::{Alignoth, Around, Clamp, FromAround, Interval, Region};
 use crate::utils::{get_fasta_contigs, get_fasta_length};
 use anyhow::Result;
 use inquire::{Select, Text};
+use std::fmt::Display;
 use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -69,14 +70,14 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     {
         "Around a position" => {
             let around = Around {
-                position: Text::new("Position:").prompt()?.parse()?,
+                position: prompt_parse("Position:", None)?,
                 target: target.clone(),
             };
             Region::from_around(&around)
         }
         "Region" => {
-            let start: i64 = Text::new("Start coordinate:").prompt()?.parse()?;
-            let end = Text::new("End coordinate:").prompt()?.parse()?;
+            let start: i64 = prompt_parse("Start coordinate:", None)?;
+            let end: i64 = prompt_parse("End coordinate:", None)?;
             Region {
                 target: target.clone(),
                 start: start - 1, // Adjust for 1-based
@@ -98,12 +99,8 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         "path/to/file.bed",
         &bed_files,
     )?;
-    let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)").prompt()?;
-    let highlight = if highlight_input.is_empty() {
-        None
-    } else {
-        Some(vec![Interval::from_str(&highlight_input)?])
-    };
+    let highlight = prompt_parse_optional::<Interval>("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)")?
+        .map(|interval| vec![interval]);
     let aux_tag_input =
         Text::new("Optional auxiliary tags (whitespace-separated, press Enter to skip):")
             .prompt_skippable()?;
@@ -116,9 +113,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         }
     });
 
-    let max_depth = Text::new("Max read depth (default 500):")
-        .with_default("500")
-        .prompt()?;
+    let max_read_depth: usize = prompt_parse("Max read depth (default 500):", Some("500"))?;
 
     let html_output = Select::new(
         "Choose output type:",
@@ -132,7 +127,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         reference: Some(reference_path.into()),
         region: Some(region),
         aux_tag: aux_tags,
-        max_read_depth: max_depth.parse()?,
+        max_read_depth,
         max_width: 1024,
         output: None,
         data_format: Default::default(),
@@ -171,5 +166,42 @@ fn select_optional_file(
         choices.push("Skip".to_string());
         let selection = Select::new(question, choices).prompt()?;
         Ok((selection != "Skip").then(|| PathBuf::from(&selection)))
+    }
+}
+
+/// Prompts with `message`, re-asking until the input parses into `T` instead of aborting the
+/// wizard on a parse error. An optional `default` pre-fills the prompt.
+fn prompt_parse<T>(message: &str, default: Option<&str>) -> Result<T>
+where
+    T: FromStr,
+    T::Err: Display,
+{
+    loop {
+        let mut prompt = Text::new(message);
+        if let Some(default) = default {
+            prompt = prompt.with_default(default);
+        }
+        match prompt.prompt()?.parse() {
+            Ok(value) => return Ok(value),
+            Err(error) => eprintln!("Invalid input: {error}. Please try again."),
+        }
+    }
+}
+
+/// Like [`prompt_parse`], but treats empty input as `None` so the user can skip the prompt.
+fn prompt_parse_optional<T>(message: &str) -> Result<Option<T>>
+where
+    T: FromStr,
+    T::Err: Display,
+{
+    loop {
+        let input = Text::new(message).prompt()?;
+        if input.trim().is_empty() {
+            return Ok(None);
+        }
+        match input.parse() {
+            Ok(value) => return Ok(Some(value)),
+            Err(error) => eprintln!("Invalid input: {error}. Please try again."),
+        }
     }
 }
