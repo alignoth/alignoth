@@ -7,8 +7,9 @@ mod wizard;
 use crate::cli::{DataFormat, Preprocess};
 use crate::highlight::{BedHighlight, Highlight, VcfHighlight};
 use crate::plot::create_plot_data;
+use crate::utils::ensure_vcf_index;
 use crate::wizard::wizard_mode;
-use anyhow::{bail, Result};
+use anyhow::Result;
 use csv::WriterBuilder;
 use log::LevelFilter;
 use lz_str::compress_to_utf16;
@@ -177,18 +178,8 @@ async fn main() -> Result<()> {
     };
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
-        let csi_index = PathBuf::from(&format!("{}.csi", vcf_path.display()));
-        let tbi_index = PathBuf::from(&format!("{}.tbi", vcf_path.display()));
-        if csi_index.exists() || tbi_index.exists() {
-            highlight.extend(VcfHighlight::new(vcf_path.clone()).intervals(region)?);
-        } else {
-            bail!(
-                "VCF/BCF index not found: {csi} or {tbi}. Please create an index using `bcftools index {vcf}` or `tabix {vcf}`.",
-                csi = csi_index.display(),
-                tbi = tbi_index.display(),
-                vcf = vcf_path.display()
-            );
-        }
+        let vcf_path = ensure_vcf_index(vcf_path)?;
+        highlight.extend(VcfHighlight::new(vcf_path).intervals(region)?);
     }
     if let Some(bed_path) = opt.bed.as_ref() {
         highlight.extend(BedHighlight::new(bed_path.clone()).intervals(region)?);

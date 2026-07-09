@@ -1,0 +1,7 @@
+##fileformat=VCFv4.3
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=1,length=1000>
+##bcftools_viewVersion=1.19+htslib-1.22.1
+##bcftools_viewCommand=view -O v -o tests/sample_3/1257A.vcf tests/sample_3/1257A.vcf.gz; Date=Thu Jul  9 12:57:48 2026
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+1	257	.	A	G	.	.	.

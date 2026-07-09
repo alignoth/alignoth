@@ -1,8 +1,10 @@
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use bio::io::fasta;
 use itertools::Itertools;
+use rust_htslib::bcf::{Format, Header, Read as BcfRead, Reader, Writer};
+use rust_htslib::{bam, bcf};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 // Check if the cwd contains only one fasta (.fa, .fasta, .fasta.gz, .fa.gz) file and at least one bam (.bam, .bam.gz) file. Returns the fasta path and a vector of all bam paths.
 pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, Vec<PathBuf>)>> {
@@ -52,6 +54,103 @@ pub(crate) fn get_fasta_contigs(fasta_path: &PathBuf) -> Result<Vec<String>> {
     Ok(contigs)
 }
 
+/// Returns `path` with `.extension` appended, e.g. `reads.bam` + `bai` -> `reads.bam.bai`.
+fn appended_extension(path: &Path, extension: &str) -> PathBuf {
+    let mut name = path.as_os_str().to_owned();
+    name.push(".");
+    name.push(extension);
+    PathBuf::from(name)
+}
+
+/// Returns whether a coordinate index (`.bai` or `.csi`) exists next to the given BAM/CRAM file.
+pub(crate) fn bam_index_present(path: &Path) -> bool {
+    appended_extension(path, "bai").exists() || appended_extension(path, "csi").exists()
+}
+
+/// Builds a `.bai` index for the given (coordinate-sorted) BAM/CRAM file.
+pub(crate) fn build_bam_index(path: &Path) -> Result<()> {
+    bam::index::build(path, None, bam::index::Type::Bai, 1).with_context(|| {
+        format!(
+            "Failed to build index for {}. Is the file coordinate-sorted?",
+            path.display()
+        )
+    })
+}
+
+/// Returns whether a `.fai` index exists next to the given FASTA file.
+pub(crate) fn fasta_index_present(path: &Path) -> bool {
+    appended_extension(path, "fai").exists()
+}
+
+/// Builds a `.fai` index for the given FASTA file.
+pub(crate) fn build_fasta_index(path: &Path) -> Result<()> {
+    rust_htslib::faidx::build(path)
+        .map_err(|e| anyhow!("Failed to build index for {}: {e}", path.display()))
+}
+
+/// Returns whether a `.tbi` or `.csi` index exists next to the given VCF/BCF file.
+pub(crate) fn vcf_index_present(path: &Path) -> bool {
+    appended_extension(path, "tbi").exists() || appended_extension(path, "csi").exists()
+}
+
+/// Builds an index for the given VCF/BCF file, bgzipping a plain `.vcf` first if necessary.
+/// Returns the path that should be used downstream (unchanged, or the newly written `.vcf.gz`).
+pub(crate) fn build_vcf_index(path: &Path) -> Result<PathBuf> {
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or_default();
+    if name.ends_with(".bcf") {
+        bcf::index::build(path, None, 1, bcf::index::Type::Csi(14))?;
+        Ok(path.to_path_buf())
+    } else if name.ends_with(".vcf.gz") {
+        bcf::index::build(path, None, 1, bcf::index::Type::Tbx)?;
+        Ok(path.to_path_buf())
+    } else {
+        let bgzipped = bgzip_vcf(path)?;
+        bcf::index::build(&bgzipped, None, 1, bcf::index::Type::Tbx)?;
+        Ok(bgzipped)
+    }
+}
+
+/// Rewrites an uncompressed VCF as a bgzipped `.vcf.gz` next to it and returns the new path.
+fn bgzip_vcf(path: &Path) -> Result<PathBuf> {
+    let mut reader = Reader::from_path(path)?;
+    let header = Header::from_template(reader.header());
+    let output = appended_extension(path, "gz");
+    let mut writer = Writer::from_path(&output, &header, false, Format::Vcf)?;
+    for record in reader.records() {
+        writer.write(&record?)?;
+    }
+    Ok(output)
+}
+
+/// Ensures a coordinate index exists for the given BAM/CRAM file, building one if it is missing.
+pub(crate) fn ensure_bam_index(path: &Path) -> Result<()> {
+    if !bam_index_present(path) {
+        build_bam_index(path)?;
+    }
+    Ok(())
+}
+
+/// Ensures a `.fai` index exists for the given FASTA file, building one if it is missing.
+pub(crate) fn ensure_fasta_index(path: &Path) -> Result<()> {
+    if !fasta_index_present(path) {
+        build_fasta_index(path)?;
+    }
+    Ok(())
+}
+
+/// Ensures an index exists for the given VCF/BCF file, building one (and bgzipping a plain `.vcf`
+/// if necessary) when it is missing. Returns the path that should be used downstream.
+pub(crate) fn ensure_vcf_index(path: &Path) -> Result<PathBuf> {
+    if vcf_index_present(path) {
+        Ok(path.to_path_buf())
+    } else {
+        build_vcf_index(path)
+    }
+}
+
 /// Takes any given aux and returns a string representation of it.
 pub(crate) fn aux_to_string(aux: rust_htslib::bam::record::Aux) -> String {
     match aux {
@@ -87,9 +186,56 @@ pub(crate) fn ellipsis(s: &str, max_len: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{ellipsis, get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd};
-    use std::path::PathBuf;
+    use crate::utils::{
+        bam_index_present, build_bam_index, build_fasta_index, build_vcf_index, ellipsis,
+        fasta_index_present, get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd,
+        vcf_index_present,
+    };
+    use std::path::{Path, PathBuf};
     use std::str::FromStr;
+    use tempfile::TempDir;
+
+    fn copy_to_temp(fixture: &str) -> (TempDir, PathBuf) {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(Path::new(fixture).file_name().unwrap());
+        std::fs::copy(fixture, &path).unwrap();
+        (dir, path)
+    }
+
+    #[test]
+    fn test_build_bam_index() {
+        let (_dir, bam) = copy_to_temp("tests/sample_1/reads.bam");
+        assert!(!bam_index_present(&bam));
+        build_bam_index(&bam).unwrap();
+        assert!(bam_index_present(&bam));
+        assert!(rust_htslib::bam::IndexedReader::from_path(&bam).is_ok());
+    }
+
+    #[test]
+    fn test_build_fasta_index() {
+        let (_dir, fasta) = copy_to_temp("tests/sample_1/reference.fa");
+        assert!(!fasta_index_present(&fasta));
+        build_fasta_index(&fasta).unwrap();
+        assert!(fasta_index_present(&fasta));
+    }
+
+    #[test]
+    fn test_build_vcf_index_for_bgzipped_vcf() {
+        let (_dir, vcf) = copy_to_temp("tests/sample_3/1257A.vcf.gz");
+        assert!(!vcf_index_present(&vcf));
+        let indexed = build_vcf_index(&vcf).unwrap();
+        assert_eq!(indexed, vcf);
+        assert!(vcf_index_present(&vcf));
+    }
+
+    #[test]
+    fn test_build_vcf_index_bgzips_plain_vcf() {
+        let (_dir, vcf) = copy_to_temp("tests/sample_3/1257A.vcf");
+        let indexed = build_vcf_index(&vcf).unwrap();
+        assert_eq!(indexed, vcf.with_extension("vcf.gz"));
+        assert!(vcf_index_present(&indexed));
+        assert!(rust_htslib::bcf::IndexedReader::from_path(&indexed).is_ok());
+    }
 
     #[test]
     fn test_get_fasta_length() {
