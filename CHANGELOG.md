@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.6.0](https://github.com/alignoth/alignoth/compare/v1.5.1...v1.6.0) (2026-07-09)
+
+
+### Features
+
+* allow specifying multiple bams (will get vstacked) ([#450](https://github.com/alignoth/alignoth/issues/450)) ([d592235](https://github.com/alignoth/alignoth/commit/d592235c01833fbf9d7f680d83579d05fc22a10a))
+* Offer to create missing BAM/FASTA/VCF indexes ([#468](https://github.com/alignoth/alignoth/issues/468)) ([d871593](https://github.com/alignoth/alignoth/commit/d871593ed32c6e6d95ee96104900f9aaf656b3bd))
+* Print reproducible command after wizard run ([#469](https://github.com/alignoth/alignoth/issues/469)) ([c6ba421](https://github.com/alignoth/alignoth/commit/c6ba42105155ff6f6ff62d03cb7fa8605f3f6b61))
+* Reorder wizard highlight prompts and unify optional-file selection ([#466](https://github.com/alignoth/alignoth/issues/466)) ([578f34d](https://github.com/alignoth/alignoth/commit/578f34d75d1fd4188517c16d6b1f7aacc8f81279))
+* Retry individual wizard prompts on invalid input ([#467](https://github.com/alignoth/alignoth/issues/467)) ([cf4055d](https://github.com/alignoth/alignoth/commit/cf4055d81c4d1eb1ccb5fbc0a4eb94d99f36db90))
+
 ## [1.5.1](https://github.com/alignoth/alignoth/compare/v1.5.0...v1.5.1) (2026-03-13)
 
 
