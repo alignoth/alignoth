@@ -66,7 +66,7 @@ async fn main() -> Result<()> {
         let (mut read_data, ref_data, total_reads, coverage_data, retained_reads) =
             create_plot_data(
                 bam,
-                &opt.reference.as_ref().unwrap(),
+                opt.reference.as_ref().unwrap(),
                 region,
                 opt.max_read_depth,
                 opt.aux_tag.clone(),
