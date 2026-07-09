@@ -201,6 +201,58 @@ impl Preprocess for Alignoth {
     }
 }
 
+impl Alignoth {
+    /// Renders the non-interactive `alignoth` command that reproduces this configuration.
+    pub(crate) fn to_command(&self) -> String {
+        let mut args = vec!["alignoth".to_string()];
+        for bam in &self.bam_path {
+            args.push("-b".to_string());
+            args.push(quote(&bam.display().to_string()));
+        }
+        if let Some(reference) = &self.reference {
+            args.push("-r".to_string());
+            args.push(quote(&reference.display().to_string()));
+        }
+        if let Some(region) = &self.region {
+            args.push("-g".to_string());
+            args.push(quote(&region.to_string()));
+        }
+        for highlight in self.highlight.iter().flatten() {
+            args.push("-h".to_string());
+            args.push(quote(&highlight.to_string()));
+        }
+        if let Some(vcf) = &self.vcf {
+            args.push("-v".to_string());
+            args.push(quote(&vcf.display().to_string()));
+        }
+        if let Some(bed) = &self.bed {
+            args.push("--bed".to_string());
+            args.push(quote(&bed.display().to_string()));
+        }
+        for tag in self.aux_tag.iter().flatten() {
+            args.push("-x".to_string());
+            args.push(quote(tag));
+        }
+        if self.max_read_depth != 500 {
+            args.push("-d".to_string());
+            args.push(self.max_read_depth.to_string());
+        }
+        if self.html {
+            args.push("--html".to_string());
+        }
+        args.join(" ")
+    }
+}
+
+/// Wraps `value` in single quotes if a shell would otherwise split or drop it.
+fn quote(value: &str) -> String {
+    if value.is_empty() || value.contains(char::is_whitespace) {
+        format!("'{value}'")
+    } else {
+        value.to_string()
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Region {
     pub(crate) target: String,
@@ -239,6 +291,13 @@ impl FromStr for Region {
             start,
             end,
         })
+    }
+}
+
+impl Display for Region {
+    /// Formats the region 1-based and fully inclusive, matching the `--region` input syntax.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}-{}", self.target, self.start + 1, self.end)
     }
 }
 
@@ -413,6 +472,17 @@ impl FromStr for Interval {
     }
 }
 
+impl Display for Interval {
+    /// Formats the interval matching the `--highlight` input syntax (`name:start-end` or `name:pos`).
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.start == self.end {
+            write!(f, "{}:{}", self.name, self.start)
+        } else {
+            write!(f, "{}:{}-{}", self.name, self.start, self.end)
+        }
+    }
+}
+
 impl Interval {
     pub fn new(name: String, start: f64, end: f64) -> Self {
         Self { name, start, end }
@@ -427,8 +497,65 @@ impl Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{Around, DataFormat, FromAround, Interval, Region};
+    use crate::cli::{Alignoth, Around, DataFormat, FromAround, Interval, Region};
+    use std::path::PathBuf;
     use std::str::FromStr;
+
+    fn base_alignoth() -> Alignoth {
+        Alignoth {
+            bam_path: vec![PathBuf::from("sample.bam")],
+            reference: Some(PathBuf::from("ref.fa")),
+            region: Some(Region {
+                target: "chr1".to_string(),
+                start: 999,
+                end: 2000,
+            }),
+            around: None,
+            around_vcf_record: None,
+            plot_all: false,
+            highlight: None,
+            vcf: None,
+            bed: None,
+            max_read_depth: 500,
+            data_format: DataFormat::Json,
+            max_width: 1024,
+            spec_output: None,
+            ref_data_output: None,
+            read_data_output: None,
+            coverage_output: None,
+            highlight_data_output: None,
+            output: None,
+            html: false,
+            aux_tag: None,
+            no_embed_js: false,
+            mismatch_display_min_percent: 1.0,
+        }
+    }
+
+    #[test]
+    fn test_to_command_minimal() {
+        assert_eq!(
+            base_alignoth().to_command(),
+            "alignoth -b sample.bam -r ref.fa -g chr1:1000-2000"
+        );
+    }
+
+    #[test]
+    fn test_to_command_full() {
+        let opt = Alignoth {
+            highlight: Some(vec![Interval::new("var".to_string(), 1200.0, 1200.0)]),
+            vcf: Some(PathBuf::from("variants.vcf.gz")),
+            bed: Some(PathBuf::from("regions.bed")),
+            aux_tag: Some(vec!["HP".to_string(), "PS".to_string()]),
+            max_read_depth: 200,
+            html: true,
+            ..base_alignoth()
+        };
+        assert_eq!(
+            opt.to_command(),
+            "alignoth -b sample.bam -r ref.fa -g chr1:1000-2000 -h var:1200 -v variants.vcf.gz --bed regions.bed -x HP -x PS -d 200 --html"
+        );
+    }
 
     #[test]
     fn test_region_deserialization() {

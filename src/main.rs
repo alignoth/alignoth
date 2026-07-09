@@ -37,6 +37,7 @@ async fn main() -> Result<()> {
         ColorChoice::Auto,
     );
     opt.preprocess()?;
+    let reproduce_command = wizard.then(|| opt.to_command());
     let region = opt.region.as_ref().unwrap();
 
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
@@ -360,6 +361,9 @@ async fn main() -> Result<()> {
         } else {
             stdout().write_all(plot_specs.to_string().as_bytes())?;
         }
+    }
+    if let Some(command) = reproduce_command {
+        println!("\nReproduce this plot with:\n  {command}");
     }
     Ok(())
 }
