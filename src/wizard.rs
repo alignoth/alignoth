@@ -88,47 +88,21 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
 
     let target_length = get_fasta_length(&PathBuf::from(reference_path.clone()), &target)? as i64;
     region = region.clamp(0, target_length - 1);
+    let vcf_input = select_optional_file(
+        "Do you want to provide a VCF file to highlight variant positions?",
+        "path/to/file.vcf",
+        &vcf_files,
+    )?;
+    let bed_input = select_optional_file(
+        "Do you want to provide a BED file to highlight certain regions?",
+        "path/to/file.bed",
+        &bed_files,
+    )?;
     let highlight_input = Text::new("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)").prompt()?;
     let highlight = if highlight_input.is_empty() {
         None
     } else {
         Some(vec![Interval::from_str(&highlight_input)?])
-    };
-    let vcf_choices: Vec<_> = vcf_files.iter().map(|p| p.display().to_string()).collect();
-    let vcf_input: Option<PathBuf> = if vcf_choices.is_empty() {
-        let input = Text::new("Do you want to provide a VCF file to highlight variant positions? (Example: path/to/file.vcf, press Enter to skip)").prompt()?;
-        if input.is_empty() {
-            None
-        } else {
-            Some(PathBuf::from(input))
-        }
-    } else {
-        let mut choices = vcf_choices.clone();
-        choices.push("Skip".to_string());
-        let selection = Select::new("Choose a VCF file:", choices).prompt()?;
-        if selection == "Skip" {
-            None
-        } else {
-            Some(PathBuf::from(selection))
-        }
-    };
-    let bed_choices: Vec<_> = bed_files.iter().map(|p| p.display().to_string()).collect();
-    let bed_input: Option<PathBuf> = if bed_choices.is_empty() {
-        let input = Text::new("Do you want to provide a BED file to highlight certain regions? (Example: path/to/file.bed, press Enter to skip)").prompt()?;
-        if input.is_empty() {
-            None
-        } else {
-            Some(PathBuf::from(input))
-        }
-    } else {
-        let mut choices = bed_choices.clone();
-        choices.push("Skip".to_string());
-        let selection = Select::new("Choose a BED file:", choices).prompt()?;
-        if selection == "Skip" {
-            None
-        } else {
-            Some(PathBuf::from(selection))
-        }
     };
     let aux_tag_input =
         Text::new("Optional auxiliary tags (whitespace-separated, press Enter to skip):")
@@ -177,4 +151,25 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         no_embed_js: false,
         mismatch_display_min_percent: 1.0,
     })
+}
+
+/// Asks the user for an optional file, letting them pick from `candidates` found in the current
+/// directory or enter a path manually. Returns `None` if the user chooses to skip.
+fn select_optional_file(
+    question: &str,
+    example: &str,
+    candidates: &[PathBuf],
+) -> Result<Option<PathBuf>> {
+    if candidates.is_empty() {
+        let input = Text::new(&format!(
+            "{question} (Example: {example}, press Enter to skip)"
+        ))
+        .prompt()?;
+        Ok((!input.trim().is_empty()).then(|| PathBuf::from(input.trim())))
+    } else {
+        let mut choices: Vec<_> = candidates.iter().map(|p| p.display().to_string()).collect();
+        choices.push("Skip".to_string());
+        let selection = Select::new(question, choices).prompt()?;
+        Ok((selection != "Skip").then(|| PathBuf::from(&selection)))
+    }
 }
