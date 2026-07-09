@@ -37,7 +37,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .tid(region.target.as_bytes())
         .context(format!(
             "bam header does not contain given region target {}",
-            &region.target
+            region.target
         ))
         .unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
@@ -48,7 +48,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
             Read::from_record(r, &ref_path, &region.target, &aux_tags)
                 .context(format!(
                     "bam file does not contain given region target {}",
-                    &region.target
+                    region.target
                 ))
                 .unwrap()
         })
@@ -609,12 +609,8 @@ fn clip_read(
     let new_qual = qual[trim_start..trim_end].to_vec();
 
     let new_cigar_string = CigarString::from(new_cigar);
-    record.set(
-        &record.qname().to_vec(),
-        Some(&new_cigar_string),
-        &new_seq,
-        &new_qual,
-    );
+    let qname = record.qname().to_vec();
+    record.set(&qname, Some(&new_cigar_string), &new_seq, &new_qual);
 
     Ok(record)
 }
