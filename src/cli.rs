@@ -1,4 +1,6 @@
-use crate::utils::{get_fasta_length, get_ref_and_bam_from_cwd};
+use crate::utils::{
+    ensure_bam_index, ensure_fasta_index, get_fasta_length, get_ref_and_bam_from_cwd,
+};
 use anyhow::{anyhow, Context, Result};
 use log::warn;
 use rust_htslib::bam;
@@ -152,6 +154,10 @@ impl Preprocess for Alignoth {
                 "Missing reference file. Please use the -r flag to specify the reference file."
             ));
         }
+        for bam in &self.bam_path {
+            ensure_bam_index(bam)?;
+        }
+        ensure_fasta_index(self.reference.as_ref().unwrap())?;
         if self.plot_all {
             warn!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
             let mut min_start = i64::MAX;

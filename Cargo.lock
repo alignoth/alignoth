@@ -28,6 +28,7 @@ dependencies = [
  "serde_json",
  "simplelog",
  "structopt",
+ "tempfile",
  "tera",
  "tokio",
 ]
@@ -126,7 +127,7 @@ dependencies = [
  "enum-map",
  "fxhash",
  "getset",
- "itertools 0.12.1",
+ "itertools 0.15.0",
  "itertools-num",
  "multimap",
  "ndarray",
@@ -653,6 +654,12 @@ dependencies = [
  "libc",
  "windows-sys 0.59.0",
 ]
+
+[[package]]
+name = "fastrand"
+version = "2.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "feature-probe"
@@ -2144,6 +2151,19 @@ dependencies = [
  "proc-macro2 1.0.95",
  "quote 1.0.40",
  "syn 2.0.114",
+]
+
+[[package]]
+name = "tempfile"
+version = "3.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d31c77bdf42a745371d260a26ca7163f1e0924b64afa0b688e61b5a9fa02f16"
+dependencies = [
+ "fastrand",
+ "getrandom 0.3.2",
+ "once_cell",
+ "rustix",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
