@@ -4,7 +4,8 @@ use crate::utils::{
     get_fasta_contigs, get_fasta_length, vcf_index_present,
 };
 use anyhow::{bail, Result};
-use inquire::{Confirm, Select, Text};
+use inquire::autocompletion::Replacement;
+use inquire::{Autocomplete, Confirm, CustomUserError, Select, Text};
 use std::fmt::Display;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -46,7 +47,11 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         .collect();
 
     let bam_path = if bam_files.is_empty() {
-        PathBuf::from(Text::new("Path to BAM file:").prompt()?)
+        PathBuf::from(
+            Text::new("Path to BAM file:")
+                .with_autocomplete(FilePathCompleter)
+                .prompt()?,
+        )
     } else {
         let choices: Vec<_> = bam_files.iter().map(|p| p.display().to_string()).collect();
         PathBuf::from(Select::new("Select BAM file:", choices).prompt()?)
@@ -56,7 +61,11 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     })?;
 
     let reference_path = if fasta_files.is_empty() {
-        PathBuf::from(Text::new("Path to reference FASTA file:").prompt()?)
+        PathBuf::from(
+            Text::new("Path to reference FASTA file:")
+                .with_autocomplete(FilePathCompleter)
+                .prompt()?,
+        )
     } else {
         let choices: Vec<_> = fasta_files
             .iter()
@@ -200,6 +209,32 @@ fn ensure_optional_vcf_index(path: PathBuf) -> Result<Option<PathBuf>> {
     }
 }
 
+#[derive(Clone, Default)]
+struct FilePathCompleter;
+
+impl Autocomplete for FilePathCompleter {
+    fn get_suggestions(&mut self, input: &str) -> Result<Vec<String>, CustomUserError> {
+        let (dir, prefix) = input.split_at(input.rfind('/').map_or(0, |i| i + 1));
+        Ok(fs::read_dir(if dir.is_empty() { "." } else { dir })?
+            .flatten()
+            .filter_map(|entry| {
+                let name = entry.file_name().into_string().ok()?;
+                let suffix = if entry.path().is_dir() { "/" } else { "" };
+                name.starts_with(prefix)
+                    .then(|| format!("{dir}{name}{suffix}"))
+            })
+            .collect())
+    }
+
+    fn get_completion(
+        &mut self,
+        _: &str,
+        highlighted: Option<String>,
+    ) -> Result<Replacement, CustomUserError> {
+        Ok(highlighted)
+    }
+}
+
 /// Asks the user for an optional file, letting them pick from `candidates` found in the current
 /// directory or enter a path manually. Returns `None` if the user chooses to skip.
 fn select_optional_file(
@@ -211,6 +246,7 @@ fn select_optional_file(
         let input = Text::new(&format!(
             "{question} (Example: {example}, press Enter to skip)"
         ))
+        .with_autocomplete(FilePathCompleter)
         .prompt()?;
         Ok((!input.trim().is_empty()).then(|| PathBuf::from(input.trim())))
     } else {
