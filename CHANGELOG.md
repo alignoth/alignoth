@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.8.0](https://github.com/alignoth/alignoth/compare/v1.7.0...v1.8.0) (2026-07-17)
+
+
+### Features
+
+* Add option to clamp reads to region ([#449](https://github.com/alignoth/alignoth/issues/449)) ([6e3d9a2](https://github.com/alignoth/alignoth/commit/6e3d9a2ab3b4d0f6329e6935a04be50a32d50e7a))
+
+
+### Bug Fixes
+
+* Remove stale VCF index before rebuilding after bgzip ([#475](https://github.com/alignoth/alignoth/issues/475)) ([51e9136](https://github.com/alignoth/alignoth/commit/51e91368ef42af3aa512dc7019a4299147c6c61c))
+
 ## [1.7.0](https://github.com/alignoth/alignoth/compare/v1.6.0...v1.7.0) (2026-07-15)
 
 
