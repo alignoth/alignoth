@@ -107,6 +107,11 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         _ => unreachable!(),
     };
 
+    let clamp_reads: bool = Text::new("Clamp reads to the specified region?")
+        .with_default("false")
+        .prompt()?
+        .parse()?;
+
     let target_length = get_fasta_length(&reference_path, &target)? as i64;
     region = region.clamp(0, target_length - 1);
     let vcf_input = match select_optional_file(
@@ -168,6 +173,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         coverage_output: None,
         no_embed_js: false,
         mismatch_display_min_percent: 1.0,
+        clamp_reads,
     })
 }
 

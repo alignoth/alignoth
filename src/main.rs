@@ -71,6 +71,7 @@ async fn main() -> Result<()> {
                 opt.max_read_depth,
                 opt.aux_tag.clone(),
                 opt.mismatch_display_min_percent,
+                opt.clamp_reads,
                 bam_name.clone(),
             )?;
 
