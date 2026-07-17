@@ -104,13 +104,25 @@ pub(crate) fn build_vcf_index(path: &Path) -> Result<PathBuf> {
         bcf::index::build(path, None, 1, bcf::index::Type::Csi(14))?;
         Ok(path.to_path_buf())
     } else if name.ends_with(".vcf.gz") {
-        bcf::index::build(path, None, 1, bcf::index::Type::Tbx)?;
+        build_bgzf_index(path)?;
         Ok(path.to_path_buf())
     } else {
         let bgzipped = bgzip_vcf(path)?;
-        bcf::index::build(&bgzipped, None, 1, bcf::index::Type::Tbx)?;
+        build_bgzf_index(&bgzipped)?;
         Ok(bgzipped)
     }
+}
+
+/// Builds a tabix index for a bgzipped VCF, removing any pre-existing `.csi`/`.tbi` first.
+fn build_bgzf_index(path: &Path) -> Result<()> {
+    for extension in ["csi", "tbi"] {
+        let index = appended_extension(path, extension);
+        if index.exists() {
+            std::fs::remove_file(&index)?;
+        }
+    }
+    bcf::index::build(path, None, 1, bcf::index::Type::Tbx)?;
+    Ok(())
 }
 
 /// Rewrites an uncompressed VCF as a bgzipped `.vcf.gz` next to it and returns the new path.
@@ -235,6 +247,30 @@ mod tests {
         assert_eq!(indexed, vcf.with_extension("vcf.gz"));
         assert!(vcf_index_present(&indexed));
         assert!(rust_htslib::bcf::IndexedReader::from_path(&indexed).is_ok());
+    }
+
+    #[test]
+    fn test_build_vcf_index_removes_stale_index() {
+        use rust_htslib::bcf::{IndexedReader, Read};
+        let dir = tempfile::tempdir().unwrap();
+        let vcf = dir.path().join("1257A.vcf");
+        std::fs::copy("tests/sample_3/1257A.vcf", &vcf).unwrap();
+        let stale_csi = dir.path().join("1257A.vcf.gz.csi");
+        std::fs::copy("tests/sample_3/1257A.vcf.gz.csi", &stale_csi).unwrap();
+
+        let indexed = build_vcf_index(&vcf).unwrap();
+        assert_eq!(indexed, vcf.with_extension("vcf.gz"));
+        assert!(!stale_csi.exists(), "stale .csi index should have been removed");
+
+        let mut reader = IndexedReader::from_path(&indexed).unwrap();
+        let rid = reader.header().name2rid(b"1").unwrap();
+        reader.fetch(rid, 0, None).unwrap();
+        let records: Vec<_> = reader.records().collect();
+        assert!(
+            records.iter().all(|record| record.is_ok()),
+            "reading a variant record failed"
+        );
+        assert_eq!(records.len(), 1);
     }
 
     #[test]
