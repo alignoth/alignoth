@@ -1195,12 +1195,6 @@ mod tests {
 
     #[test]
     fn test_clamped_read_keeps_sequence_in_sync_with_cigar() {
-        // Region chr1:7-12 (internal [6, 12)). The only read (pos 4, CIGAR 16M2I82M) extends past
-        // both region boundaries, so with `clamp_reads` its leading two aligned bases and its tail
-        // are clipped, leaving 6M starting at position 6. Regression test: previously the clipped
-        // CIGAR was matched against the *original*, unclipped read sequence, so trimming from the
-        // left shifted the base-to-reference correspondence and produced spurious mismatches. The
-        // read matches the reference, so the clamped PlotCigar must be a clean `6=`.
         let region = Region {
             target: "chr1".to_string(),
             start: 6,
