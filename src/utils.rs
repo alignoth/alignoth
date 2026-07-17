@@ -260,7 +260,10 @@ mod tests {
 
         let indexed = build_vcf_index(&vcf).unwrap();
         assert_eq!(indexed, vcf.with_extension("vcf.gz"));
-        assert!(!stale_csi.exists(), "stale .csi index should have been removed");
+        assert!(
+            !stale_csi.exists(),
+            "stale .csi index should have been removed"
+        );
 
         let mut reader = IndexedReader::from_path(&indexed).unwrap();
         let rid = reader.header().name2rid(b"1").unwrap();
