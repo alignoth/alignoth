@@ -60,6 +60,7 @@ The following options are available when using alignoth:
 | no-embed-js           |       | If present, the generated html will not embed javscript dependencies and therefore be considerably smaller but require internet access to load the dependencies.  | false   |
 | around-vcf-record     | -a    | Plots a region around a specified VCF record taken via its index (starting at 0) from the VCF file given via the --vcf option.                                                    |         |
 | mismatch-display-min-percent |     | The minimum percentage of mismatches to display in the coverage plot.                                                                                        | 1       |
+| clamp-reads           |       | If set, reads are clamped to the boundaries of the specified region before processing. Useful with very long reads to avoid including read data far outside the region. | false   |
 
 
 ## Installation
