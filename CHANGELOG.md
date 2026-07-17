@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/alignoth/alignoth/compare/v1.6.0...v1.7.0) (2026-07-15)
+
+
+### Features
+
+* Allow auto completion for manual path inputs in wizard mode ([#472](https://github.com/alignoth/alignoth/issues/472)) ([58daddc](https://github.com/alignoth/alignoth/commit/58daddc287dfa0d3d1f84a654dc7d9806205ed8c))
+
 ## [1.6.0](https://github.com/alignoth/alignoth/compare/v1.5.1...v1.6.0) (2026-07-09)
 
 
