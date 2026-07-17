@@ -1,4 +1,6 @@
-use crate::utils::{get_fasta_length, get_ref_and_bam_from_cwd};
+use crate::utils::{
+    ensure_bam_index, ensure_fasta_index, get_fasta_length, get_ref_and_bam_from_cwd,
+};
 use anyhow::{anyhow, Context, Result};
 use log::warn;
 use rust_htslib::bam;
@@ -18,9 +20,9 @@ use structopt::StructOpt;
     name = "alignoth"
 )]
 pub struct Alignoth {
-    /// BAM file to be visualized.
+    /// BAM files to be visualized.
     #[structopt(long, short = "b", parse(from_os_str))]
-    pub(crate) bam_path: Option<PathBuf>,
+    pub(crate) bam_path: Vec<PathBuf>,
 
     /// Path to the reference fasta file.
     #[structopt(long, short = "r", parse(from_os_str))]
@@ -136,17 +138,17 @@ impl Preprocess for Alignoth {
                 "You have to specify either a region or a base to plot around or use the --plot-all or --around-vcf-record option."
             ));
         }
-        if self.bam_path.is_none() && self.reference.is_none() {
-            if let Some(files) = get_ref_and_bam_from_cwd()? {
-                self.reference = Some(files.0);
-                self.bam_path = Some(files.1);
+        if self.bam_path.is_empty() && self.reference.is_none() {
+            if let Some((reference, bams)) = get_ref_and_bam_from_cwd()? {
+                self.reference = Some(reference);
+                self.bam_path = bams;
             } else {
-                return Err(anyhow!(
-                    "Could not find single reference and single bam file in current working directory. Please use the -r and -b flags to specify the reference and bam file."
+                return Err(anyhow::anyhow!(
+                    "Could not unambiguously find a single reference and at least one bam file in the current working directory. Please use the -r and -b flags to specify the reference and bam files."
                 ));
             }
         }
-        if self.bam_path.is_none() {
+        if self.bam_path.is_empty() {
             return Err(anyhow!(
                 "Missing bam file. Please use the -b flag to specify the bam file."
             ));
@@ -156,9 +158,30 @@ impl Preprocess for Alignoth {
                 "Missing reference file. Please use the -r flag to specify the reference file."
             ));
         }
+        for bam in &self.bam_path {
+            ensure_bam_index(bam)?;
+        }
+        ensure_fasta_index(self.reference.as_ref().unwrap())?;
         if self.plot_all {
             warn!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
-            self.region = Some(Region::from_bam(self.bam_path.as_ref().unwrap())?);
+            let mut min_start = i64::MAX;
+            let mut max_end = i64::MIN;
+            let mut target = String::new();
+            for bam in &self.bam_path {
+                let r = Region::from_bam(bam)?;
+                if target.is_empty() {
+                    target = r.target.clone();
+                } else if target != r.target {
+                    return Err(anyhow::anyhow!("Cannot use --plot-all with multiple BAM files that have different targets."));
+                }
+                min_start = std::cmp::min(min_start, r.start);
+                max_end = std::cmp::max(max_end, r.end);
+            }
+            self.region = Some(Region {
+                target,
+                start: min_start,
+                end: max_end,
+            });
         }
         if let Some(around) = &self.around {
             self.region = Some(Region::from_around(around));
@@ -179,6 +202,58 @@ impl Preprocess for Alignoth {
             self.region = Some(region.clamp(0, target_length - 1));
         }
         Ok(())
+    }
+}
+
+impl Alignoth {
+    /// Renders the non-interactive `alignoth` command that reproduces this configuration.
+    pub(crate) fn to_command(&self) -> String {
+        let mut args = vec!["alignoth".to_string()];
+        for bam in &self.bam_path {
+            args.push("-b".to_string());
+            args.push(quote(&bam.display().to_string()));
+        }
+        if let Some(reference) = &self.reference {
+            args.push("-r".to_string());
+            args.push(quote(&reference.display().to_string()));
+        }
+        if let Some(region) = &self.region {
+            args.push("-g".to_string());
+            args.push(quote(&region.to_string()));
+        }
+        for highlight in self.highlight.iter().flatten() {
+            args.push("-h".to_string());
+            args.push(quote(&highlight.to_string()));
+        }
+        if let Some(vcf) = &self.vcf {
+            args.push("-v".to_string());
+            args.push(quote(&vcf.display().to_string()));
+        }
+        if let Some(bed) = &self.bed {
+            args.push("--bed".to_string());
+            args.push(quote(&bed.display().to_string()));
+        }
+        for tag in self.aux_tag.iter().flatten() {
+            args.push("-x".to_string());
+            args.push(quote(tag));
+        }
+        if self.max_read_depth != 500 {
+            args.push("-d".to_string());
+            args.push(self.max_read_depth.to_string());
+        }
+        if self.html {
+            args.push("--html".to_string());
+        }
+        args.join(" ")
+    }
+}
+
+/// Wraps `value` in single quotes if a shell would otherwise split or drop it.
+fn quote(value: &str) -> String {
+    if value.is_empty() || value.contains(char::is_whitespace) {
+        format!("'{value}'")
+    } else {
+        value.to_string()
     }
 }
 
@@ -220,6 +295,13 @@ impl FromStr for Region {
             start,
             end,
         })
+    }
+}
+
+impl Display for Region {
+    /// Formats the region 1-based and fully inclusive, matching the `--region` input syntax.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}-{}", self.target, self.start + 1, self.end)
     }
 }
 
@@ -394,6 +476,17 @@ impl FromStr for Interval {
     }
 }
 
+impl Display for Interval {
+    /// Formats the interval matching the `--highlight` input syntax (`name:start-end` or `name:pos`).
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.start == self.end {
+            write!(f, "{}:{}", self.name, self.start)
+        } else {
+            write!(f, "{}:{}-{}", self.name, self.start, self.end)
+        }
+    }
+}
+
 impl Interval {
     pub fn new(name: String, start: f64, end: f64) -> Self {
         Self { name, start, end }
@@ -408,8 +501,66 @@ impl Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{Around, DataFormat, FromAround, Interval, Region};
+    use crate::cli::{Alignoth, Around, DataFormat, FromAround, Interval, Region};
+    use std::path::PathBuf;
     use std::str::FromStr;
+
+    fn base_alignoth() -> Alignoth {
+        Alignoth {
+            bam_path: vec![PathBuf::from("sample.bam")],
+            reference: Some(PathBuf::from("ref.fa")),
+            region: Some(Region {
+                target: "chr1".to_string(),
+                start: 999,
+                end: 2000,
+            }),
+            around: None,
+            around_vcf_record: None,
+            plot_all: false,
+            highlight: None,
+            vcf: None,
+            bed: None,
+            max_read_depth: 500,
+            data_format: DataFormat::Json,
+            max_width: 1024,
+            spec_output: None,
+            ref_data_output: None,
+            read_data_output: None,
+            coverage_output: None,
+            highlight_data_output: None,
+            output: None,
+            html: false,
+            aux_tag: None,
+            no_embed_js: false,
+            mismatch_display_min_percent: 1.0,
+            clamp_reads: false,
+        }
+    }
+
+    #[test]
+    fn test_to_command_minimal() {
+        assert_eq!(
+            base_alignoth().to_command(),
+            "alignoth -b sample.bam -r ref.fa -g chr1:1000-2000"
+        );
+    }
+
+    #[test]
+    fn test_to_command_full() {
+        let opt = Alignoth {
+            highlight: Some(vec![Interval::new("var".to_string(), 1200.0, 1200.0)]),
+            vcf: Some(PathBuf::from("variants.vcf.gz")),
+            bed: Some(PathBuf::from("regions.bed")),
+            aux_tag: Some(vec!["HP".to_string(), "PS".to_string()]),
+            max_read_depth: 200,
+            html: true,
+            ..base_alignoth()
+        };
+        assert_eq!(
+            opt.to_command(),
+            "alignoth -b sample.bam -r ref.fa -g chr1:1000-2000 -h var:1200 -v variants.vcf.gz --bed regions.bed -x HP -x PS -d 200 --html"
+        );
+    }
 
     #[test]
     fn test_region_deserialization() {

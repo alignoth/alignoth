@@ -22,6 +22,7 @@ use std::path::Path;
 use std::str::FromStr;
 
 /// Generates the plot data for a given region of a bam file
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     bam_path: P,
     ref_path: P,
@@ -30,6 +31,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     aux_tags: Option<Vec<String>>,
     mismatch_display_min_percent: f64,
     clamp_reads: bool,
+    sample: String,
 ) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
     let mut bam = bam::IndexedReader::from_path(&bam_path)?;
     let tid = bam
@@ -37,7 +39,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         .tid(region.target.as_bytes())
         .context(format!(
             "bam header does not contain given region target {}",
-            &region.target
+            region.target
         ))
         .unwrap() as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))?;
@@ -48,12 +50,13 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
             Read::from_record(r, &ref_path, &aux_tags, region, clamp_reads)
                 .context(format!(
                     "bam file does not contain given region target {}",
-                    &region.target
+                    region.target
                 ))
                 .unwrap()
         })
         .collect_vec();
-    let coverage = Coverage::from_reads(&data, region, mismatch_display_min_percent);
+    let coverage =
+        Coverage::from_reads(&data, region, mismatch_display_min_percent, sample.clone());
     let total_read_count = data.len();
     data.order(max_read_depth)?;
     let retained_reads = data.len();
@@ -62,7 +65,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
         reference: read_fasta(ref_path, region)?.iter().collect(),
     };
     Ok((
-        vec![EncodedRead::from_reads(data)],
+        vec![EncodedRead::from_reads(data, sample)],
         reference_data,
         total_read_count,
         coverage,
@@ -134,6 +137,7 @@ impl Read {
 /// making it suitable for inline data embedding in visualization specs.
 #[derive(Serialize, Debug, PartialEq, Eq)]
 pub struct EncodedRead {
+    sample: String,
     values: String,
 }
 
@@ -147,8 +151,9 @@ impl EncodedRead {
     /// let encoded = EncodedRead::from_reads(vec![read1, read2]);
     /// println!("{}", serde_json::to_string(&encoded).unwrap());
     /// ```
-    fn from_reads(reads: Vec<Read>) -> Self {
+    fn from_reads(reads: Vec<Read>, sample: String) -> Self {
         EncodedRead {
+            sample,
             values: reads.iter().map(|r| r.encode()).join("§"),
         }
     }
@@ -292,6 +297,7 @@ impl EncodedBaseCoverage {
 /// Each value in coverage represents the number of reads covering that position.
 #[derive(Serialize, Debug, Eq, PartialEq)]
 pub(crate) struct Coverage {
+    sample: String,
     start: i64,
     #[serde(rename = "m")]
     matches: String,
@@ -302,7 +308,12 @@ pub(crate) struct Coverage {
 }
 
 impl Coverage {
-    pub fn from_reads(reads: &[Read], region: &Region, mismatch_display_min_percent: f64) -> Self {
+    pub fn from_reads(
+        reads: &[Read],
+        region: &Region,
+        mismatch_display_min_percent: f64,
+        sample: String,
+    ) -> Self {
         let mut coverage = vec![BaseCoverage::default(); region.length() as usize];
 
         for read in reads {
@@ -355,6 +366,7 @@ impl Coverage {
         let coverage = EncodedBaseCoverage(coverage);
 
         Self {
+            sample,
             start: region.start,
             matches: coverage.matches(),
             a: coverage.a(),
@@ -703,6 +715,15 @@ impl Read {
         } else {
             record
         };
+        // Re-read the sequence from the (possibly clipped) record so it stays in sync with the
+        // clipped CIGAR and reference window below. Otherwise `from_cigar` would match the wrong
+        // read bases against the reference and report spurious mismatches.
+        let read_seq = record
+            .seq()
+            .as_bytes()
+            .iter()
+            .map(|u| char::from(*u))
+            .collect_vec();
         let region = cli::Region {
             target: region.target.clone(),
             start: record.pos() - record.cigar().leading_softclips(),
@@ -772,7 +793,7 @@ impl PlotOrder for Vec<Read> {
             if max_read_depth < *used_rows {
                 let mut rng = StdRng::seed_from_u64(42);
                 let random_rows: HashSet<_> = (0..*used_rows as u32)
-                    .choose_multiple(&mut rng, max_read_depth)
+                    .sample(&mut rng, max_read_depth)
                     .into_iter()
                     .collect();
                 self.retain(|read| random_rows.contains(&read.row.unwrap()));
@@ -956,6 +977,7 @@ mod tests {
             None,
             0.0,
             false,
+            "sample_2".to_string(),
         )
         .unwrap();
 
@@ -1090,6 +1112,7 @@ mod tests {
             None,
             0.0,
             false,
+            "sample_1".to_string(),
         )
         .unwrap();
         let expected_reference = Reference {
@@ -1109,8 +1132,12 @@ mod tests {
             raw_cigar: "16M2I82M".to_string(),
         };
 
-        let expected_reads = vec![EncodedRead::from_reads(vec![expected_read])];
+        let expected_reads = vec![EncodedRead::from_reads(
+            vec![expected_read],
+            "sample_1".to_string(),
+        )];
         let expected_coverage = Coverage {
+            sample: "sample_1".to_string(),
             start: 0,
             matches: "0|0|0|0|1|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0".to_string(),
             a: "".to_string(),
@@ -1141,6 +1168,7 @@ mod tests {
             None,
             0.0,
             false,
+            "NA12878".to_string(),
         );
         assert!(result.is_ok());
     }
@@ -1160,8 +1188,48 @@ mod tests {
             None,
             0.0,
             false,
+            "NA12878_with_clipping_read".to_string(),
         );
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_clamped_read_keeps_sequence_in_sync_with_cigar() {
+        // Region chr1:7-12 (internal [6, 12)). The only read (pos 4, CIGAR 16M2I82M) extends past
+        // both region boundaries, so with `clamp_reads` its leading two aligned bases and its tail
+        // are clipped, leaving 6M starting at position 6. Regression test: previously the clipped
+        // CIGAR was matched against the *original*, unclipped read sequence, so trimming from the
+        // left shifted the base-to-reference correspondence and produced spurious mismatches. The
+        // read matches the reference, so the clamped PlotCigar must be a clean `6=`.
+        let region = Region {
+            target: "chr1".to_string(),
+            start: 6,
+            end: 12,
+        };
+        let (reads, _reference, _, _, _) = create_plot_data(
+            "tests/sample_1/reads.bam",
+            "tests/sample_1/reference.fa",
+            &region,
+            100,
+            None,
+            0.0,
+            true,
+            "sample_1".to_string(),
+        )
+        .unwrap();
+        let expected_read = Read {
+            name: "sim_Som1-5-2_chr1_1_1acd6f".to_string(),
+            cigar: PlotCigar::from_str("6=").unwrap(),
+            position: 6,
+            flags: 99,
+            mapq: 30,
+            row: Some(1),
+            end_position: 12,
+            mpos: 789264,
+            aux: AuxRecord(HashMap::new()),
+            raw_cigar: "6M".to_string(),
+        };
+        assert!(reads[0].values.contains(&expected_read.encode()));
     }
 
     #[test]
@@ -1272,9 +1340,10 @@ mod tests {
             end: 15,
         };
 
-        let coverage = Coverage::from_reads(&reads, &region, 0.0);
+        let coverage = Coverage::from_reads(&reads, &region, 0.0, "test".to_string());
 
         let expected = Coverage {
+            sample: "test".to_string(),
             a: "".to_string(),
             t: "".to_string(),
             c: "".to_string(),
