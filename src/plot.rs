@@ -715,9 +715,6 @@ impl Read {
         } else {
             record
         };
-        // Re-read the sequence from the (possibly clipped) record so it stays in sync with the
-        // clipped CIGAR and reference window below. Otherwise `from_cigar` would match the wrong
-        // read bases against the reference and report spurious mismatches.
         let read_seq = record
             .seq()
             .as_bytes()
