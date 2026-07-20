@@ -2,7 +2,6 @@ use crate::cli;
 use crate::cli::Region;
 use crate::utils::{aux_to_string, get_fasta_length};
 use anyhow::{Context, Result};
-use bio::io::fasta;
 use itertools::Itertools;
 use log::warn;
 use rand::prelude::IteratorRandom;
@@ -13,6 +12,7 @@ use rust_htslib::bam::ext::BamRecordExtensions;
 use rust_htslib::bam::record::{Cigar, CigarString, CigarStringView};
 use rust_htslib::bam::FetchDefinition::Region as FetchRegion;
 use rust_htslib::bam::Read as HtslibRead;
+use rust_htslib::faidx;
 use serde::{Serialize, Serializer};
 use std::cmp::{max, min};
 use std::collections::{HashMap, HashSet};
@@ -75,16 +75,16 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
 
 /// Reads the given region from the given fasta file and returns it as a vec of the bases as chars
 fn read_fasta<P: AsRef<Path> + std::fmt::Debug>(path: P, region: &Region) -> Result<Vec<char>> {
-    let mut reader = fasta::IndexedReader::from_file(&path).unwrap();
-    let index =
-        fasta::Index::with_fasta_file(&path).context("error reading index file of input FASTA")?;
-    let _sequences = index.sequences();
-
-    let mut seq: Vec<u8> = Vec::new();
-
-    reader.fetch(&region.target, region.start as u64, region.end as u64)?;
-    reader.read(&mut seq)?;
-
+    if region.end <= region.start {
+        return Ok(Vec::new());
+    }
+    let reader =
+        faidx::Reader::from_path(&path).context("error reading index file of input FASTA")?;
+    let seq = reader.fetch_seq(
+        &region.target,
+        region.start as usize,
+        (region.end - 1) as usize,
+    )?;
     Ok(seq.iter().map(|u| char::from(*u)).collect_vec())
 }
 
@@ -1095,6 +1095,34 @@ mod tests {
         .unwrap();
         let expected_reference = "TTGCCGGGGTGGGGAGAGAG".chars().collect_vec();
         assert_eq!(reference, expected_reference);
+    }
+
+    #[test]
+    fn test_create_plot_data_with_bgzipped_reference() {
+        let region = Region {
+            target: "chr1".to_string(),
+            start: 0,
+            end: 20,
+        };
+        let plot = |reference: &str| {
+            create_plot_data(
+                "tests/sample_1/reads.bam",
+                reference,
+                &region,
+                100,
+                None,
+                0.0,
+                false,
+                "sample_1".to_string(),
+            )
+            .unwrap()
+        };
+        let (_dir, gz) = crate::utils::tests::bgzipped_reference();
+        let (gz_reads, gz_reference, _, gz_coverage, _) = plot(gz.to_str().unwrap());
+        let (reads, reference, _, coverage, _) = plot("tests/sample_1/reference.fa");
+        assert_eq!(gz_reference, reference);
+        assert_eq!(gz_reads, reads);
+        assert_eq!(gz_coverage, coverage);
     }
 
     #[test]

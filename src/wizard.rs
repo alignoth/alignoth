@@ -1,7 +1,7 @@
-use crate::cli::{Alignoth, Around, Clamp, FromAround, Interval, Region};
+use crate::cli::{Alignoth, Around, FromAround, Interval, Region};
 use crate::utils::{
     bam_index_present, build_bam_index, build_fasta_index, build_vcf_index, fasta_index_present,
-    get_fasta_contigs, get_fasta_length, vcf_index_present,
+    get_fasta_contigs, vcf_index_present, FileKind,
 };
 use anyhow::{bail, Result};
 use inquire::autocompletion::Replacement;
@@ -45,7 +45,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     let contigs = get_fasta_contigs(&reference_path)?;
     let target = Select::new("Select target contig/chromosome:", contigs).prompt()?;
 
-    let mut region = match Select::new(
+    let region = match Select::new(
         "Do you want to visualize around a certain position or a specific region?",
         vec!["Around a position", "Region"],
     )
@@ -75,8 +75,6 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         .prompt()?
         .parse()?;
 
-    let target_length = get_fasta_length(&reference_path, &target)? as i64;
-    region = region.clamp(0, target_length - 1);
     let vcf_input = match select_optional_file(
         "Do you want to provide a VCF file to highlight variant positions?",
         "path/to/file.vcf",
@@ -177,31 +175,6 @@ fn ensure_optional_vcf_index(path: PathBuf) -> Result<Option<PathBuf>> {
     } else {
         println!("Skipping VCF highlighting for {}.", path.display());
         Ok(None)
-    }
-}
-
-#[derive(Clone, Copy)]
-enum FileKind {
-    Alignment,
-    Fasta,
-    Vcf,
-    Bed,
-}
-
-impl FileKind {
-    fn suffixes(self) -> &'static [&'static str] {
-        match self {
-            FileKind::Alignment => &[".bam", ".sam", ".cram"],
-            FileKind::Fasta => &[".fa", ".fasta"],
-            FileKind::Vcf => &[".vcf.gz", ".bcf", ".vcf"],
-            FileKind::Bed => &[".bed"],
-        }
-    }
-
-    fn matches(self, path: &Path) -> bool {
-        path.file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| self.suffixes().iter().any(|suffix| name.ends_with(suffix)))
     }
 }
 
