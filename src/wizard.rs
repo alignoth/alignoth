@@ -15,64 +15,27 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
     println!("Welcome to Alignoth wizard mode 🪄 Let's build your plot interactively.\n");
 
     let current_dir = std::env::current_dir()?;
-    let bam_files: Vec<_> = fs::read_dir(&current_dir)?
-        .filter_map(|entry| entry.ok())
-        .map(|e| e.path())
-        .filter(|p| {
-            p.extension()
-                .is_some_and(|ext| ext == "bam" || ext == "sam" || ext == "cram")
-        })
-        .collect();
-    let fasta_files: Vec<_> = fs::read_dir(&current_dir)?
-        .filter_map(|entry| entry.ok())
-        .map(|e| e.path())
-        .filter(|p| {
-            p.extension()
-                .is_some_and(|ext| ext == "fa" || ext == "fasta")
-        })
-        .collect();
-    let vcf_files: Vec<_> = fs::read_dir(&current_dir)?
-        .filter_map(|entry| entry.ok())
-        .map(|e| e.path())
-        .filter(|p| {
-            p.file_name().and_then(|n| n.to_str()).is_some_and(|name| {
-                name.ends_with(".vcf.gz") || name.ends_with(".bcf") || name.ends_with(".vcf")
-            })
-        })
-        .collect();
-    let bed_files: Vec<_> = fs::read_dir(&current_dir)?
-        .filter_map(|entry| entry.ok())
-        .map(|e| e.path())
-        .filter(|p| p.extension().is_some_and(|ext| ext == "bed"))
-        .collect();
+    let bam_files = files_in(&current_dir, FileKind::Alignment)?;
+    let fasta_files = files_in(&current_dir, FileKind::Fasta)?;
+    let vcf_files = files_in(&current_dir, FileKind::Vcf)?;
+    let bed_files = files_in(&current_dir, FileKind::Bed)?;
 
-    let bam_path = if bam_files.is_empty() {
-        PathBuf::from(
-            Text::new("Path to BAM file:")
-                .with_autocomplete(FilePathCompleter)
-                .prompt()?,
-        )
-    } else {
-        let choices: Vec<_> = bam_files.iter().map(|p| p.display().to_string()).collect();
-        PathBuf::from(Select::new("Select BAM file:", choices).prompt()?)
-    };
+    let bam_path = select_required_file(
+        "Path to BAM file:",
+        "Select BAM file:",
+        &bam_files,
+        FileKind::Alignment,
+    )?;
     ensure_required_index(&bam_path, bam_index_present(&bam_path), || {
         build_bam_index(&bam_path)
     })?;
 
-    let reference_path = if fasta_files.is_empty() {
-        PathBuf::from(
-            Text::new("Path to reference FASTA file:")
-                .with_autocomplete(FilePathCompleter)
-                .prompt()?,
-        )
-    } else {
-        let choices: Vec<_> = fasta_files
-            .iter()
-            .map(|p| p.display().to_string())
-            .collect();
-        PathBuf::from(Select::new("Select reference FASTA file:", choices).prompt()?)
-    };
+    let reference_path = select_required_file(
+        "Path to reference FASTA file:",
+        "Select reference FASTA file:",
+        &fasta_files,
+        FileKind::Fasta,
+    )?;
     ensure_required_index(
         &reference_path,
         fasta_index_present(&reference_path),
@@ -118,6 +81,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         "Do you want to provide a VCF file to highlight variant positions?",
         "path/to/file.vcf",
         &vcf_files,
+        FileKind::Vcf,
     )? {
         Some(vcf) => ensure_optional_vcf_index(vcf)?,
         None => None,
@@ -126,6 +90,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         "Do you want to provide a BED file to highlight certain regions?",
         "path/to/file.bed",
         &bed_files,
+        FileKind::Bed,
     )?;
     let highlight = prompt_parse_optional::<Interval>("Do you want to highlight a specific region or position? (Example: some_interval:1000-2000 or some_position:1200, press Enter to skip)")?
         .map(|interval| vec![interval]);
@@ -215,8 +180,72 @@ fn ensure_optional_vcf_index(path: PathBuf) -> Result<Option<PathBuf>> {
     }
 }
 
-#[derive(Clone, Default)]
-struct FilePathCompleter;
+#[derive(Clone, Copy)]
+enum FileKind {
+    Alignment,
+    Fasta,
+    Vcf,
+    Bed,
+}
+
+impl FileKind {
+    fn suffixes(self) -> &'static [&'static str] {
+        match self {
+            FileKind::Alignment => &[".bam", ".sam", ".cram"],
+            FileKind::Fasta => &[".fa", ".fasta"],
+            FileKind::Vcf => &[".vcf.gz", ".bcf", ".vcf"],
+            FileKind::Bed => &[".bed"],
+        }
+    }
+
+    fn matches(self, path: &Path) -> bool {
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| self.suffixes().iter().any(|suffix| name.ends_with(suffix)))
+    }
+}
+
+fn files_in(dir: &Path, kind: FileKind) -> Result<Vec<PathBuf>> {
+    Ok(fs::read_dir(dir)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| kind.matches(path))
+        .collect())
+}
+
+fn choices_from(candidates: &[PathBuf]) -> Vec<String> {
+    candidates.iter().map(|p| p.display().to_string()).collect()
+}
+
+fn select_required_file(
+    manual_question: &str,
+    select_question: &str,
+    candidates: &[PathBuf],
+    kind: FileKind,
+) -> Result<PathBuf> {
+    if candidates.is_empty() {
+        Ok(PathBuf::from(
+            Text::new(manual_question)
+                .with_autocomplete(FilePathCompleter::new(kind))
+                .prompt()?,
+        ))
+    } else {
+        Ok(PathBuf::from(
+            Select::new(select_question, choices_from(candidates)).prompt()?,
+        ))
+    }
+}
+
+#[derive(Clone, Copy)]
+struct FilePathCompleter {
+    kind: FileKind,
+}
+
+impl FilePathCompleter {
+    fn new(kind: FileKind) -> Self {
+        Self { kind }
+    }
+}
 
 impl Autocomplete for FilePathCompleter {
     fn get_suggestions(&mut self, input: &str) -> Result<Vec<String>, CustomUserError> {
@@ -225,9 +254,14 @@ impl Autocomplete for FilePathCompleter {
             .flatten()
             .filter_map(|entry| {
                 let name = entry.file_name().into_string().ok()?;
-                let suffix = if entry.path().is_dir() { "/" } else { "" };
-                name.starts_with(prefix)
-                    .then(|| format!("{dir}{name}{suffix}"))
+                if !name.starts_with(prefix) {
+                    return None;
+                }
+                let path = entry.path();
+                if path.is_dir() {
+                    return Some(format!("{dir}{name}/"));
+                }
+                self.kind.matches(&path).then(|| format!("{dir}{name}"))
             })
             .collect())
     }
@@ -247,16 +281,17 @@ fn select_optional_file(
     question: &str,
     example: &str,
     candidates: &[PathBuf],
+    kind: FileKind,
 ) -> Result<Option<PathBuf>> {
     if candidates.is_empty() {
         let input = Text::new(&format!(
             "{question} (Example: {example}, press Enter to skip)"
         ))
-        .with_autocomplete(FilePathCompleter)
+        .with_autocomplete(FilePathCompleter::new(kind))
         .prompt()?;
         Ok((!input.trim().is_empty()).then(|| PathBuf::from(input.trim())))
     } else {
-        let mut choices: Vec<_> = candidates.iter().map(|p| p.display().to_string()).collect();
+        let mut choices = choices_from(candidates);
         choices.push("Skip".to_string());
         let selection = Select::new(question, choices).prompt()?;
         Ok((selection != "Skip").then(|| PathBuf::from(&selection)))
@@ -296,6 +331,102 @@ where
         match input.parse() {
             Ok(value) => return Ok(Some(value)),
             Err(error) => eprintln!("Invalid input: {error}. Please try again."),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+
+    fn suggest_in_sample_dir(dir: &Path, kind: FileKind) -> Vec<String> {
+        let mut completer = FilePathCompleter::new(kind);
+        completer
+            .get_suggestions(&format!("{}/", dir.display()))
+            .unwrap()
+            .iter()
+            .map(|s| {
+                let base = s.trim_end_matches('/').rsplit('/').next().unwrap();
+                if s.ends_with('/') {
+                    format!("{base}/")
+                } else {
+                    base.to_string()
+                }
+            })
+            .collect()
+    }
+
+    fn sample_dir() -> tempfile::TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        for name in [
+            "sample.bam",
+            "sample.cram",
+            "ref.fa",
+            "ref.fasta",
+            "variants.vcf.gz",
+            "regions.bed",
+            "notes.txt",
+        ] {
+            File::create(dir.path().join(name)).unwrap();
+        }
+        fs::create_dir(dir.path().join("subdir")).unwrap();
+        dir
+    }
+
+    #[test]
+    fn fasta_prompt_does_not_suggest_bam_files() {
+        let dir = sample_dir();
+        let names = suggest_in_sample_dir(dir.path(), FileKind::Fasta);
+        assert!(names.iter().any(|n| n == "ref.fa"));
+        assert!(names.iter().any(|n| n == "ref.fasta"));
+        assert!(
+            !names
+                .iter()
+                .any(|n| n == "sample.bam" || n == "sample.cram"),
+            "Can't suggest alignment files when asking for a FASTA file, got {names:?}"
+        );
+    }
+
+    #[test]
+    fn bam_prompt_only_suggests_alignment_files() {
+        let dir = sample_dir();
+        let names = suggest_in_sample_dir(dir.path(), FileKind::Alignment);
+        assert!(names.iter().any(|n| n == "sample.bam"));
+        assert!(names.iter().any(|n| n == "sample.cram"));
+        assert!(
+            !names.iter().any(|n| n == "ref.fa" || n == "regions.bed"),
+            "Can't suggest non-alignment files, got {names:?}"
+        );
+    }
+
+    #[test]
+    fn vcf_and_bed_prompts_suggest_their_own_types() {
+        let dir = sample_dir();
+        let vcf = suggest_in_sample_dir(dir.path(), FileKind::Vcf);
+        assert!(vcf.iter().any(|n| n == "variants.vcf.gz"));
+        assert!(!vcf.iter().any(|n| n == "sample.bam"), "got {vcf:?}");
+
+        let bed = suggest_in_sample_dir(dir.path(), FileKind::Bed);
+        assert!(bed.iter().any(|n| n == "regions.bed"));
+        assert!(!bed.iter().any(|n| n == "sample.bam"), "got {bed:?}");
+    }
+
+    #[test]
+    fn directories_are_always_suggested_so_navigation_still_works() {
+        let dir = sample_dir();
+        for kind in [
+            FileKind::Alignment,
+            FileKind::Fasta,
+            FileKind::Vcf,
+            FileKind::Bed,
+        ] {
+            let names = suggest_in_sample_dir(dir.path(), kind);
+            assert!(
+                names.iter().any(|n| n == "subdir/"),
+                "Directories must stay navigable, got {names:?}"
+            );
+            assert!(!names.iter().any(|n| n == "notes.txt"), "Got {names:?}");
         }
     }
 }
