@@ -1,29 +1,50 @@
-use anyhow::{anyhow, Context, Result};
-use bio::io::fasta;
+use anyhow::{anyhow, bail, Context, Result};
 use itertools::Itertools;
 use rust_htslib::bcf::{Format, Header, Read as BcfRead, Reader, Writer};
-use rust_htslib::{bam, bcf};
+use rust_htslib::{bam, bcf, faidx};
 use std::fs;
 use std::path::{Path, PathBuf};
+
+#[derive(Clone, Copy)]
+pub(crate) enum FileKind {
+    Alignment,
+    Fasta,
+    Vcf,
+    Bed,
+}
+
+impl FileKind {
+    pub(crate) fn suffixes(self) -> &'static [&'static str] {
+        match self {
+            FileKind::Alignment => &[".bam", ".sam", ".cram"],
+            FileKind::Fasta => &[".fa", ".fasta", ".fa.gz", ".fasta.gz"],
+            FileKind::Vcf => &[".vcf.gz", ".bcf", ".vcf"],
+            FileKind::Bed => &[".bed"],
+        }
+    }
+
+    pub(crate) fn matches(self, path: &Path) -> bool {
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| self.suffixes().iter().any(|suffix| name.ends_with(suffix)))
+    }
+}
 
 // Check if the cwd contains only one fasta (.fa, .fasta, .fasta.gz, .fa.gz) file and at least one bam (.bam, .bam.gz) file. Returns the fasta path and a vector of all bam paths.
 pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, Vec<PathBuf>)>> {
     let mut fasta_path: Option<PathBuf> = None;
     let mut bam_paths: Vec<PathBuf> = Vec::new();
     for entry in fs::read_dir(".")? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_file() && path.extension().is_some() {
-            let ext = path.extension().unwrap().to_str().unwrap();
-            if ext == "fa" || ext == "fasta" || ext == "fa.gz" || ext == "fasta.gz" {
-                if fasta_path.is_some() {
-                    // There is already a fasta file in the cwd
-                    return Ok(None);
-                }
-                fasta_path = Some(path);
-            } else if ext == "bam" || ext == "bam.gz" {
-                bam_paths.push(path);
+        let path = entry?.path();
+        if !path.is_file() {
+            continue;
+        }
+        if FileKind::Fasta.matches(&path) {
+            if fasta_path.replace(path).is_some() {
+                return Ok(None);
             }
+        } else if FileKind::Alignment.matches(&path) {
+            bam_paths.push(path);
         }
     }
     if let Some(fasta) = fasta_path {
@@ -36,22 +57,19 @@ pub(crate) fn get_ref_and_bam_from_cwd() -> Result<Option<(PathBuf, Vec<PathBuf>
 
 // Get length of fasta file and given target
 pub(crate) fn get_fasta_length(fasta_path: &PathBuf, target: &str) -> Result<usize> {
-    let mut fasta_reader = fasta::IndexedReader::from_file(fasta_path)?;
-    let mut seq: Vec<u8> = Vec::new();
-    fasta_reader.fetch_all(target)?;
-    fasta_reader.read(&mut seq)?;
-    Ok(seq.len())
+    let reader = faidx::Reader::from_path(fasta_path)?;
+    if !reader.seq_names()?.iter().any(|name| name == target) {
+        bail!(
+            "FASTA file {} does not contain target {target}",
+            fasta_path.display()
+        );
+    }
+    Ok(reader.fetch_seq_len(target) as usize)
 }
 
 // Get all contigs/chromosomes from fasta file
 pub(crate) fn get_fasta_contigs(fasta_path: &PathBuf) -> Result<Vec<String>> {
-    let fasta_reader = fasta::Reader::from_file(fasta_path)?;
-    let mut contigs = Vec::new();
-    for record in fasta_reader.records() {
-        let record = record?;
-        contigs.push(record.id().to_string());
-    }
-    Ok(contigs)
+    Ok(faidx::Reader::from_path(fasta_path)?.seq_names()?)
 }
 
 /// Returns `path` with `.extension` appended, e.g. `reads.bam` + `bai` -> `reads.bam.bai`.
@@ -85,9 +103,16 @@ pub(crate) fn build_bam_index(path: &Path) -> Result<()> {
     })
 }
 
-/// Returns whether a `.fai` index exists next to the given FASTA file.
+/// Returns whether a `.fai` index exists next to the given FASTA file. A bgzipped FASTA
+/// additionally requires a `.gzi` index for random access.
 pub(crate) fn fasta_index_present(path: &Path) -> bool {
     appended_extension(path, "fai").exists()
+        && (!is_bgzipped(path) || appended_extension(path, "gzi").exists())
+}
+
+/// Returns whether the given path looks bgzipped, i.e. ends in `.gz`.
+fn is_bgzipped(path: &Path) -> bool {
+    path.extension().is_some_and(|extension| extension == "gz")
 }
 
 /// Builds a `.fai` index for the given FASTA file.
@@ -207,15 +232,56 @@ pub(crate) fn ellipsis(s: &str, max_len: usize) -> String {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use crate::utils::{
         bam_index_present, build_bam_index, build_fasta_index, build_vcf_index, ellipsis,
         fasta_index_present, get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd,
         vcf_index_present,
     };
+    use std::io::Write;
     use std::path::{Path, PathBuf};
     use std::str::FromStr;
     use tempfile::TempDir;
+
+    pub(crate) fn bgzipped_reference() -> (TempDir, PathBuf) {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("reference.fa.gz");
+        let plain = std::fs::read("tests/sample_1/reference.fa").unwrap();
+        let mut writer = rust_htslib::bgzf::Writer::from_path(&path).unwrap();
+        writer.write_all(&plain).unwrap();
+        drop(writer);
+        build_fasta_index(&path).unwrap();
+        (dir, path)
+    }
+
+    #[test]
+    fn test_bgzipped_fasta_contigs_and_length_match_plain() {
+        let plain = PathBuf::from("tests/sample_1/reference.fa");
+        let (_dir, gz) = bgzipped_reference();
+        assert_eq!(get_fasta_contigs(&gz).unwrap(), vec!["chr1".to_string()]);
+        assert_eq!(
+            get_fasta_contigs(&gz).unwrap(),
+            get_fasta_contigs(&plain).unwrap()
+        );
+        assert_eq!(
+            get_fasta_length(&gz, "chr1").unwrap(),
+            get_fasta_length(&plain, "chr1").unwrap()
+        );
+    }
+
+    #[test]
+    fn test_bgzipped_fasta_index_requires_gzi() {
+        let (dir, gz) = bgzipped_reference();
+        assert!(fasta_index_present(&gz));
+        std::fs::remove_file(dir.path().join("reference.fa.gz.gzi")).unwrap();
+        assert!(!fasta_index_present(&gz));
+    }
+
+    #[test]
+    fn test_get_fasta_length_rejects_unknown_target() {
+        let plain = PathBuf::from("tests/sample_1/reference.fa");
+        assert!(get_fasta_length(&plain, "nonexistent").is_err());
+    }
 
     fn copy_to_temp(fixture: &str) -> (TempDir, PathBuf) {
         let dir = tempfile::tempdir().unwrap();

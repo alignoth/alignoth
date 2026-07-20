@@ -185,22 +185,16 @@ impl Preprocess for Alignoth {
         }
         if let Some(around) = &self.around {
             self.region = Some(Region::from_around(around));
-            let target = self.region.as_ref().unwrap().target.clone();
-            let target_length =
-                get_fasta_length(self.reference.as_ref().unwrap(), &target).unwrap() as i64;
-            let region = self.region.as_mut().unwrap();
-            self.region = Some(region.clamp(0, target_length - 1));
         } else if let Some(vcf_record_index) = &self.around_vcf_record {
             self.region = Some(Region::from_vcf_record(
                 *vcf_record_index,
                 self.vcf.as_ref().unwrap(),
             )?);
-            let target = self.region.as_ref().unwrap().target.clone();
-            let target_length =
-                get_fasta_length(self.reference.as_ref().unwrap(), &target).unwrap() as i64;
-            let region = self.region.as_mut().unwrap();
-            self.region = Some(region.clamp(0, target_length - 1));
         }
+        let region = self.region.as_ref().unwrap();
+        let target_length =
+            get_fasta_length(self.reference.as_ref().unwrap(), &region.target)? as i64;
+        self.region = Some(region.clamp(0, target_length));
         Ok(())
     }
 }
@@ -501,7 +495,7 @@ impl Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{Alignoth, Around, DataFormat, FromAround, Interval, Region};
+    use crate::cli::{Alignoth, Around, DataFormat, FromAround, Interval, Preprocess, Region};
     use std::path::PathBuf;
     use std::str::FromStr;
 
@@ -535,6 +529,33 @@ mod tests {
             mismatch_display_min_percent: 1.0,
             clamp_reads: false,
         }
+    }
+
+    fn preprocessed_region(region: Option<Region>, around: Option<Around>) -> Region {
+        let mut opt = Alignoth {
+            bam_path: vec![PathBuf::from("tests/sample_1/reads.bam")],
+            reference: Some(PathBuf::from("tests/sample_1/reference.fa")),
+            region,
+            around,
+            ..base_alignoth()
+        };
+        opt.preprocess().unwrap();
+        opt.region.unwrap()
+    }
+
+    #[test]
+    fn test_preprocess_clamps_region_to_target_bounds() {
+        // chr1 is 123bp; a region reaching past the end is clamped, not rejected.
+        let clamped = preprocessed_region(Some(Region::from_str("chr1:110-140").unwrap()), None);
+        assert_eq!((clamped.start, clamped.end), (109, 123));
+
+        // An exact whole-contig region keeps its final base.
+        let whole = preprocessed_region(Some(Region::from_str("chr1:1-123").unwrap()), None);
+        assert_eq!((whole.start, whole.end), (0, 123));
+
+        // --around covers the whole contig too, rather than dropping the last base.
+        let around = preprocessed_region(None, Some(Around::from_str("chr1:100").unwrap()));
+        assert_eq!((around.start, around.end), (0, 123));
     }
 
     #[test]
