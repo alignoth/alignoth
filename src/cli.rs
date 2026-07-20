@@ -545,15 +545,12 @@ mod tests {
 
     #[test]
     fn test_preprocess_clamps_region_to_target_bounds() {
-        // chr1 is 123bp; a region reaching past the end is clamped, not rejected.
         let clamped = preprocessed_region(Some(Region::from_str("chr1:110-140").unwrap()), None);
         assert_eq!((clamped.start, clamped.end), (109, 123));
 
-        // An exact whole-contig region keeps its final base.
         let whole = preprocessed_region(Some(Region::from_str("chr1:1-123").unwrap()), None);
         assert_eq!((whole.start, whole.end), (0, 123));
 
-        // --around covers the whole contig too, rather than dropping the last base.
         let around = preprocessed_region(None, Some(Around::from_str("chr1:100").unwrap()));
         assert_eq!((around.start, around.end), (0, 123));
     }
