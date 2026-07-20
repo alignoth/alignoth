@@ -13,6 +13,7 @@ use anyhow::Result;
 use csv::WriterBuilder;
 use log::LevelFilter;
 use lz_str::compress_to_utf16;
+use serde::Serialize;
 use serde_json::{json, Value};
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
 use std::cmp::min;
@@ -21,6 +22,61 @@ use std::io::{stdout, Write};
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use tera::{Context, Tera};
+
+const CDN_VEGA: &str = r#"<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>"#;
+const CDN_VEGA_LITE: &str = r#"<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>"#;
+const CDN_VEGA_EMBED: &str = r#"<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>"#;
+const CDN_LZ_STRING: &str = r#"<script src="https://cdn.jsdelivr.net/npm/lz-string@1"></script>"#;
+
+/// Inlines a javascript resource into a `<script>` tag at compile time.
+macro_rules! embedded {
+    ($path:literal) => {
+        concat!("<script>", include_str!($path), "</script>")
+    };
+}
+
+/// Strips the alignment file extension to get the sample name, e.g. `reads.bam` -> `reads`.
+fn sample_name(path: &Path) -> &str {
+    path.file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .trim_end_matches(".bam")
+        .trim_end_matches(".sam")
+        .trim_end_matches(".cram")
+}
+
+fn joined_sample_names(paths: &[PathBuf]) -> String {
+    paths
+        .iter()
+        .map(|p| sample_name(p))
+        .collect::<Vec<_>>()
+        .join("_")
+}
+
+fn encode<T: Serialize>(value: &T, format: &DataFormat) -> Result<Vec<u8>> {
+    Ok(match format {
+        DataFormat::Json => json!(value).to_string().into_bytes(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            writer.serialize(value)?;
+            writer.into_inner()?
+        }
+    })
+}
+
+fn encode_each<T: Serialize>(values: &[T], format: &DataFormat) -> Result<Vec<u8>> {
+    Ok(match format {
+        DataFormat::Json => json!(values).to_string().into_bytes(),
+        DataFormat::Tsv => {
+            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
+            for value in values {
+                writer.serialize(value)?;
+            }
+            writer.into_inner()?
+        }
+    })
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -53,15 +109,7 @@ async fn main() -> Result<()> {
     let mut reference_data = None;
 
     for (i, bam) in opt.bam_path.iter().enumerate() {
-        let bam_name = bam
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .trim_end_matches(".bam")
-            .trim_end_matches(".sam")
-            .trim_end_matches(".cram")
-            .to_string();
+        let bam_name = sample_name(bam).to_string();
 
         let (mut read_data, ref_data, total_reads, coverage_data, retained_reads) =
             create_plot_data(
@@ -150,34 +198,9 @@ async fn main() -> Result<()> {
     }
     plot_specs["vconcat"] = json!(new_vconcat);
     let reference_data = reference_data.unwrap();
-    let reference = match opt.data_format {
-        DataFormat::Json => json!(reference_data).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            writer.serialize(&reference_data)?;
-            writer.into_inner()?
-        }
-    };
-    let coverage = match opt.data_format {
-        DataFormat::Json => json!(all_coverage_data).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            for item in &all_coverage_data {
-                writer.serialize(item)?;
-            }
-            writer.into_inner()?
-        }
-    };
-    let reads = match opt.data_format {
-        DataFormat::Json => json!(all_read_data).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            for record in &all_read_data {
-                writer.serialize(record)?;
-            }
-            writer.into_inner()?
-        }
-    };
+    let reference = encode(&reference_data, &opt.data_format)?;
+    let coverage = encode_each(&all_coverage_data, &opt.data_format)?;
+    let reads = encode_each(&all_read_data, &opt.data_format)?;
     let mut highlight = opt.highlight.as_ref().cloned().unwrap_or_default();
     if let Some(vcf_path) = opt.vcf.as_ref() {
         let vcf_path = ensure_vcf_index(vcf_path)?;
@@ -188,33 +211,13 @@ async fn main() -> Result<()> {
     }
 
     highlight.iter_mut().for_each(|h| h.preprocess());
-    let highlights = match opt.data_format {
-        DataFormat::Json => json!(highlight).to_string().as_bytes().to_vec(),
-        DataFormat::Tsv => {
-            let mut writer = WriterBuilder::new().delimiter(b'\t').from_writer(vec![]);
-            writer.serialize(&highlight)?;
-            writer.into_inner()?
-        }
-    };
+    let highlights = encode(&highlight, &opt.data_format)?;
 
     if let Some(out_path) = &opt.output {
         if !out_path.exists() {
             std::fs::create_dir_all(out_path)?;
         }
-        let bam_file_name = opt
-            .bam_path
-            .iter()
-            .map(|p| {
-                p.file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .trim_end_matches(".bam")
-                    .trim_end_matches(".sam")
-                    .trim_end_matches(".cram")
-            })
-            .collect::<Vec<_>>()
-            .join("_");
+        let bam_file_name = joined_sample_names(&opt.bam_path);
         let highlight_path = if opt.highlight.is_some() || opt.vcf.is_some() || opt.bed.is_some() {
             Some(Path::join(
                 out_path,
@@ -272,20 +275,7 @@ async fn main() -> Result<()> {
         plot_specs["datasets"]["reads"] = json!(all_read_data);
         plot_specs["datasets"]["highlight"] = json!(highlight);
         plot_specs["datasets"]["coverage"] = json!(all_coverage_data);
-        let bam_name = opt
-            .bam_path
-            .iter()
-            .map(|p| {
-                p.file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .trim_end_matches(".bam")
-                    .trim_end_matches(".sam")
-                    .trim_end_matches(".cram")
-            })
-            .collect::<Vec<_>>()
-            .join("_");
+        let bam_name = joined_sample_names(&opt.bam_path);
         if opt.html {
             let mut templates = Tera::default();
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
@@ -295,56 +285,23 @@ async fn main() -> Result<()> {
                 "spec",
                 &json!(compress_to_utf16(&plot_specs.to_string())).to_string(),
             );
-            if opt.no_embed_js {
-                context.insert(
-                    "vega",
-                    r#"<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>"#,
-                );
-                context.insert(
-                    "vegalite",
-                    r#"<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>"#,
-                );
-                context.insert(
-                    "vegaembed",
-                    r#"<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>"#,
-                );
-                context.insert(
-                    "lzstring",
-                    r#"<script src="https://cdn.jsdelivr.net/npm/lz-string@1"></script>"#,
-                );
+            let scripts = if opt.no_embed_js {
+                [
+                    ("vega", CDN_VEGA),
+                    ("vegalite", CDN_VEGA_LITE),
+                    ("vegaembed", CDN_VEGA_EMBED),
+                    ("lzstring", CDN_LZ_STRING),
+                ]
             } else {
-                context.insert(
-                    "vega",
-                    concat!(
-                        "<script>",
-                        include_str!("../resources/vega.min.js"),
-                        "</script>"
-                    ),
-                );
-                context.insert(
-                    "vegalite",
-                    concat!(
-                        "<script>",
-                        include_str!("../resources/vega-lite.min.js"),
-                        "</script>"
-                    ),
-                );
-                context.insert(
-                    "vegaembed",
-                    concat!(
-                        "<script>",
-                        include_str!("../resources/vega-embed.min.js"),
-                        "</script>"
-                    ),
-                );
-                context.insert(
-                    "lzstring",
-                    concat!(
-                        "<script>",
-                        include_str!("../resources/lz-string.min.js"),
-                        "</script>"
-                    ),
-                );
+                [
+                    ("vega", embedded!("../resources/vega.min.js")),
+                    ("vegalite", embedded!("../resources/vega-lite.min.js")),
+                    ("vegaembed", embedded!("../resources/vega-embed.min.js")),
+                    ("lzstring", embedded!("../resources/lz-string.min.js")),
+                ]
+            };
+            for (name, script) in scripts {
+                context.insert(name, script);
             }
             let html = templates.render("plot", &context)?;
             if wizard {
