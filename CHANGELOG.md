@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.9.0](https://github.com/alignoth/alignoth/compare/v1.8.0...v1.9.0) (2026-07-20)
+
+
+### Features
+
+* Make autocompletion file type aware ([#476](https://github.com/alignoth/alignoth/issues/476)) ([f39de68](https://github.com/alignoth/alignoth/commit/f39de68e102b7a0df0a824cf1fcf63d94fd061ae))
+
+
+### Bug Fixes
+
+* Also replace file extension for index check ([#478](https://github.com/alignoth/alignoth/issues/478)) ([f8a3d72](https://github.com/alignoth/alignoth/commit/f8a3d72df9f28fd777f7b4498eb0939c753bf313))
+* Support bgzipped FASTA references ([#479](https://github.com/alignoth/alignoth/issues/479)) ([970f8e1](https://github.com/alignoth/alignoth/commit/970f8e1689abaefd3a9549ff756d8141b76c0e2a))
+
 ## [1.8.0](https://github.com/alignoth/alignoth/compare/v1.7.0...v1.8.0) (2026-07-17)
 
 
