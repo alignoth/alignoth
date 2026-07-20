@@ -62,9 +62,17 @@ fn appended_extension(path: &Path, extension: &str) -> PathBuf {
     PathBuf::from(name)
 }
 
+/// Returns whether an index exists next to `path`, either appended (`reads.bam.bai`) or replacing
+/// the file's extension (`reads.bai`), matching htslib's own lookup.
+fn index_present(path: &Path, extension: &str) -> bool {
+    appended_extension(path, extension).exists() || path.with_extension(extension).exists()
+}
+
 /// Returns whether a coordinate index (`.bai` or `.csi`) exists next to the given BAM/CRAM file.
 pub(crate) fn bam_index_present(path: &Path) -> bool {
-    appended_extension(path, "bai").exists() || appended_extension(path, "csi").exists()
+    ["bai", "csi"]
+        .iter()
+        .any(|extension| index_present(path, extension))
 }
 
 /// Builds a `.bai` index for the given (coordinate-sorted) BAM/CRAM file.
@@ -90,7 +98,9 @@ pub(crate) fn build_fasta_index(path: &Path) -> Result<()> {
 
 /// Returns whether a `.tbi` or `.csi` index exists next to the given VCF/BCF file.
 pub(crate) fn vcf_index_present(path: &Path) -> bool {
-    appended_extension(path, "tbi").exists() || appended_extension(path, "csi").exists()
+    ["tbi", "csi"]
+        .iter()
+        .any(|extension| index_present(path, extension))
 }
 
 /// Builds an index for the given VCF/BCF file, bgzipping a plain `.vcf` first if necessary.
@@ -221,6 +231,31 @@ mod tests {
         build_bam_index(&bam).unwrap();
         assert!(bam_index_present(&bam));
         assert!(rust_htslib::bam::IndexedReader::from_path(&bam).is_ok());
+    }
+
+    #[test]
+    fn test_bam_index_present_accepts_extension_replaced_index() {
+        let (dir, bam) = copy_to_temp("tests/sample_1/reads.bam");
+        build_bam_index(&bam).unwrap();
+        std::fs::rename(
+            dir.path().join("reads.bam.bai"),
+            dir.path().join("reads.bai"),
+        )
+        .unwrap();
+        assert!(bam_index_present(&bam));
+        assert!(rust_htslib::bam::IndexedReader::from_path(&bam).is_ok());
+    }
+
+    #[test]
+    fn test_vcf_index_present_accepts_extension_replaced_index() {
+        let (dir, vcf) = copy_to_temp("tests/sample_3/1257A.vcf.gz");
+        std::fs::copy(
+            "tests/sample_3/1257A.vcf.gz.csi",
+            dir.path().join("1257A.vcf.csi"),
+        )
+        .unwrap();
+        assert!(vcf_index_present(&vcf));
+        assert!(rust_htslib::bcf::IndexedReader::from_path(&vcf).is_ok());
     }
 
     #[test]
