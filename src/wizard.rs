@@ -384,7 +384,7 @@ mod tests {
             !names
                 .iter()
                 .any(|n| n == "sample.bam" || n == "sample.cram"),
-            "must NOT suggest alignment files when asking for a FASTA file, got {names:?}"
+            "Can't suggest alignment files when asking for a FASTA file, got {names:?}"
         );
     }
 
@@ -396,7 +396,7 @@ mod tests {
         assert!(names.iter().any(|n| n == "sample.cram"));
         assert!(
             !names.iter().any(|n| n == "ref.fa" || n == "regions.bed"),
-            "must NOT suggest non-alignment files, got {names:?}"
+            "Can't suggest non-alignment files, got {names:?}"
         );
     }
 
@@ -424,9 +424,9 @@ mod tests {
             let names = suggest_in_sample_dir(dir.path(), kind);
             assert!(
                 names.iter().any(|n| n == "subdir/"),
-                "directories must stay navigable, got {names:?}"
+                "Directories must stay navigable, got {names:?}"
             );
-            assert!(!names.iter().any(|n| n == "notes.txt"), "got {names:?}");
+            assert!(!names.iter().any(|n| n == "notes.txt"), "Got {names:?}");
         }
     }
 }
