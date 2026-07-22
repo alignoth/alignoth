@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/alignoth/alignoth/compare/v1.9.0...v1.10.0) (2026-07-22)
+
+
+### Features
+
+* Fill available width for HTML plots by default ([#484](https://github.com/alignoth/alignoth/issues/484)) ([15b1f8a](https://github.com/alignoth/alignoth/commit/15b1f8a59750e716bac5138751f68905d8f104b9))
+
 ## [1.9.0](https://github.com/alignoth/alignoth/compare/v1.8.0...v1.9.0) (2026-07-20)
 
 
