@@ -47,7 +47,7 @@ The following options are available when using alignoth:
 | bed                   | -b    | Path to a BED file. Regions from the BED file will be highlighted in the resulting plot similar to the highlight option.                                          |         |
 | plot-all              | -p    | Plot all reads in the given region. We advise to only use this command for small bam files with a single target.                                                  | false   |
 | max-read-depth        | -d    | Set the maximum rows of reads that will be shown in the alignment plots                                                                                           | 500     |
-| max-width             | -w    | Set the maximum width of the resulting alignment plot                                                                                                             | 1024    |
+| max-width             | -w    | Set the maximum width of the resulting alignment plot. If unset, HTML plots fill the available window width while other outputs default to 1024.                  | 1024    |
 | output                | -o    | If present, data and vega-lite specs of the generated plot will be split and written to the given directory                                                       |         |
 | data-format           | -f    | Sets the output format for the read, reference and highlight data                                                                                                 | json    |
 | aux_tag               | -x    | Displays the given content of the aux tag in the tooltip of the plot. Multiple usage for more than one tag is possible.                                           |         |

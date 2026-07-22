@@ -193,6 +193,19 @@
 <script>
     const compressed_spec = {{ spec | safe }};
     const spec = JSON.parse(LZString.decompressFromUTF16(compressed_spec));
+    {% if autofit %}
+    {
+        const MAX_PX_PER_BASE = 20;
+        const AXIS_LEGEND_WIDTH = 200;
+        const MIN_WIDTH = 300;
+        const domain = spec.vconcat[1].encoding.x.scale.domain;
+        const bases = domain[1] - domain[0];
+        const available = document.getElementById("vis").clientWidth - AXIS_LEGEND_WIDTH;
+        const width = Math.min(bases * MAX_PX_PER_BASE, Math.max(available, MIN_WIDTH));
+        spec.vconcat[0].width = width;
+        spec.vconcat[1].width = width;
+    }
+    {% endif %}
     let fullData = [];
     vegaEmbed("#vis", spec, {mode: "vega-lite"}).then(({ view }) => {
         fullReads = view.data('reads');

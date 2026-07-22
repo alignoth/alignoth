@@ -119,7 +119,7 @@ pub(crate) async fn wizard_mode() -> Result<Alignoth> {
         region: Some(region),
         aux_tag: aux_tags,
         max_read_depth,
-        max_width: 1024,
+        max_width: None,
         output: None,
         data_format: Default::default(),
         html: html_output,
