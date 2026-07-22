@@ -64,9 +64,9 @@ pub struct Alignoth {
     #[structopt(long, short = "f", default_value)]
     pub(crate) data_format: DataFormat,
 
-    /// Sets the maximum width of the resulting plot.
-    #[structopt(long, short = "w", default_value = "1024")]
-    pub(crate) max_width: i64,
+    /// Sets the maximum width of the resulting plot. Defaults to 1024, or to the available width when rendering to HTML.
+    #[structopt(long, short = "w")]
+    pub(crate) max_width: Option<i64>,
 
     /// If present vega-lite specs will be written to the given file path
     #[structopt(long, parse(from_os_str), conflicts_with("output"))]
@@ -516,7 +516,7 @@ mod tests {
             bed: None,
             max_read_depth: 500,
             data_format: DataFormat::Json,
-            max_width: 1024,
+            max_width: Some(1024),
             spec_output: None,
             ref_data_output: None,
             read_data_output: None,

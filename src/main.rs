@@ -97,7 +97,11 @@ async fn main() -> Result<()> {
     let region = opt.region.as_ref().unwrap();
 
     let mut plot_specs: Value = serde_json::from_str(include_str!("../resources/plot.vl.json"))?;
-    let width = json!(min(opt.max_width, 5 * region.length()));
+    let width = match opt.max_width {
+        Some(max_width) => Some(min(max_width, 5 * region.length())),
+        None if opt.html => None,
+        None => Some(min(1024, 5 * region.length())),
+    };
     let domain = json!(vec![region.start as f32 - 0.5, region.end as f32 - 0.5]);
 
     let template_coverage = plot_specs["vconcat"][0].clone();
@@ -136,7 +140,9 @@ async fn main() -> Result<()> {
         };
 
         let mut cov = template_coverage.clone();
-        cov["width"] = width.clone();
+        if let Some(width) = width {
+            cov["width"] = json!(width);
+        }
         if i == 0 {
             cov["title"] = json!({
                 "text": &region.target,
@@ -153,7 +159,9 @@ async fn main() -> Result<()> {
         cov["encoding"]["y"]["axis"]["title"] = json!(format!("{} cov", bam_name));
 
         let mut rds = template_reads.clone();
-        rds["width"] = width.clone();
+        if let Some(width) = width {
+            rds["width"] = json!(width);
+        }
         rds["encoding"]["x"]["scale"]["domain"] = domain.clone();
         rds["encoding"]["y"]["axis"]["title"] = json!(subsampling_warning);
 
@@ -281,6 +289,7 @@ async fn main() -> Result<()> {
             templates.add_raw_template("plot", include_str!("../resources/plot.html.tera"))?;
             let mut context = Context::new();
             context.insert("num_bams", &opt.bam_path.len());
+            context.insert("autofit", &width.is_none());
             context.insert(
                 "spec",
                 &json!(compress_to_utf16(&plot_specs.to_string())).to_string(),
