@@ -156,7 +156,6 @@ async fn main() -> Result<()> {
                 json!({ "filter": format!("datum.sample == '{}'", bam_name) }),
             );
         }
-        cov["encoding"]["y"]["axis"]["title"] = json!(format!("{} cov", bam_name));
 
         let mut rds = template_reads.clone();
         if let Some(width) = width {

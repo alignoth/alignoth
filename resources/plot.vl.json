@@ -78,7 +78,7 @@
           "type": "quantitative",
           "stack": true,
           "axis": {
-            "title": "Coverage"
+            "title": null
           }
         },
         "color": {
