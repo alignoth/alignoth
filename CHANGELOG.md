@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/alignoth/alignoth/compare/v1.10.0...v1.10.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* Drop redundant y-axis title from coverage track ([#486](https://github.com/alignoth/alignoth/issues/486)) ([8535009](https://github.com/alignoth/alignoth/commit/8535009b657eababc8683719716f9337eb249526))
+
 ## [1.10.0](https://github.com/alignoth/alignoth/compare/v1.9.0...v1.10.0) (2026-07-22)
 
 
