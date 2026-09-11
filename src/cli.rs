@@ -20,8 +20,7 @@ use structopt::StructOpt;
     name = "alignoth"
 )]
 pub struct Alignoth {
-    /// BAM files to be visualized. Local paths or http(s)/ftp URLs (like samtools); remote
-    /// files need an index (.bai/.csi) alongside them.
+    /// BAM files to be visualized. Local paths or http(s)/ftp URLs like samtools. Remote files need a matching index (.bai/.csi).
     #[structopt(long, short = "b", parse(from_os_str))]
     pub(crate) bam_path: Vec<PathBuf>,
 
