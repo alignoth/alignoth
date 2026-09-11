@@ -1,9 +1,9 @@
 use crate::utils::{
     ensure_bam_index, ensure_fasta_index, get_fasta_length, get_ref_and_bam_from_cwd,
+    open_indexed_bam,
 };
 use anyhow::{anyhow, Context, Result};
 use log::warn;
-use rust_htslib::bam;
 use rust_htslib::bam::{FetchDefinition, Read};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use serde::Deserialize;
@@ -20,7 +20,8 @@ use structopt::StructOpt;
     name = "alignoth"
 )]
 pub struct Alignoth {
-    /// BAM files to be visualized.
+    /// BAM files to be visualized. Local paths or http(s)/ftp URLs (like samtools); remote
+    /// files need an index (.bai/.csi) alongside them.
     #[structopt(long, short = "b", parse(from_os_str))]
     pub(crate) bam_path: Vec<PathBuf>,
 
@@ -321,7 +322,7 @@ pub(crate) trait FromBam {
 
 impl FromBam for Region {
     fn from_bam(bam_path: &Path) -> Result<Self> {
-        let mut bam = bam::IndexedReader::from_path(bam_path)?;
+        let mut bam = open_indexed_bam(bam_path)?;
         let header = bam.header();
         let target = header.target_names()[0];
         let target = std::str::from_utf8(target)?.to_string();
