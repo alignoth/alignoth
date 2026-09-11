@@ -339,6 +339,14 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn test_ensure_bam_index_builds_missing_local_index() {
+        let (_dir, bam) = copy_to_temp("tests/sample_1/reads.bam");
+        assert!(!bam_index_present(&bam));
+        ensure_bam_index(&bam).unwrap();
+        assert!(bam_index_present(&bam));
+    }
+
+    #[test]
     fn test_bam_index_present_accepts_extension_replaced_index() {
         let (dir, bam) = copy_to_temp("tests/sample_1/reads.bam");
         build_bam_index(&bam).unwrap();

@@ -495,8 +495,10 @@ impl Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{Alignoth, Around, DataFormat, FromAround, Interval, Preprocess, Region};
-    use std::path::PathBuf;
+    use crate::cli::{
+        Alignoth, Around, DataFormat, FromAround, FromBam, Interval, Preprocess, Region,
+    };
+    use std::path::{Path, PathBuf};
     use std::str::FromStr;
 
     fn base_alignoth() -> Alignoth {
@@ -541,6 +543,12 @@ mod tests {
         };
         opt.preprocess().unwrap();
         opt.region.unwrap()
+    }
+
+    #[test]
+    fn test_region_from_bam_reads_first_target() {
+        let region = Region::from_bam(Path::new("tests/sample_2/sample.bam")).unwrap();
+        assert_eq!(region.target, "chr1");
     }
 
     #[test]
