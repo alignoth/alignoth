@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/alignoth/alignoth/compare/v1.10.1...v1.11.0) (2026-09-14)
+
+
+### Features
+
+* Allow passing BAM files via remote URL similar to samtools ([#494](https://github.com/alignoth/alignoth/issues/494)) ([5b9d55d](https://github.com/alignoth/alignoth/commit/5b9d55df93e0a4427a314b15338d5abbef83b23d))
+
 ## [1.10.1](https://github.com/alignoth/alignoth/compare/v1.10.0...v1.10.1) (2026-07-27)
 
 
