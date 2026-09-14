@@ -1,6 +1,6 @@
 use crate::cli;
 use crate::cli::Region;
-use crate::utils::{aux_to_string, get_fasta_length};
+use crate::utils::{aux_to_string, get_fasta_length, open_indexed_bam};
 use anyhow::{Context, Result};
 use itertools::Itertools;
 use log::warn;
@@ -33,7 +33,7 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     clamp_reads: bool,
     sample: String,
 ) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
-    let mut bam = bam::IndexedReader::from_path(&bam_path)?;
+    let mut bam = open_indexed_bam(bam_path.as_ref())?;
     let tid = bam
         .header()
         .tid(region.target.as_bytes())

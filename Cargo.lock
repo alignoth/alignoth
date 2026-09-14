@@ -31,6 +31,7 @@ dependencies = [
  "tempfile",
  "tera",
  "tokio",
+ "url",
 ]
 
 [[package]]

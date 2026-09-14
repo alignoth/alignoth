@@ -1,9 +1,9 @@
 use crate::utils::{
     ensure_bam_index, ensure_fasta_index, get_fasta_length, get_ref_and_bam_from_cwd,
+    open_indexed_bam,
 };
 use anyhow::{anyhow, Context, Result};
 use log::warn;
-use rust_htslib::bam;
 use rust_htslib::bam::{FetchDefinition, Read};
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use serde::Deserialize;
@@ -20,7 +20,7 @@ use structopt::StructOpt;
     name = "alignoth"
 )]
 pub struct Alignoth {
-    /// BAM files to be visualized.
+    /// BAM files to be visualized. Local paths or http(s)/ftp URLs like samtools. Remote files need a matching index (.bai/.csi).
     #[structopt(long, short = "b", parse(from_os_str))]
     pub(crate) bam_path: Vec<PathBuf>,
 
@@ -321,7 +321,7 @@ pub(crate) trait FromBam {
 
 impl FromBam for Region {
     fn from_bam(bam_path: &Path) -> Result<Self> {
-        let mut bam = bam::IndexedReader::from_path(bam_path)?;
+        let mut bam = open_indexed_bam(bam_path)?;
         let header = bam.header();
         let target = header.target_names()[0];
         let target = std::str::from_utf8(target)?.to_string();
@@ -495,8 +495,10 @@ impl Interval {
 
 #[cfg(test)]
 mod tests {
-    use crate::cli::{Alignoth, Around, DataFormat, FromAround, Interval, Preprocess, Region};
-    use std::path::PathBuf;
+    use crate::cli::{
+        Alignoth, Around, DataFormat, FromAround, FromBam, Interval, Preprocess, Region,
+    };
+    use std::path::{Path, PathBuf};
     use std::str::FromStr;
 
     fn base_alignoth() -> Alignoth {
@@ -541,6 +543,12 @@ mod tests {
         };
         opt.preprocess().unwrap();
         opt.region.unwrap()
+    }
+
+    #[test]
+    fn test_region_from_bam_reads_first_target() {
+        let region = Region::from_bam(Path::new("tests/sample_2/sample.bam")).unwrap();
+        assert_eq!(region.target, "chr1");
     }
 
     #[test]

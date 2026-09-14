@@ -4,6 +4,7 @@ use rust_htslib::bcf::{Format, Header, Read as BcfRead, Reader, Writer};
 use rust_htslib::{bam, bcf, faidx};
 use std::fs;
 use std::path::{Path, PathBuf};
+use url::Url;
 
 #[derive(Clone, Copy)]
 pub(crate) enum FileKind {
@@ -172,12 +173,36 @@ fn bgzip_vcf(path: &Path) -> Result<PathBuf> {
     Ok(output)
 }
 
-/// Ensures a coordinate index exists for the given BAM/CRAM file, building one if it is missing.
-pub(crate) fn ensure_bam_index(path: &Path) -> Result<()> {
-    if !bam_index_present(path) {
-        build_bam_index(path)?;
+/// Returns whether `path` is a remote BAM URL (`http://`, `https://`, or `ftp://`), the schemes
+/// samtools itself accepts.
+fn is_remote_bam(path: &Path) -> bool {
+    path.to_str().is_some_and(|path| {
+        ["http://", "https://", "ftp://"]
+            .iter()
+            .any(|scheme| path.starts_with(scheme))
+    })
+}
+
+/// Opens an indexed BAM/CRAM reader, transparently supporting remote URLs in addition to local
+/// paths.
+pub(crate) fn open_indexed_bam(path: &Path) -> Result<bam::IndexedReader> {
+    if is_remote_bam(path) {
+        let url = Url::parse(path.to_str().context("bam path is not valid UTF-8")?)
+            .with_context(|| format!("invalid remote BAM URL: {}", path.display()))?;
+        Ok(bam::IndexedReader::from_url(&url)?)
+    } else {
+        Ok(bam::IndexedReader::from_path(path)?)
     }
-    Ok(())
+}
+
+/// Ensures a coordinate index exists for the given BAM/CRAM file, building one if it is missing.
+/// Remote files are left untouched: alignoth expects a matching remote index to already exist,
+/// the same way samtools does.
+pub(crate) fn ensure_bam_index(path: &Path) -> Result<()> {
+    if is_remote_bam(path) || bam_index_present(path) {
+        return Ok(());
+    }
+    build_bam_index(path)
 }
 
 /// Ensures a `.fai` index exists for the given FASTA file, building one if it is missing.
@@ -235,8 +260,8 @@ pub(crate) fn ellipsis(s: &str, max_len: usize) -> String {
 pub(crate) mod tests {
     use crate::utils::{
         bam_index_present, build_bam_index, build_fasta_index, build_vcf_index, ellipsis,
-        fasta_index_present, get_fasta_contigs, get_fasta_length, get_ref_and_bam_from_cwd,
-        vcf_index_present,
+        ensure_bam_index, fasta_index_present, get_fasta_contigs, get_fasta_length,
+        get_ref_and_bam_from_cwd, is_remote_bam, vcf_index_present,
     };
     use std::io::Write;
     use std::path::{Path, PathBuf};
@@ -297,6 +322,28 @@ pub(crate) mod tests {
         build_bam_index(&bam).unwrap();
         assert!(bam_index_present(&bam));
         assert!(rust_htslib::bam::IndexedReader::from_path(&bam).is_ok());
+    }
+
+    #[test]
+    fn test_is_remote_bam() {
+        assert!(is_remote_bam(Path::new("http://example.com/reads.bam")));
+        assert!(is_remote_bam(Path::new("https://example.com/reads.bam")));
+        assert!(is_remote_bam(Path::new("ftp://example.com/reads.bam")));
+        assert!(!is_remote_bam(Path::new("tests/sample_1/reads.bam")));
+        assert!(!is_remote_bam(Path::new("/abs/path/reads.bam")));
+    }
+
+    #[test]
+    fn test_ensure_bam_index_skips_remote_bam() {
+        ensure_bam_index(Path::new("http://example.com/reads.bam")).unwrap();
+    }
+
+    #[test]
+    fn test_ensure_bam_index_builds_missing_local_index() {
+        let (_dir, bam) = copy_to_temp("tests/sample_1/reads.bam");
+        assert!(!bam_index_present(&bam));
+        ensure_bam_index(&bam).unwrap();
+        assert!(bam_index_present(&bam));
     }
 
     #[test]
