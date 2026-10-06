@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/alignoth/alignoth/compare/v1.11.0...v1.11.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* Support =/X CIGAR operators ([#500](https://github.com/alignoth/alignoth/issues/500)) ([ad4a868](https://github.com/alignoth/alignoth/commit/ad4a868c754a9d441090b11a6948989bb88d7a1e))
+
 ## [1.11.0](https://github.com/alignoth/alignoth/compare/v1.10.1...v1.11.0) (2026-09-14)
 
 
