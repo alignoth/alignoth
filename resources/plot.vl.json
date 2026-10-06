@@ -580,6 +580,10 @@
               "filter": "datum.type != 'deletion' && datum.type != 'insertion'"
             },
             {
+              "as": "position (1-based)",
+              "calculate": "if(datum.length == 1, datum.position + datum.offset + 1, (datum.position + datum.offset + 1) + '-' + (datum.position + datum.offset + datum.length))"
+            },
+            {
               "as": "v_offset",
               "calculate": "if(datum.position < datum.mpos, 0, 2)"
             }
@@ -595,6 +599,9 @@
               },
               {
                 "field": "type"
+              },
+              {
+                "field": "position (1-based)"
               },
               {
                 "field": "mapq"
@@ -759,6 +766,10 @@
               "filter": "datum.type == 'insertion'"
             },
             {
+              "as": "position (1-based)",
+              "calculate": "(datum.position + datum.offset) + '-' + (datum.position + datum.offset + 1)"
+            },
+            {
               "as": "v_offset",
               "calculate": "if(datum.position < datum.mpos, 0, 2)"
             }
@@ -774,6 +785,9 @@
               },
               {
                 "field": "type"
+              },
+              {
+                "field": "position (1-based)"
               },
               {
                 "field": "mapq"
@@ -937,6 +951,10 @@
               "filter": "datum.type == 'deletion'"
             },
             {
+              "as": "position (1-based)",
+              "calculate": "if(datum.length == 1, datum.position + datum.offset + 1, (datum.position + datum.offset + 1) + '-' + (datum.position + datum.offset + datum.length))"
+            },
+            {
               "as": "v_offset",
               "calculate": "if(datum.position < datum.mpos, 0, 2)"
             }
@@ -952,6 +970,9 @@
               },
               {
                 "field": "type"
+              },
+              {
+                "field": "position (1-based)"
               },
               {
                 "field": "mapq"
