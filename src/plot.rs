@@ -511,7 +511,10 @@ impl PlotCigar {
         let (mut read_index, mut ref_index) = (0, 0);
         for c in &cigar {
             match c {
-                Cigar::Match(length) | Cigar::SoftClip(length) => {
+                Cigar::Match(length)
+                | Cigar::Equal(length)
+                | Cigar::Diff(length)
+                | Cigar::SoftClip(length) => {
                     inner_plot_cigars.extend(match_bases(
                         &read_seq[read_index..read_index + *length as usize],
                         &ref_seq[ref_index..ref_index + *length as usize],
@@ -1022,6 +1025,18 @@ mod tests {
             },
         ]);
         assert_eq!(cigar, expected_cigar);
+    }
+
+    #[test]
+    fn test_plot_cigar_eqx() {
+        let cigar_string = CigarStringView::new(
+            CigarString::from(vec![Cigar::Equal(4), Cigar::Diff(1), Cigar::Equal(5)]),
+            0,
+        );
+        let reference = vec!['A', 'A', 'G', 'C', 'T', 'A', 'T', 'A', 'T', 'A'];
+        let read = vec!['A', 'A', 'G', 'C', 'C', 'A', 'T', 'A', 'T', 'A'];
+        let cigar = PlotCigar::from_cigar(cigar_string, read, reference).unwrap();
+        assert_eq!(cigar, PlotCigar::from_str("4=|1C|5=").unwrap());
     }
 
     #[test]
