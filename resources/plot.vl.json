@@ -410,7 +410,7 @@
               "as": "type"
             },
             {
-              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 0, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
               "as": "length"
             },
             {
@@ -420,11 +420,11 @@
             },
             {
               "as": "start",
-              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 1.4, datum.position + datum.offset + 0.4)"
+              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 0.9, datum.position + datum.offset + 0.4)"
             },
             {
               "as": "end",
-              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length - 0.4, datum.position + datum.offset + datum.length + 0.6)"
+              "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 0.1, datum.position + datum.offset + datum.length + 0.6)"
             },
             {
               "as": "v_offset",
@@ -560,7 +560,7 @@
               "as": "type"
             },
             {
-              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 0, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
               "as": "length"
             },
             {
@@ -735,7 +735,7 @@
               "as": "type"
             },
             {
-              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 0, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
               "as": "length"
             },
             {
@@ -745,11 +745,11 @@
             },
             {
               "as": "start",
-              "calculate": "datum.position + datum.offset + 0.5"
+              "calculate": "datum.position + datum.offset"
             },
             {
               "as": "end",
-              "calculate": "datum.position + datum.offset + datum.length + 0.5"
+              "calculate": "datum.position + datum.offset + 1"
             },
             {
               "as": "inserted bases",
@@ -917,7 +917,7 @@
               "as": "type"
             },
             {
-              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 1, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
+              "calculate": "if(datum.type == 'match' || datum.type == 'deletion', parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1)), if(datum.type == 'insertion', 0, parseInt(substring(datum.cigars, 0, length(datum.cigars) - 1))))",
               "as": "length"
             },
             {
