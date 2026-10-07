@@ -44,7 +44,7 @@ pub struct Alignoth {
     #[structopt(long)]
     pub(crate) plot_all: bool,
 
-    /// Interval or single base position that will be highlighted in the visualization. Example: 132440-132450 or 132440
+    /// Named interval or single base position that will be highlighted in the visualization. Example: myinterval:132440-132450 or myvariant:132440
     #[structopt(long, short = "h")]
     pub(crate) highlight: Option<Vec<Interval>>,
 
