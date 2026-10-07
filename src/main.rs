@@ -290,6 +290,10 @@ async fn main() -> Result<()> {
             context.insert("num_bams", &opt.bam_path.len());
             context.insert("autofit", &width.is_none());
             context.insert(
+                "mismatch_display_min_percent",
+                &opt.mismatch_display_min_percent,
+            );
+            context.insert(
                 "spec",
                 &json!(compress_to_utf16(&plot_specs.to_string())).to_string(),
             );
