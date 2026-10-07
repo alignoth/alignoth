@@ -120,7 +120,22 @@
             cursor: default;
         }
 
-        .flag-pill:hover .tooltip {
+        .info {
+            position: relative;
+            cursor: help;
+        }
+
+        .info .tooltip {
+            left: -4px;
+            transform: none;
+        }
+
+        .info .tooltip::after {
+            left: 10px;
+        }
+
+        .flag-pill:hover .tooltip,
+        .info:hover .tooltip {
             visibility: visible;
             opacity: 1;
         }
@@ -169,7 +184,7 @@
       <li><strong>Zoom:</strong> Use the mouse wheel to zoom in and out of the plot.</li>
       <li><strong>Pan:</strong> Click and drag to pan through the reads horizontally.</li>
       <li><strong>Highlight Reads:</strong> Click on a read to highlight it. Hold shift to select multiple. This will lower the opacity of all other reads, allowing better visibility of the selected read, especially when read mates overlap.</li>
-      <li><strong>Coverage:</strong> Mismatches below {{ mismatch_display_min_percent }}% of the read depth at a position are counted as matches in the coverage track. This threshold can be changed via <code>--mismatch-display-min-percent</code>.</li>
+      <li><strong>Coverage:</strong> Mismatches below {{ mismatch_display_min_percent }}% of the read depth at a position are counted as matches in the coverage track. This threshold can be changed via <code>--mismatch-display-min-percent</code>. <span class="info">ⓘ<span class="tooltip">Hides likely sequencing errors and keeps the file small.</span></span></li>
     </ul>
   </details>
 
