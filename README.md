@@ -42,7 +42,7 @@ The following options are available when using alignoth:
 | reference             | -r    | The path to the reference fasta file                                                                                                                              |         |
 | region                | -g    | Chromosome and region for the visualization. Example: 2:132424-132924                                                                                             |         |
 | around                | -a    | A chromosome and a base position that will define the region that will be plotted starting 500bp before and end 500bp behind the given position. Example: 2:17348 |         |
-| highlight             | -h    | Named intervals or single base positions that will be highlighted in the visualization. Example: myinterval:132400-132500 or myvariant:132440                     |         |
+| highlight             | -h    | Interval or single base position that will be highlighted in the visualization, optionally prefixed with a name. Example: 132440-132450, 132440, myinterval:132440-132450 or myvariant:132440 |         |
 | vcf                   | -v    | Path to a VCF file. Variants from the VCF file will be highlighted in the resulting plot similar to the highlight option.                                         |         |
 | bed                   |       | Path to a BED file. Regions from the BED file will be highlighted in the resulting plot similar to the highlight option.                                          |         |
 | plot-all              |       | Plot all reads in the given region. We advise to only use this command for small bam files with a single target.                                                  | false   |

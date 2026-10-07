@@ -44,7 +44,7 @@ pub struct Alignoth {
     #[structopt(long)]
     pub(crate) plot_all: bool,
 
-    /// Named interval or single base position that will be highlighted in the visualization. Example: myinterval:132440-132450 or myvariant:132440
+    /// Interval or single base position that will be highlighted in the visualization, optionally prefixed with a name. Example: 132440-132450, 132440, myinterval:132440-132450 or myvariant:132440
     #[structopt(long, short = "h")]
     pub(crate) highlight: Option<Vec<Interval>>,
 
@@ -440,43 +440,43 @@ impl FromStr for Interval {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some((name, interval)) = s.split_once(':') {
-            if let Some((start, end)) = interval.split_once('-') {
-                Ok(Interval {
-                    name: name.to_string(),
-                    start: start.parse::<f64>().context(format!(
-                        "Could not parse float from given interval start {start}"
-                    ))?,
-                    end: end.parse::<f64>().context(format!(
-                        "Could not parse float from given interval end {end}"
-                    ))?,
-                })
-            } else if let Ok(p) = interval.parse::<f64>() {
-                Ok(Interval {
-                    name: name.to_string(),
-                    start: p,
-                    end: p,
-                })
-            } else {
-                Err(anyhow!(
-                    "No '-' in interval string nor a single position to highlight."
-                ))
-            }
+        let (name, interval) = s.split_once(':').unwrap_or((s, s));
+        if let Some((start, end)) = interval.split_once('-') {
+            Ok(Interval {
+                name: name.to_string(),
+                start: start.parse::<f64>().context(format!(
+                    "Could not parse float from given interval start {start}"
+                ))?,
+                end: end.parse::<f64>().context(format!(
+                    "Could not parse float from given interval end {end}"
+                ))?,
+            })
+        } else if let Ok(p) = interval.parse::<f64>() {
+            Ok(Interval {
+                name: name.to_string(),
+                start: p,
+                end: p,
+            })
         } else {
             Err(anyhow!(
-                "No ':' in interval string nor a single position to highlight."
+                "Expected <POS> or <START>-<END>, optionally prefixed with <NAME>:"
             ))
         }
     }
 }
 
 impl Display for Interval {
-    /// Formats the interval matching the `--highlight` input syntax (`name:start-end` or `name:pos`).
+    /// Formats the interval matching the `--highlight` input syntax (`[name:]start-end` or `[name:]pos`).
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.start == self.end {
-            write!(f, "{}:{}", self.name, self.start)
+        let interval = if self.start == self.end {
+            self.start.to_string()
         } else {
-            write!(f, "{}:{}-{}", self.name, self.start, self.end)
+            format!("{}-{}", self.start, self.end)
+        };
+        if self.name == interval {
+            write!(f, "{interval}")
+        } else {
+            write!(f, "{}:{interval}", self.name)
         }
     }
 }
@@ -608,6 +608,13 @@ mod tests {
             end: 3000.0,
         };
         assert_eq!(interval, expeceted_interval);
+    }
+
+    #[test]
+    fn test_unnamed_interval_deserialization() {
+        let interval = Interval::from_str("2000-3000").unwrap();
+        assert_eq!(interval.name, "2000-3000");
+        assert_eq!(interval.to_string(), "2000-3000");
     }
 
     #[test]
