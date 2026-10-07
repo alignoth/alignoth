@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.12.0](https://github.com/alignoth/alignoth/compare/v1.11.1...v1.12.0) (2026-10-07)
+
+
+### Features
+
+* Allow highlighting without a name ([#506](https://github.com/alignoth/alignoth/issues/506)) ([d9ca657](https://github.com/alignoth/alignoth/commit/d9ca657b6a0a559e1b6af8b3d7012c5b019f2e64))
+* Mention mismatch display threshold in plot manual ([#503](https://github.com/alignoth/alignoth/issues/503)) ([bf43190](https://github.com/alignoth/alignoth/commit/bf4319083f8112da1c82eb098b9538db307192bc))
+* Show base positions in read tooltips ([#502](https://github.com/alignoth/alignoth/issues/502)) ([874d14a](https://github.com/alignoth/alignoth/commit/874d14af5069ea989bc1b0c0de4e0415178ec0b8))
+
+
+### Bug Fixes
+
+* Fix read offset after insertions ([#504](https://github.com/alignoth/alignoth/issues/504)) ([e08ee4b](https://github.com/alignoth/alignoth/commit/e08ee4b46597aa8da25940c0eb2d8ec5a845574a))
+
 ## [1.11.1](https://github.com/alignoth/alignoth/compare/v1.11.0...v1.11.1) (2026-10-06)
 
 
