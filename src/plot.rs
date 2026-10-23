@@ -34,28 +34,18 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
     sample: String,
 ) -> Result<(Vec<EncodedRead>, Reference, usize, Coverage, usize)> {
     let mut bam = open_indexed_bam(bam_path.as_ref())?;
-    let tid = bam
-        .header()
-        .tid(region.target.as_bytes())
-        .context(format!(
-            "bam header does not contain given region target {}",
-            region.target
-        ))
-        .unwrap() as i32;
+    let tid = bam.header().tid(region.target.as_bytes()).context(format!(
+        "bam header does not contain given region target {}",
+        region.target
+    ))? as i32;
     bam.fetch(FetchRegion(tid, region.start, region.end))
         .context(format!("Could not fetch region {region} from {bam_path:?}"))?;
-    let mut data = bam
+    let mut data: Vec<Read> = bam
         .records()
         .filter_map(|r| r.ok())
-        .filter_map(|r| {
-            Read::from_record(r, &ref_path, &aux_tags, region, clamp_reads)
-                .context(format!(
-                    "bam file does not contain given region target {}",
-                    region.target
-                ))
-                .unwrap()
-        })
-        .collect_vec();
+        .map(|r| Read::from_record(r, &ref_path, &aux_tags, region, clamp_reads))
+        .flatten_ok()
+        .collect::<Result<_>>()?;
     let coverage =
         Coverage::from_reads(&data, region, mismatch_display_min_percent, sample.clone());
     let total_read_count = data.len();
