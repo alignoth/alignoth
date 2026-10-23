@@ -406,7 +406,7 @@
               "flatten": ["cigars", "cigar_index"]
             },
             {
-              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'n', 'skip', substring(datum.cigars, 1, length(datum.cigars))))))",
               "as": "type"
             },
             {
@@ -425,6 +425,9 @@
             {
               "as": "end",
               "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + 0.1, datum.position + datum.offset + datum.length + 0.6)"
+            },
+            {
+              "filter": "datum.type != 'skip'"
             },
             {
               "as": "v_offset",
@@ -556,7 +559,7 @@
               "flatten": ["cigars", "cigar_index"]
             },
             {
-              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'n', 'skip', substring(datum.cigars, 1, length(datum.cigars))))))",
               "as": "type"
             },
             {
@@ -577,7 +580,7 @@
               "calculate": "datum.position + datum.offset + datum.length + 0.5"
             },
             {
-              "filter": "datum.type != 'deletion' && datum.type != 'insertion'"
+              "filter": "datum.type != 'deletion' && datum.type != 'insertion' && datum.type != 'skip'"
             },
             {
               "as": "position (1-based)",
@@ -738,7 +741,7 @@
               "flatten": ["cigars", "cigar_index"]
             },
             {
-              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'n', 'skip', substring(datum.cigars, 1, length(datum.cigars))))))",
               "as": "type"
             },
             {
@@ -927,7 +930,7 @@
               "flatten": ["cigars", "cigar_index"]
             },
             {
-              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', substring(datum.cigars, 1, length(datum.cigars)))))",
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 'insertion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == '=', 'match', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'd', 'deletion', if(substring(datum.cigars, length(datum.cigars) - 1, length(datum.cigars)) == 'n', 'skip', substring(datum.cigars, 1, length(datum.cigars))))))",
               "as": "type"
             },
             {
@@ -948,7 +951,7 @@
               "calculate": "if(datum.type == 'insertion', datum.position + datum.offset + datum.length, datum.position + datum.offset + datum.length + 0.5)"
             },
             {
-              "filter": "datum.type == 'deletion'"
+              "filter": "datum.type == 'deletion' || datum.type == 'skip'"
             },
             {
               "as": "position (1-based)",
@@ -998,6 +1001,7 @@
               "value": 0.2
             },
             "strokeWidth": {
+              "condition": {"test": "datum.type == 'skip'", "value": 1},
               "field": "type",
               "scale": {
                 "type": "ordinal",
@@ -1016,6 +1020,7 @@
               "legend": null
             },
             "color": {
+              "condition": {"test": "datum.type == 'skip'", "value": "#BBBBBB"},
               "field": "type",
               "legend": {
                 "symbolSize": 75,
