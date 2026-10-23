@@ -42,7 +42,8 @@ pub(crate) fn create_plot_data<P: AsRef<Path> + std::fmt::Debug>(
             region.target
         ))
         .unwrap() as i32;
-    bam.fetch(FetchRegion(tid, region.start, region.end))?;
+    bam.fetch(FetchRegion(tid, region.start, region.end))
+        .context(format!("Could not fetch region {region} from {bam_path:?}"))?;
     let mut data = bam
         .records()
         .filter_map(|r| r.ok())

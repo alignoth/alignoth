@@ -41,7 +41,7 @@ pub struct Alignoth {
     pub(crate) around_vcf_record: Option<u64>,
 
     /// A short command to plot the whole bam file. We advise to only use this command for small bam files.
-    #[structopt(long)]
+    #[structopt(long, conflicts_with_all = &["around", "region"])]
     pub(crate) plot_all: bool,
 
     /// Interval or single base position that will be highlighted in the visualization, optionally prefixed with a name. Example: 132440-132450, 132440, myinterval:132440-132450 or myvariant:132440
@@ -322,26 +322,30 @@ pub(crate) trait FromBam {
 impl FromBam for Region {
     fn from_bam(bam_path: &Path) -> Result<Self> {
         let mut bam = open_indexed_bam(bam_path)?;
-        let header = bam.header();
-        let target = header.target_names()[0];
-        let target = std::str::from_utf8(target)?.to_string();
         bam.fetch(FetchDefinition::All)?;
-        let start = bam
-            .records()
-            .next()
-            .context(
-                "Could not find first alignment in bam file. Please specify a region with -g.",
-            )??
-            .pos();
-        let end = bam
-            .records()
-            .last()
-            .context(
-                "Could not find last alignment in bam file. Please specify a region with -g.",
-            )??
-            .cigar()
-            .end_pos();
-        Ok(Region { target, start, end })
+        let mut records = bam.records().filter(|record| {
+            record
+                .as_ref()
+                .map_or(true, |record| !record.is_unmapped() && record.tid() >= 0)
+        });
+        let first = records.next().context(
+            "Could not find any mapped alignment in bam file. Please specify a region with -g instead of using --plot-all.",
+        )??;
+        let tid = first.tid();
+        let mut end = first.cigar().end_pos();
+        for record in records {
+            let record = record?;
+            if record.tid() != tid {
+                break;
+            }
+            end = cmp::max(end, record.cigar().end_pos());
+        }
+        let target = std::str::from_utf8(bam.header().tid2name(tid as u32))?.to_string();
+        Ok(Region {
+            target,
+            start: first.pos(),
+            end,
+        })
     }
 }
 
@@ -546,9 +550,10 @@ mod tests {
     }
 
     #[test]
-    fn test_region_from_bam_reads_first_target() {
+    fn test_region_from_bam_uses_target_of_first_alignment() {
         let region = Region::from_bam(Path::new("tests/sample_2/sample.bam")).unwrap();
-        assert_eq!(region.target, "chr1");
+        assert_eq!(region.target, "chr6");
+        assert_eq!((region.start, region.end), (150, 651));
     }
 
     #[test]
