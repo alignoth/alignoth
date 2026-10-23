@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.12.1](https://github.com/alignoth/alignoth/compare/v1.12.0...v1.12.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* Improve region handling of --plot-all ([#512](https://github.com/alignoth/alignoth/issues/512)) ([db76404](https://github.com/alignoth/alignoth/commit/db764043706491e6a0840e7c0d54d613360e49fb))
+* Omit softclips from coverage track ([#511](https://github.com/alignoth/alignoth/issues/511)) ([d17210b](https://github.com/alignoth/alignoth/commit/d17210bfc463baea130ac3410d1b7d381cd48265))
+* Prevent reads from overlapping trailing softclips ([#516](https://github.com/alignoth/alignoth/issues/516)) ([fffd828](https://github.com/alignoth/alignoth/commit/fffd828cbc8dee594990608044d5fef9fdea9352))
+* Return errors instead of panicking when creating plot data ([#513](https://github.com/alignoth/alignoth/issues/513)) ([6a3c06e](https://github.com/alignoth/alignoth/commit/6a3c06eb03c5ef29e5bcde2eee028af462c60849))
+* Support spliced reads ([#517](https://github.com/alignoth/alignoth/issues/517)) ([8f0ee54](https://github.com/alignoth/alignoth/commit/8f0ee5459647126b38be0b9e6c55684e687f3cda))
+* Use shared target for --plot-all with multiple bam files ([#514](https://github.com/alignoth/alignoth/issues/514)) ([ff732cc](https://github.com/alignoth/alignoth/commit/ff732cc9a280ffa992e2505c627594f7c4ee737c))
+
 ## [1.12.0](https://github.com/alignoth/alignoth/compare/v1.11.1...v1.12.0) (2026-10-07)
 
 
