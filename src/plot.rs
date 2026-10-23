@@ -345,7 +345,7 @@ impl Coverage {
                             }
                         }
 
-                        CigarType::Del => {
+                        CigarType::Del | CigarType::Skip => {
                             if let Some(len) = cigar.length {
                                 ref_pos += len as i64;
                             }
@@ -380,6 +380,7 @@ impl Coverage {
 /// |---------------|-----------------|
 /// | Match         | `<#matches>=`   |
 /// | Deletion      | `<#deletions>d` |
+/// | Skip          | `<#skipped>n`   |
 /// | Substitutions | `<#><base>`     |
 /// | Insertions    | `i<bases>`      |
 ///
@@ -435,6 +436,14 @@ impl FromStr for PlotCigar {
                         length: Some(u32::from_str(&length).unwrap()),
                     }
                 }
+                Some('n') => {
+                    let length = inner.chars().take(inner.len() - 1).collect::<String>();
+                    InnerPlotCigar {
+                        cigar_type: CigarType::Skip,
+                        bases: None,
+                        length: Some(u32::from_str(&length).unwrap()),
+                    }
+                }
                 _ => {
                     if inner.starts_with('i') {
                         InnerPlotCigar {
@@ -479,6 +488,7 @@ impl Display for InnerPlotCigar {
                 self.bases.as_ref().unwrap().iter().collect::<String>()
             ),
             CigarType::Del => write!(f, "{}d", self.length.unwrap()),
+            CigarType::Skip => write!(f, "{}n", self.length.unwrap()),
             CigarType::Sub => write!(
                 f,
                 "{}{}",
@@ -494,6 +504,7 @@ enum CigarType {
     Match,
     Ins,
     Del,
+    Skip,
     Sub,
 }
 
@@ -530,6 +541,14 @@ impl PlotCigar {
                 Cigar::Del(length) => {
                     inner_plot_cigars.push(InnerPlotCigar {
                         cigar_type: CigarType::Del,
+                        bases: None,
+                        length: Some(*length),
+                    });
+                    ref_index += *length as usize;
+                }
+                Cigar::RefSkip(length) => {
+                    inner_plot_cigars.push(InnerPlotCigar {
+                        cigar_type: CigarType::Skip,
                         bases: None,
                         length: Some(*length),
                     });
