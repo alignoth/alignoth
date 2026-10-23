@@ -754,6 +754,17 @@ impl Read {
     fn set_row(&mut self, row: u32) {
         self.row = Some(row);
     }
+
+    /// Returns the end position of the Read as drawn in the plot including trailing softclips
+    fn plot_end(&self) -> i64 {
+        self.position
+            + self
+                .cigar
+                .into_iter()
+                .filter_map(|c| c.length)
+                .map(i64::from)
+                .sum::<i64>()
+    }
 }
 
 pub trait PlotOrder {
@@ -768,8 +779,8 @@ impl PlotOrder for Vec<Read> {
         for read in self.iter_mut() {
             if let Some(row) = ordered_reads.get(&read.name) {
                 read.set_row(*row as u32);
-                if row_ends[*row] < read.end_position {
-                    row_ends[*row] = read.end_position;
+                if row_ends[*row] < read.plot_end() {
+                    row_ends[*row] = read.plot_end();
                 }
                 continue;
             }
@@ -780,7 +791,7 @@ impl PlotOrder for Vec<Read> {
                 // No previous rows fit the read. New row is unfilled and read can be placed at the beginning
                 {
                     read.set_row(row as u32);
-                    row_ends[row] = max(read.end_position, read.mpos);
+                    row_ends[row] = max(read.plot_end(), read.mpos);
                     ordered_reads.insert(&read.name, row);
                     // We placed a read in the last row available so all rows seem to be filled so we append a new empty row for the next read
                     if row == row_ends.len() - 1 {
