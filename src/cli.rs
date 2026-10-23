@@ -4,7 +4,7 @@ use crate::utils::{
 };
 use anyhow::{anyhow, Context, Result};
 use log::warn;
-use rust_htslib::bam::{FetchDefinition, Read};
+use rust_htslib::bam::Read;
 use rust_htslib::bcf::{Read as BCFRead, Reader};
 use serde::Deserialize;
 use serde::Serialize;
@@ -164,16 +164,11 @@ impl Preprocess for Alignoth {
         ensure_fasta_index(self.reference.as_ref().unwrap())?;
         if self.plot_all {
             warn!("You are using the --plot-all option. This is not recommended for large bam files or files with multiple targets.");
+            let target = first_shared_target(&self.bam_path)?;
             let mut min_start = i64::MAX;
             let mut max_end = i64::MIN;
-            let mut target = String::new();
             for bam in &self.bam_path {
-                let r = Region::from_bam(bam)?;
-                if target.is_empty() {
-                    target = r.target.clone();
-                } else if target != r.target {
-                    return Err(anyhow::anyhow!("Cannot use --plot-all with multiple BAM files that have different targets."));
-                }
+                let r = Region::from_bam(bam, &target)?;
                 min_start = std::cmp::min(min_start, r.start);
                 max_end = std::cmp::max(max_end, r.end);
             }
@@ -313,36 +308,51 @@ impl FromAround for Region {
     }
 }
 
+/// Returns the first target that has mapped alignments in all given bam files.
+fn first_shared_target(bam_paths: &[PathBuf]) -> Result<String> {
+    let mut shared: Option<Vec<String>> = None;
+    for bam_path in bam_paths {
+        let mut bam = open_indexed_bam(bam_path)?;
+        let mapped = bam
+            .index_stats()?
+            .into_iter()
+            .filter(|(tid, _, mapped, _)| *tid >= 0 && *mapped > 0)
+            .map(
+                |(tid, ..)| Ok(std::str::from_utf8(bam.header().tid2name(tid as u32))?.to_string()),
+            )
+            .collect::<Result<Vec<_>>>()?;
+        shared = Some(match shared {
+            Some(targets) => targets.into_iter().filter(|t| mapped.contains(t)).collect(),
+            None => mapped,
+        });
+    }
+    shared
+        .and_then(|targets| targets.into_iter().next())
+        .context("Could not find a target with mapped alignments in all bam files. Please specify a region with -g instead of using --plot-all.")
+}
+
 pub(crate) trait FromBam {
-    fn from_bam(bam_path: &Path) -> Result<Self>
+    fn from_bam(bam_path: &Path, target: &str) -> Result<Self>
     where
         Self: Sized;
 }
 
 impl FromBam for Region {
-    fn from_bam(bam_path: &Path) -> Result<Self> {
+    fn from_bam(bam_path: &Path, target: &str) -> Result<Self> {
         let mut bam = open_indexed_bam(bam_path)?;
-        bam.fetch(FetchDefinition::All)?;
-        let mut records = bam.records().filter(|record| {
-            record
-                .as_ref()
-                .map_or(true, |record| !record.is_unmapped() && record.tid() >= 0)
-        });
-        let first = records.next().context(
-            "Could not find any mapped alignment in bam file. Please specify a region with -g instead of using --plot-all.",
-        )??;
-        let tid = first.tid();
+        bam.fetch(target)?;
+        let mut records = bam
+            .records()
+            .filter(|record| record.as_ref().map_or(true, |record| !record.is_unmapped()));
+        let first = records.next().context(format!(
+            "Could not find any mapped alignment on {target} in bam file. Please specify a region with -g instead of using --plot-all."
+        ))??;
         let mut end = first.cigar().end_pos();
         for record in records {
-            let record = record?;
-            if record.tid() != tid {
-                break;
-            }
-            end = cmp::max(end, record.cigar().end_pos());
+            end = cmp::max(end, record?.cigar().end_pos());
         }
-        let target = std::str::from_utf8(bam.header().tid2name(tid as u32))?.to_string();
         Ok(Region {
-            target,
+            target: target.to_string(),
             start: first.pos(),
             end,
         })
@@ -500,9 +510,10 @@ impl Interval {
 #[cfg(test)]
 mod tests {
     use crate::cli::{
-        Alignoth, Around, DataFormat, FromAround, FromBam, Interval, Preprocess, Region,
+        first_shared_target, Alignoth, Around, DataFormat, FromAround, FromBam, Interval,
+        Preprocess, Region,
     };
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
     use std::str::FromStr;
 
     fn base_alignoth() -> Alignoth {
@@ -550,9 +561,11 @@ mod tests {
     }
 
     #[test]
-    fn test_region_from_bam_uses_target_of_first_alignment() {
-        let region = Region::from_bam(Path::new("tests/sample_2/sample.bam")).unwrap();
-        assert_eq!(region.target, "chr6");
+    fn test_region_from_bam() {
+        let bam = PathBuf::from("tests/sample_2/sample.bam");
+        let target = first_shared_target(std::slice::from_ref(&bam)).unwrap();
+        assert_eq!(target, "chr6");
+        let region = Region::from_bam(&bam, &target).unwrap();
         assert_eq!((region.start, region.end), (150, 651));
     }
 
