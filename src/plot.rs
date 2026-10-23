@@ -99,6 +99,8 @@ pub struct Read {
     mapq: u8,
     row: Option<u32>,
     #[serde(skip)]
+    start_position: i64,
+    #[serde(skip)]
     end_position: i64,
     mpos: i64,
     aux: AuxRecord,
@@ -318,14 +320,16 @@ impl Coverage {
         let mut coverage = vec![BaseCoverage::default(); region.length() as usize];
 
         for read in reads {
-            if !(read.end_position <= region.start || read.position >= region.end) {
+            if !(read.end_position <= region.start || read.start_position >= region.end) {
                 let mut ref_pos = read.position;
                 for cigar in &read.cigar {
-                    let start = ref_pos.max(region.start);
+                    let start = ref_pos.max(region.start).max(read.start_position);
                     match cigar.cigar_type {
                         CigarType::Match => {
                             if let Some(len) = cigar.length {
-                                let end = (ref_pos + len as i64).min(region.end);
+                                let end = (ref_pos + len as i64)
+                                    .min(region.end)
+                                    .min(read.end_position);
                                 for i in start..end {
                                     coverage[(i - region.start) as usize].m += 1;
                                 }
@@ -334,7 +338,9 @@ impl Coverage {
                         }
                         CigarType::Sub => {
                             if let (Some(len), Some(bases)) = (cigar.length, &cigar.bases) {
-                                let end = (ref_pos + len as i64).min(region.end);
+                                let end = (ref_pos + len as i64)
+                                    .min(region.end)
+                                    .min(read.end_position);
                                 for pos in start..end {
                                     let idx = (pos - region.start) as usize;
                                     match bases[0] {
@@ -746,6 +752,7 @@ impl Read {
             flags: record.flags(),
             mapq: record.mapq(),
             row: None,
+            start_position: record.pos(),
             end_position: record.reference_end(),
             mpos,
             aux: AuxRecord::new(&record, aux_tags),
@@ -871,6 +878,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
+            start_position: 20,
             end_position: 120,
             mpos: 100,
             aux: AuxRecord(HashMap::new()),
@@ -884,6 +892,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
+            start_position: 40,
             end_position: 140,
             mpos: 120,
             aux: AuxRecord(HashMap::new()),
@@ -904,6 +913,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
+            start_position: 20,
             end_position: 120,
             mpos: 100,
             aux: AuxRecord(HashMap::new()),
@@ -917,6 +927,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
+            start_position: 40,
             end_position: 140,
             mpos: 120,
             aux: AuxRecord(HashMap::new()),
@@ -930,6 +941,7 @@ mod tests {
             flags: 0,
             mapq: 0,
             row: None,
+            start_position: 50,
             end_position: 150,
             mpos: 140,
             aux: AuxRecord(HashMap::new()),
@@ -994,6 +1006,7 @@ mod tests {
             row: Some(
                 9,
             ),
+            start_position: 373,
             end_position: 887,
             mpos: 333,
             aux: AuxRecord(HashMap::new()),
@@ -1170,6 +1183,7 @@ mod tests {
             flags: 99,
             mapq: 30,
             row: Some(1),
+            start_position: 4,
             end_position: 106,
             mpos: 789264,
             aux: AuxRecord(HashMap::new()),
@@ -1268,6 +1282,7 @@ mod tests {
             flags: 99,
             mapq: 30,
             row: Some(1),
+            start_position: 6,
             end_position: 12,
             mpos: 789264,
             aux: AuxRecord(HashMap::new()),
@@ -1344,6 +1359,7 @@ mod tests {
                 name: "read1".to_string(),
                 cigar: "5=".parse().unwrap(), // 5 matches
                 position: 5,
+                start_position: 5,
                 end_position: 10,
                 flags: 0,
                 mapq: 60,
@@ -1356,6 +1372,7 @@ mod tests {
                 name: "read2".to_string(),
                 cigar: "5=".parse().unwrap(),
                 position: 7,
+                start_position: 7,
                 end_position: 12,
                 flags: 0,
                 mapq: 60,
@@ -1368,6 +1385,7 @@ mod tests {
                 name: "outside".to_string(),
                 cigar: "5=".parse().unwrap(),
                 position: 20,
+                start_position: 20,
                 end_position: 25,
                 flags: 0,
                 mapq: 60,
@@ -1396,6 +1414,31 @@ mod tests {
             start: 5,
         };
         assert_eq!(coverage, expected);
+    }
+
+    #[test]
+    fn test_coverage_from_reads_ignores_softclips() {
+        let reads = vec![Read {
+            name: "read".to_string(),
+            cigar: "1A|1C|3=|1G".parse().unwrap(),
+            position: 5,
+            start_position: 7,
+            end_position: 10,
+            flags: 0,
+            mapq: 60,
+            row: None,
+            mpos: -1,
+            aux: Default::default(),
+            raw_cigar: "2S3M1S".to_string(),
+        }];
+        let region = Region {
+            target: "chr1".to_owned(),
+            start: 5,
+            end: 11,
+        };
+        let coverage = Coverage::from_reads(&reads, &region, 0.0, "test".to_string());
+        assert_eq!(coverage.matches, "0|0|1|0|0|-1");
+        assert!(coverage.a.is_empty() && coverage.c.is_empty() && coverage.g.is_empty());
     }
 
     #[test]
