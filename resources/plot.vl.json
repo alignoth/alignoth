@@ -1000,6 +1000,9 @@
               },
               "value": 0.2
             },
+            "strokeDash": {
+              "condition": {"test": "datum.type == 'skip'", "value": [4, 2]}
+            },
             "strokeWidth": {
               "condition": {"test": "datum.type == 'skip'", "value": 1},
               "field": "type",
