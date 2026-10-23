@@ -310,12 +310,38 @@
               "filter": "datum.mpos >= 0"
             },
             {
+              "calculate": "split(datum.cigar, '|')",
+              "as": "cigars"
+            },
+            {
+              "flatten": ["cigars"]
+            },
+            {
+              "calculate": "if(substring(datum.cigars, 0, 1) == 'i', 0, parseInt(datum.cigars))",
+              "as": "length"
+            },
+            {
+              "aggregate": [{"op": "sum", "field": "length", "as": "length"}],
+              "groupby": ["name", "position", "mpos", "row"]
+            },
+            {
+              "calculate": "if(datum.position < datum.mpos, datum.position + datum.length, null)",
+              "as": "left_end"
+            },
+            {
+              "joinaggregate": [{"op": "max", "field": "left_end", "as": "left_end"}],
+              "groupby": ["name"]
+            },
+            {
               "as": "start",
-              "calculate": "if(datum.position < datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+              "calculate": "if(isValid(datum.left_end), datum.left_end + 0.5, min(datum.position, datum.mpos) + 0.5)"
             },
             {
               "as": "end",
-              "calculate": "if(datum.position > datum.mpos, datum.position + 0.5, datum.mpos + 0.5)"
+              "calculate": "max(datum.position, datum.mpos) + 0.5"
+            },
+            {
+              "filter": "datum.start < datum.end"
             },
             {
               "as": "v_offset",
