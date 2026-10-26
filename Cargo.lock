@@ -1523,9 +1523,9 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "rust-htslib"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2386a28563a1c0713d7901e5c6e07732ca46a844ec8ee08cd17c631e581988ad"
+checksum = "fc6fe95f931db6155c90987476030375adfaa91e0990aec8d6634829c0cee390"
 dependencies = [
  "bio-types",
  "byteorder",
