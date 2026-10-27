@@ -11,33 +11,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: GoogleCloudPlatform/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         id: release
         with:
           release-type: rust
-          package-name: alignoth
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         if: ${{ steps.release.outputs.release_created }}
-        with:
-          toolchain: stable
-          override: true
 
       - name: Install system dependencies
         if: ${{ steps.release.outputs.release_created }}
         run: |
           sudo apt-get install --yes libgsl0-dev
 
-      - uses: Swatinem/rust-cache@v1.3.0
+      - uses: Swatinem/rust-cache@v2
         if: ${{ steps.release.outputs.release_created }}
       
       - name: Publish crate
         if: ${{ steps.release.outputs.release_created }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: publish
-          args: --token ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
