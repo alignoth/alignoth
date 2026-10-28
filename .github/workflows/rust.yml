@@ -11,13 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
           components: rustfmt
       
       - name: Check format
@@ -27,38 +25,32 @@ jobs:
      runs-on: ubuntu-latest
      steps:
        - name: Checkout repository
-         uses: actions/checkout@v3
+         uses: actions/checkout@v7
 
        - name: Install stable toolchain
-         uses: actions-rs/toolchain@v1
+         uses: dtolnay/rust-toolchain@stable
          with:
-           toolchain: stable
-           override: true
            components: clippy
 
+       - uses: Swatinem/rust-cache@v2
+
        - name: Lint with clippy
-         uses: actions-rs/clippy-check@v1
-         with:
-           token: ${{ secrets.GITHUB_TOKEN }}
+         run: cargo clippy --all-targets -- -D warnings
 
   Testing:
     needs: Formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
       
-      - uses: Swatinem/rust-cache@v1.3.0
+      - uses: Swatinem/rust-cache@v2
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - name: Run tests
+        run: cargo test
 
   Coverage:
     needs:
@@ -66,26 +58,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: taiki-e/install-action@v2
         with:
-          toolchain: stable
-          override: true
+          tool: cargo-tarpaulin
 
       - name: Run cargo-tarpaulin
-        run: |
-          cargo install cargo-tarpaulin
-          cargo tarpaulin --out Xml
+        run: cargo tarpaulin --out Xml
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: code-coverage-report
           path: cobertura.xml

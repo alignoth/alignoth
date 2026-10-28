@@ -10,6 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Auto apply clippy lints
-        uses: fxwiegand/apply-clippy-lints@v1.0.6
+        uses: fxwiegand/apply-clippy-lints@v1.2.0
